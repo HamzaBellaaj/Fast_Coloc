@@ -8,11 +8,26 @@ import { Listing } from './models';
 import { ListingMap } from './listing-map';
 @Component({
   imports: [RouterLink, DecimalPipe, DatePipe, ListingMap],
-  template: `<a class="link" routerLink="/annonces">← Toutes les annonces</a>
+  template: `<a class="link" [routerLink]="backLink">← Retour aux annonces</a>
     @if (busy()) {
       <p role="status" class="notice">Ouverture de l’annonce…</p>
     }
     @if (row(); as r) {
+      @if (
+        route.snapshot.queryParamMap.get('published') === '1' &&
+        r.author_id === auth.profile()?.id &&
+        r.status === 'PUBLISHED'
+      ) {
+        <section class="publication-notice" role="status">
+          <img src="/assets/fastcoloc-symbol.svg" width="56" height="56" alt="" />
+          <div>
+            <h2>Ton annonce est en ligne.</h2>
+            <p>Elle est maintenant visible dans le catalogue. Retrouve-la dans Mes annonces.</p>
+          </div>
+          <a class="btn ghost" routerLink="/mes-annonces">Mes annonces ↗</a>
+        </section>
+      }
+
       <div class="content-head">
         <div>
           <span class="tag">{{
@@ -109,6 +124,12 @@ export class ListingDetail implements OnInit {
   row = signal<Listing | null>(null);
   busy = signal(true);
   changing = signal(false);
+  get backLink() {
+    const from = this.route.snapshot.queryParamMap.get('from') || '/annonces';
+    return this.router.parseUrl(
+      /^\/(annonces|favoris|mes-annonces)(\?|$)/.test(from) ? from : '/annonces',
+    );
+  }
   ngOnInit() {
     void this.load();
   }

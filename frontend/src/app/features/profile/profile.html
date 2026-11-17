@@ -4,7 +4,7 @@
   <header class="topbar">
     <div>
       <span class="tag">MON ESPACE</span>
-      <h1 class="page-title">Salut, {{ d.profile.firstName || 'bienvenue' }} 👋</h1>
+      <h1 class="page-title">Salut, {{ d.profile.firstName || 'bienvenue' }}</h1>
       <p class="muted">Ton profil, ton style de vie, ta future coloc.</p>
     </div>
     <div class="avatar" aria-hidden="true">{{ (d.profile.firstName || 'F').charAt(0) }}</div>
@@ -39,7 +39,7 @@
   </section>
   <div class="grid2 profile-grid">
     <section class="section-card">
-      <h2 class="card-heading">👤 Mon identité</h2>
+      <h2 class="card-heading">Mon identité</h2>
       <dl>
         <dt>Nom et prénom</dt>
         <dd>{{ d.profile.firstName || 'Non renseigné' }} {{ d.profile.lastName }}</dd>
@@ -53,7 +53,7 @@
       <a class="link" routerLink="/register/1">Modifier mes informations ↗</a>
     </section>
     <section class="section-card">
-      <h2 class="card-heading">💫 À propos de moi</h2>
+      <h2 class="card-heading">À propos de moi</h2>
       <dl>
         <dt>Activités</dt>
         <dd>{{ d.personal.main_activities?.join(', ') || 'Non renseignées' }}</dd>
@@ -83,7 +83,7 @@
       <a class="link" routerLink="/register/3">Modifier mes habitudes ↗</a>
     </section>
     <section class="section-card">
-      <h2 class="card-heading">📍 Mon adresse</h2>
+      <h2 class="card-heading">Mon adresse</h2>
       <p>{{ d.address.street || 'Adresse non renseignée' }}</p>
       <p class="muted">
         {{ d.address.postal_code }} {{ localityName }} · {{ governorateName }} ·
@@ -109,7 +109,7 @@
     </section>
   </div>
   <section class="section-card spaced">
-    <h2 class="card-heading">💜 Mes préférences</h2>
+    <h2 class="card-heading">Mes préférences</h2>
     <p class="muted">
       Ces préférences sont enregistrées dans ton profil. La recherche de logements sera disponible
       dans un prochain sprint.
@@ -134,7 +134,7 @@
         /></app-field>
       </div>
       <app-field fieldId="move-in" label="Date d’emménagement souhaitée"
-        ><input id="move-in" type="date" formControlName="moveInDate" /></app-field
+        ><input id="move-in" type="date" fcCalendar formControlName="moveInDate" /></app-field
       ><app-field
         fieldId="preferred-localities"
         label="Localités préférées dans ton gouvernorat (Ctrl/Cmd pour sélectionner plusieurs)"
@@ -149,7 +149,7 @@
     </form>
   </section>
   <section class="section-card spaced">
-    <h2 class="card-heading">📸 Mes photos privées</h2>
+    <h2 class="card-heading">Mes photos privées</h2>
     <app-photos [photos]="d.photos" (changed)="load()" />
   </section>
   <div class="row wrap spaced">

@@ -1,6 +1,8 @@
 package com.iset.fastcolloc.ui.listings
 
 import android.os.Bundle
+import androidx.fragment.app.viewModels
+import com.iset.fastcolloc.ui.auth.calendarField
 import android.view.*
 import android.widget.ArrayAdapter
 import androidx.appcompat.app.AlertDialog
@@ -15,6 +17,9 @@ import com.iset.fastcolloc.databinding.*
 
 class ListingCatalogFragment :
     ListingBoundFragment<FragmentListingCatalogBinding>(FragmentListingCatalogBinding::inflate) {
+    override val listings: com.iset.fastcolloc.viewmodel.ListingViewModel by viewModels {
+        com.iset.fastcolloc.viewmodel.ListingViewModelFactory(requireActivity().application)
+    }
     private lateinit var adapter: ListingAdapter
 
     override fun onViewCreated(view: View, state: Bundle?) {
@@ -77,9 +82,6 @@ class ListingCatalogFragment :
                     when (item.itemId) {
                         R.id.s2Filters -> filters()
                         R.id.s2Refresh -> listings.load()
-                        R.id.s2Catalog -> listings.load("catalog", emptyMap(), 0)
-                        R.id.s2Mine -> listings.load("mine", emptyMap(), 0)
-                        R.id.s2Favorites -> listings.load("favorites", emptyMap(), 0)
                         else -> return false
                     }
                     return true
@@ -89,7 +91,16 @@ class ListingCatalogFragment :
             Lifecycle.State.RESUMED,
         )
         listings.loadAreas()
-        listings.load()
+        listings.areas.observe(viewLifecycleOwner) { areas ->
+            if (areas.isNotEmpty() && arguments?.getBoolean("showFilters") == true) {
+                arguments?.remove("showFilters")
+                filters()
+            }
+        }
+        if (listings.page.value == null) listings.load(
+            mode = arguments?.getString("mode") ?: "catalog",
+            query = listOf("q", "kind").mapNotNull { key -> arguments?.getString(key)?.takeIf { it.isNotBlank() }?.let { key to it } }.toMap()
+        )
     }
 
     private fun render() {
@@ -112,6 +123,7 @@ class ListingCatalogFragment :
                     "Aucune annonce à afficher pour ces critères."
                 else -> "${page.total} résultat(s) · page ${page.page+1}"
             }
+        (binding.btnPrevious.parent as View).isVisible = page != null && page.total > page.size
         binding.btnPrevious.isEnabled = !busy && listings.pageNumber > 0
         binding.btnNextPage.isEnabled =
             !busy && page != null && (page.page + 1) * page.size < page.total
@@ -128,7 +140,7 @@ class ListingCatalogFragment :
             sp.adapter =
                 ArrayAdapter(
                     requireContext(),
-                    android.R.layout.simple_spinner_dropdown_item,
+                    com.iset.fastcolloc.R.layout.item_fc_dropdown,
                     values,
                 )
         }
@@ -191,6 +203,7 @@ class ListingCatalogFragment :
                 "availableOn" to b.etAvailableFilter,
             )
         fields.forEach { (key, field) -> field.setText(listings.query[key].orEmpty()) }
+        calendarField(b.etAvailableFilter, "Disponible le", optional = true)
         options(b.spSort, listOf("Plus récentes", "Loyer croissant", "Loyer décroissant"))
         b.spSort.setSelection(
             listOf("NEWEST", "RENT_ASC", "RENT_DESC")

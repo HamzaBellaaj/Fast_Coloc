@@ -14,7 +14,7 @@ import com.iset.fastcolloc.viewmodel.*
 abstract class ListingBoundFragment<B : ViewBinding>(
     inflate: (LayoutInflater, ViewGroup?, Boolean) -> B
 ) : BoundFragment<B>(inflate) {
-    protected val listings: ListingViewModel by activityViewModels {
+    protected open val listings: ListingViewModel by activityViewModels {
         ListingViewModelFactory(requireActivity().application)
     }
 
@@ -38,7 +38,7 @@ abstract class ListingBoundFragment<B : ViewBinding>(
                     route == "list" ->
                         findNavController()
                             .navigate(
-                                R.id.listingCatalogFragment,
+                                R.id.mineListingsFragment,
                                 null,
                                 NavOptions.Builder().setPopUpTo(R.id.homeFragment, false).build(),
                             )
@@ -48,8 +48,10 @@ abstract class ListingBoundFragment<B : ViewBinding>(
                                 R.id.listingDetailFragment,
                                 Bundle().apply {
                                     putString("listingId", route.removePrefix("detail:"))
+                                    putString("title", listings.selected.value?.title.orEmpty())
                                 },
                                 NavOptions.Builder()
+                                    .setLaunchSingleTop(true)
                                     .setPopUpTo(R.id.listingEditorFragment, true)
                                     .build(),
                             )

@@ -50,7 +50,7 @@
     <fragment android:id="@+id/verifyFragment" android:name="com.iset.fastcolloc.ui.auth.EmailFragment" android:label="Confirmation" />
     <fragment android:id="@+id/forgotFragment" android:name="com.iset.fastcolloc.ui.auth.EmailFragment" android:label="Récupération" />
     <fragment android:id="@+id/resetFragment" android:name="com.iset.fastcolloc.ui.auth.ResetFragment" android:label="Nouveau mot de passe" />
-    <fragment android:id="@+id/homeFragment" android:name="com.iset.fastcolloc.ui.auth.HomeFragment" android:label="Mon espace" />
+    <fragment android:id="@+id/homeFragment" android:name="com.iset.fastcolloc.ui.auth.HomeFragment" android:label="Accueil" />
     <fragment android:id="@+id/profileFragment" android:name="com.iset.fastcolloc.ui.auth.ProfileFragment" android:label="Mon profil" />
     <fragment android:id="@+id/listingCatalogFragment" android:name="com.iset.fastcolloc.ui.listings.ListingCatalogFragment" android:label="Annonces" />
     <fragment android:id="@+id/listingDetailFragment" android:name="com.iset.fastcolloc.ui.listings.ListingDetailFragment" android:label="La coloc en détail">
@@ -59,4 +59,6 @@
     <fragment android:id="@+id/listingEditorFragment" android:name="com.iset.fastcolloc.ui.listings.ListingEditorFragment" android:label="Mon annonce">
         <argument android:name="listingId" app:argType="string" android:defaultValue="" />
     </fragment>
-</navigation>
+<fragment android:id="@id/favoritesFragment" android:name="com.iset.fastcolloc.ui.listings.ListingCatalogFragment" android:label="Mes favoris"><argument android:name="mode" app:argType="string" android:defaultValue="favorites" /></fragment>
+<fragment android:id="@id/mineListingsFragment" android:name="com.iset.fastcolloc.ui.listings.ListingCatalogFragment" android:label="Mes annonces"><argument android:name="mode" app:argType="string" android:defaultValue="mine" /></fragment>
+<fragment android:id="@+id/publicationSuccessFragment" android:name="com.iset.fastcolloc.ui.listings.PublicationSuccessFragment" android:label="Annonce publiée"><argument android:name="listingId" app:argType="string" /><argument android:name="title" app:argType="string" android:defaultValue="" /></fragment></navigation>

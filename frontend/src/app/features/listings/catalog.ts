@@ -1,7 +1,10 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { ListingCard } from './listing-card';
+import { Calendar } from '../../shared/calendar';
+import { Component, DestroyRef, inject, OnInit, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { RouterLink, ActivatedRoute, Router } from '@angular/router';
-import { DecimalPipe, DatePipe } from '@angular/common';
+import { DatePipe } from '@angular/common';
 import { Api } from '../../core/api';
 import { Auth } from '../../core/auth';
 import { Feedback } from '../../core/feedback';
@@ -9,7 +12,7 @@ import { Area, Listing, ListingPage, ListingMarker, ListingMapPage } from './mod
 import { ListingMap } from './listing-map';
 @Component({
   selector: 'fc-catalog',
-  imports: [FormsModule, RouterLink, DecimalPipe, DatePipe, ListingMap],
+  imports: [ListingCard, Calendar, FormsModule, RouterLink, DatePipe, ListingMap],
   templateUrl: './catalog.html',
 })
 export class Catalog implements OnInit {
@@ -42,7 +45,9 @@ export class Catalog implements OnInit {
     availableOn: '',
     sort: 'NEWEST',
   };
+  pendingFavorites = signal<string[]>([]);
   private requestNumber = 0;
+  private destroyRef = inject(DestroyRef);
   get regions() {
     return [
       ...new Map(
@@ -57,6 +62,9 @@ export class Catalog implements OnInit {
         a.governorate_id === Number(this.filters['governorateId']),
     );
   }
+  constructor() {
+    this.destroyRef.onDestroy(() => this.requestNumber++);
+  }
   async ngOnInit() {
     this.mode = this.route.snapshot.data['mode'] || '';
     try {
@@ -64,7 +72,8 @@ export class Catalog implements OnInit {
     } catch (e) {
       this.feedback.error(e);
     }
-    this.route.queryParams.subscribe((p) => {
+    if (this.destroyRef.destroyed) return;
+    this.route.queryParams.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((p) => {
       this.filters = {
         q: '',
         kind: '',
@@ -158,16 +167,22 @@ export class Catalog implements OnInit {
   }
   async favorite(row: Listing) {
     if (!this.auth.session()) {
-      void this.router.navigateByUrl('/login');
+      this.auth.rememberDestination(this.router.url);
+      void this.router.navigate(['/login'], { queryParams: { returnUrl: this.router.url } });
       return;
     }
+    if (this.pendingFavorites().includes(row.id)) return;
+    this.pendingFavorites.update((ids) => [...ids, row.id]);
     try {
       await this.api.request(row.favorite ? 'DELETE' : 'PUT', '/listings/' + row.id + '/favorite');
-      row.favorite = !row.favorite;
-      this.items.update((a) => [...a]);
+      this.items.update((rows) =>
+        rows.map((r) => (r.id === row.id ? { ...r, favorite: !r.favorite } : r)),
+      );
       if (this.mode === 'favorites') await this.load();
     } catch (e) {
       this.feedback.error(e);
+    } finally {
+      this.pendingFavorites.update((ids) => ids.filter((id) => id !== row.id));
     }
   }
   async remove(row: Listing) {

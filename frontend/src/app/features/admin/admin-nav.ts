@@ -5,17 +5,19 @@ import { RouterLink, RouterLinkActive } from '@angular/router';
   imports: [RouterLink, RouterLinkActive],
   styles: [':host{display:contents}.sidebar{align-self:start}'],
   template: `<aside class="sidebar">
-    <div class="brand">fast<b>coloc</b></div>
-    <p class="help">Administration Web</p>
+    <div class="brand">
+      <img src="/assets/fastcoloc-symbol.svg" width="32" height="32" alt="" /> fast<b>coloc</b>
+    </div>
+    <p class="help">ESPACE ADMINISTRATION</p>
     <a
       routerLink="/admin"
       routerLinkActive="current"
       [routerLinkActiveOptions]="{ exact: true }"
       ariaCurrentWhenActive="page"
-      >♙ Gestion des utilisateurs</a
+      >Utilisateurs</a
     >
     <a routerLink="/admin/annonces" routerLinkActive="current" ariaCurrentWhenActive="page"
-      >⌂ Gestion des annonces</a
+      >Annonces et modération</a
     >
     <p class="disclaimer">
       Zone réservée aux administrateurs. Chaque modification est contrôlée et journalisée par le

@@ -102,6 +102,27 @@ export class Auth {
     this.accept(await this.raw<Session>('POST', '/auth/login', { email, password }));
     await this.finish();
   }
+  rememberDestination(url: string | null) {
+    if (
+      url &&
+      /^\/(?:annonces(?:[/?]|$)|mes-annonces(?:[?]|$)|favoris(?:[?]|$)|profile$|admin(?:[/?]|$)|$)/.test(
+        url,
+      ) &&
+      !url.includes('\\')
+    )
+      sessionStorage.setItem('fastcoloc.returnTo', url);
+  }
+  takeDestination(fallback = '/') {
+    const url = sessionStorage.getItem('fastcoloc.returnTo');
+    sessionStorage.removeItem('fastcoloc.returnTo');
+    return url &&
+      /^\/(?:annonces(?:[/?]|$)|mes-annonces(?:[?]|$)|favoris(?:[?]|$)|profile$|admin(?:[/?]|$)|$)/.test(
+        url,
+      ) &&
+      !url.includes('\\')
+      ? url
+      : fallback;
+  }
   async finish() {
     const session = await this.raw<{ emailConfirmed: boolean; email: string }>(
       'GET',
@@ -122,7 +143,9 @@ export class Auth {
       this.profile.set(await this.raw<Profile>('GET', '/users/me'));
     }
     this.draftIdentity = null;
-    await this.router.navigateByUrl(this.destination());
+    if (this.profile()?.completedAt) {
+      await this.router.navigateByUrl(this.takeDestination());
+    } else await this.router.navigateByUrl(this.destination());
   }
   destination() {
     const p = this.profile();
@@ -141,6 +164,7 @@ export class Auth {
     } finally {
       this.clear();
       sessionStorage.removeItem(FLOW_KEY);
+      sessionStorage.removeItem('fastcoloc.returnTo');
       await this.router.navigateByUrl('/login');
     }
   }

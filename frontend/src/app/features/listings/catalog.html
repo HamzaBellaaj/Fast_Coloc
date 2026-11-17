@@ -79,6 +79,7 @@
       <label
         >Type de logement<input
           name="property"
+          list="fc-property-suggestions"
           maxlength="80"
           [(ngModel)]="filters['propertyType']"
           placeholder="Ex. Appartement"
@@ -86,6 +87,7 @@
       <label
         >Type de colocataire<input
           name="roommate"
+          list="fc-roommate-suggestions"
           maxlength="80"
           [(ngModel)]="filters['roommateType']"
           placeholder="Ex. Étudiant"
@@ -97,7 +99,11 @@
           placeholder="Ex. WiFi, Cuisine"
       /></label>
       <label
-        >Disponible le<input name="available" type="date" [(ngModel)]="filters['availableOn']"
+        >Disponible le<input
+          name="available"
+          type="date"
+          fcCalendar
+          [(ngModel)]="filters['availableOn']"
       /></label>
     </div>
   </details>
@@ -144,58 +150,34 @@
   }
   <div class="cards listing-cards">
     @for (row of items(); track row.id) {
-      <article class="card listing-card">
-        <a [routerLink]="['/annonces', row.id]" class="listing-picture">
-          @if (row.photos[0]) {
-            <img
-              [src]="row.photos[0].url"
-              [alt]="row.photos[0].caption || row.title"
-              loading="lazy"
-            />
-          } @else {
-            <span aria-label="Sans photo">⌂</span>
-          }
-          <span class="pill">{{ row.kind === 'OFFER' ? 'Offre' : 'Demande' }}</span></a
-        >
-        <div class="card-body">
-          <p class="tiny muted">{{ row.governorate }} · {{ row.locality }}</p>
-          <a [routerLink]="['/annonces', row.id]"
-            ><h3>{{ row.title }}</h3></a
-          >
-          <p class="rent">{{ row.rent | number: '1.0-3' }} <small>TND / mois</small></p>
-          <p class="muted">{{ row.capacity }} personne(s) · {{ row.property_type }}</p>
-          @if (mode === 'mine') {
-            <p class="pill">
-              {{
-                row.is_hidden
-                  ? 'Masquée par l’administration'
-                  : row.status === 'DRAFT'
-                    ? 'Brouillon'
-                    : 'Publiée'
-              }}
-              @if (row.expires_at) {
-                · jusqu’au {{ row.expires_at | date: 'dd/MM/yyyy' }}
-              }
-            </p>
-            <div class="row wrap">
-              <a class="btn small ghost" [routerLink]="['/annonces', row.id, 'modifier']"
-                >Modifier</a
-              ><button class="btn small" (click)="publish(row)" [disabled]="row.is_hidden">
-                {{ row.status === 'DRAFT' ? 'Publier' : 'Renouveler' }}</button
-              ><button class="btn small ghost" (click)="remove(row)">Supprimer</button>
-            </div>
-          } @else {
-            <button
-              type="button"
-              class="btn small ghost"
-              [attr.aria-pressed]="row.favorite"
-              (click)="favorite(row)"
-            >
-              {{ row.favorite ? '♥ Retirer des favoris' : '♡ Ajouter aux favoris' }}
-            </button>
-          }
-        </div>
-      </article>
+      <fc-listing-card
+        [row]="row"
+        [pending]="pendingFavorites().includes(row.id)"
+        [from]="router.url"
+        [showFavorite]="mode !== 'mine'"
+        (toggleFavorite)="favorite(row)"
+      >
+        @if (mode === 'mine') {
+          <p class="pill">
+            {{
+              row.is_hidden
+                ? 'Masquée par l’administration'
+                : row.status === 'DRAFT'
+                  ? 'Brouillon'
+                  : 'Publiée'
+            }}
+            @if (row.expires_at) {
+              · jusqu’au {{ row.expires_at | date: 'dd/MM/yyyy' }}
+            }
+          </p>
+          <div class="row wrap owner-actions">
+            <a class="btn small ghost" [routerLink]="['/annonces', row.id, 'modifier']">Modifier</a
+            ><button class="btn small" (click)="publish(row)" [disabled]="row.is_hidden">
+              {{ row.status === 'DRAFT' ? 'Publier' : 'Renouveler' }}</button
+            ><button class="btn small ghost" (click)="remove(row)">Supprimer</button>
+          </div>
+        }
+      </fc-listing-card>
     }
   </div>
   @if (total() > 12) {
@@ -227,3 +209,15 @@
     </section>
   }
 }
+
+<datalist id="fc-property-suggestions">
+  <option value="Appartement"></option>
+  <option value="Maison"></option>
+  <option value="Studio"></option>
+  <option value="Chambre"></option>
+</datalist>
+<datalist id="fc-roommate-suggestions">
+  <option value="Étudiant"></option>
+  <option value="Jeune actif"></option>
+  <option value="Sans préférence"></option>
+</datalist>

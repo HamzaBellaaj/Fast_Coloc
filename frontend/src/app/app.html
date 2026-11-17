@@ -18,17 +18,36 @@
     >
       Menu ☰
     </button>
-    <div class="navlinks" id="navigation" [class.open]="menuOpen" (click)="menuOpen = false">
-      <a routerLink="/">Accueil</a>
-      <a routerLink="/annonces">Annonces</a>
+    <div
+      class="navlinks"
+      id="navigation"
+      [class.open]="menuOpen"
+      (keydown.escape)="menuOpen = false"
+    >
+      <a
+        routerLink="/"
+        routerLinkActive="active"
+        [routerLinkActiveOptions]="{ exact: true }"
+        ariaCurrentWhenActive="page"
+        >Accueil</a
+      >
+      <a routerLink="/annonces" routerLinkActive="active" ariaCurrentWhenActive="page">Explorer</a>
       @if (auth.session()) {
-        <a routerLink="/mes-annonces">Mes annonces</a>
-        <a routerLink="/favoris">Favoris</a>
-        <a routerLink="/profile">Mon profil</a>
-        @if (auth.profile()?.role === 'ADMIN') {
-          <a routerLink="/admin">Administration</a>
-        }
-        <button class="btn small ghost" (click)="auth.logout()">Se déconnecter</button>
+        <a class="btn small coral" routerLink="/annonces/nouvelle">Publier une annonce ↗</a>
+        <details class="account-menu">
+          <summary>
+            <span class="account-initial">{{ (auth.profile()?.firstName || 'F').charAt(0) }}</span>
+            Mon espace <span aria-hidden="true">⌄</span>
+          </summary>
+          <div class="account-links">
+            <a routerLink="/profile">Mon profil</a><a routerLink="/favoris">Mes favoris</a
+            ><a routerLink="/mes-annonces">Mes annonces</a>
+            @if (auth.profile()?.role === 'ADMIN') {
+              <a routerLink="/admin">Administration</a>
+            }
+            <button (click)="auth.logout()">Se déconnecter</button>
+          </div>
+        </details>
       } @else {
         <a routerLink="/login">Se connecter</a
         ><a class="btn small coral" routerLink="/register/1">S’inscrire ↗</a>
@@ -53,3 +72,5 @@
     >
   </footer>
 </div>
+
+<fc-liquid-surface />

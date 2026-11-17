@@ -1,83 +1,85 @@
-import { Component } from '@angular/core';
-import { RouterLink } from '@angular/router';
-import { Catalog } from '../listings/catalog';
+import { Reveal } from '../../shared/reveal';
+import { ApartmentStage } from './apartment-stage';
+import { LiquidPopLink } from '../../shared/liquid-pop';
+import { ListingCard } from '../listings/listing-card';
+import { Component, inject, OnInit, signal } from '@angular/core';
+import { Router, RouterLink } from '@angular/router';
+import { FormsModule } from '@angular/forms';
+import { Api } from '../../core/api';
+import { Auth } from '../../core/auth';
+import { Feedback } from '../../core/feedback';
+import { Area, Listing, ListingPage } from '../listings/models';
 @Component({
-  imports: [RouterLink, Catalog],
-  template: ` <section class="hero">
-      <div>
-        <span class="tag">✦ BIENVENUE DANS TA FUTURE COLOC</span>
-        <h1>
-          La coloc,<br /><span class="pink-text">c’est mieux</span><br />ensemble<span
-            class="coral-text"
-            >.</span
-          >
-        </h1>
-        <p>
-          Des personnes à rencontrer, un quotidien à partager. Ton aventure commence avec un profil
-          qui te ressemble.
-        </p>
-        <div class="row wrap">
-          <a class="btn coral" routerLink="/register/1">Rejoindre FastColoc →</a
-          ><a class="hero-link" routerLink="/login">J’ai déjà un compte ↗</a>
-        </div>
-      </div>
-      <div class="hero-art" aria-hidden="true"><div class="art-house"></div></div>
-    </section>
-    <fc-catalog />
-    <div class="content-head">
-      <div>
-        <span class="tag">TON NOUVEAU DÉPART</span>
-        <h2>Fais comme chez toi.</h2>
-      </div>
-    </div>
-    <section class="cards" aria-label="Les étapes pour rejoindre FastColoc">
-      <article class="card">
-        <div class="card-image"><span class="feature-emoji" aria-hidden="true">👋</span></div>
-        <div class="card-body">
-          <span class="pill">01 · Fais connaissance</span>
-          <h3>Ton profil, ta personnalité</h3>
-          <p class="muted">
-            Présente-toi, partage tes centres d’intérêt et tes habitudes, à ton rythme.
-          </p>
-        </div>
-      </article>
-      <article class="card">
-        <div class="card-image alt"><span class="feature-emoji" aria-hidden="true">💌</span></div>
-        <div class="card-body">
-          <span class="pill">02 · En toute confiance</span>
-          <h3>Une adresse vérifiée</h3>
-          <p class="muted">
-            Confirme ton e-mail pour poursuivre ton inscription dans un espace sécurisé.
-          </p>
-        </div>
-      </article>
-      <article class="card">
-        <div class="card-image alt2"><span class="feature-emoji" aria-hidden="true">📸</span></div>
-        <div class="card-body">
-          <span class="pill">03 · Sois toi-même</span>
-          <h3>Le sourire en plus</h3>
-          <p class="muted">
-            Ajoute tes photos et retrouve tes informations dans ton espace personnel privé.
-          </p>
-        </div>
-      </article>
-    </section>
-    <section class="grid2 home-benefits">
-      <div class="section-card">
-        <h3>🏡 Des logements qui te ressemblent</h3>
-        <p class="muted">
-          Trouve les offres et les demandes de colocation grâce à la recherche par ville et budget.
-        </p>
-        <a class="link" routerLink="/annonces">Découvrir les annonces ↗</a>
-      </div>
-      <div class="section-card">
-        <h3>💜 Plus qu’un toit : une communauté</h3>
-        <p class="muted">
-          Un espace pensé pour les étudiants et les jeunes actifs en Tunisie. Cinq étapes pour
-          commencer.
-        </p>
-        <a class="link" routerLink="/register/1">Créer mon profil ↗</a>
-      </div>
-    </section>`,
+  imports: [Reveal, ApartmentStage, LiquidPopLink, RouterLink, FormsModule, ListingCard],
+  templateUrl: './home.html',
+  styleUrl: './home.css',
 })
-export class Home {}
+export class Home implements OnInit {
+  private api = inject(Api);
+  private router = inject(Router);
+  auth = inject(Auth);
+  private feedback = inject(Feedback);
+  items = signal<Listing[]>([]);
+  areas = signal<Area[]>([]);
+  busy = signal(true);
+  failed = signal(false);
+  pending = signal<string[]>([]);
+  region = '';
+  budget = '';
+  kind = '';
+  get regions() {
+    return [
+      ...new Map(
+        this.areas().map((a) => [a.governorate_id, { id: a.governorate_id, name: a.governorate }]),
+      ).values(),
+    ];
+  }
+  ngOnInit() {
+    void this.load();
+    void this.api
+      .request<Area[]>('GET', '/listings/areas')
+      .then((a) => this.areas.set(a))
+      .catch(() => {});
+  }
+  async load() {
+    this.busy.set(true);
+    this.failed.set(false);
+    try {
+      this.items.set(
+        (await this.api.request<ListingPage>('GET', '/listings?sort=NEWEST&size=3&page=0')).items,
+      );
+    } catch {
+      this.failed.set(true);
+    } finally {
+      this.busy.set(false);
+    }
+  }
+  search() {
+    void this.router.navigate(['/annonces'], {
+      queryParams: {
+        governorateId: this.region || null,
+        maxRent: this.budget || null,
+        kind: this.kind || null,
+        sort: 'NEWEST',
+      },
+    });
+  }
+  async favorite(row: Listing) {
+    if (!this.auth.session()) {
+      void this.router.navigate(['/login'], { queryParams: { returnUrl: '/' } });
+      return;
+    }
+    if (this.pending().includes(row.id)) return;
+    this.pending.update((ids) => [...ids, row.id]);
+    try {
+      await this.api.request(row.favorite ? 'DELETE' : 'PUT', '/listings/' + row.id + '/favorite');
+      this.items.update((rows) =>
+        rows.map((r) => (r.id === row.id ? { ...r, favorite: !r.favorite } : r)),
+      );
+    } catch (e) {
+      this.feedback.error(e);
+    } finally {
+      this.pending.update((ids) => ids.filter((id) => id !== row.id));
+    }
+  }
+}

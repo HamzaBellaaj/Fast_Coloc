@@ -41,7 +41,7 @@ public class ListingService {
   jdbc.update("insert into fastcoloc.listings(id,author_id,kind,title,description,locality_id,street,latitude,longitude,rent,capacity,property_type,roommate_type,equipment,available_from,available_until,publication_days) values(?,?,?,?,?,?,?,?,?,?,?,?,?,?::text[],?,?,?)",args.toArray());
   return detail(actor,id);
  }
- private ArrayList<Object> values(ListingWrite r){return new ArrayList<>(Arrays.asList(r.kind().name(),r.title().trim(),r.description().trim(),r.localityId(),r.street().trim(),r.latitude(),r.longitude(),r.rent(),r.capacity(),r.propertyType().trim(),r.roommateType()==null?"":r.roommateType().trim(),r.equipment().toArray(String[]::new),r.availableFrom(),r.availableUntil(),r.publicationDays()));}
+ private ArrayList<Object> values(ListingWrite r){return new ArrayList<>(Arrays.asList(r.kind().name(),r.title().trim(),r.description().trim(),r.localityId(),r.street()==null?"":r.street().trim(),r.latitude(),r.longitude(),r.rent(),r.capacity(),r.propertyType().trim(),r.roommateType()==null?"":r.roommateType().trim(),r.equipment().toArray(String[]::new),r.availableFrom(),r.availableUntil(),r.publicationDays()));}
  @Transactional public Map<String,Object> update(UUID actor,UUID id,ListingWrite r){
   author(actor,id);validate(r);if(r.version()==null)throw bad("Version de l'annonce requise.");
   var args=values(r);args.add(id);args.add(actor);args.add(r.version());

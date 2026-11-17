@@ -53,6 +53,15 @@ class ListingDraftTest {
     }
 
     @Test
+    fun requestDoesNotNeedAHomeAddressOrGps() {
+        val request = fields() - listOf("latitude", "longitude", "street")
+        val dto = ListingDraft.parse(request, "REQUEST", 1, null)
+        assertNull(dto.latitude); assertNull(dto.longitude); assertEquals("", dto.street)
+        assertThrows(IllegalArgumentException::class.java) { ListingDraft.parse(request, "OFFER", 1, null) }
+        assertThrows(IllegalArgumentException::class.java) { ListingDraft.parse(request + ("latitude" to "36.8"), "REQUEST", 1, null) }
+    }
+
+    @Test
     fun missingLocalityAndInventedRoleKindsAreRejected() {
         assertThrows(IllegalArgumentException::class.java) {
             ListingDraft.parse(fields(), "OWNER", 1, null)

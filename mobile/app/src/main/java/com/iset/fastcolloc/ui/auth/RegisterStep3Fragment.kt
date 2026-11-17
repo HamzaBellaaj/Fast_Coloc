@@ -10,7 +10,7 @@ import com.iset.fastcolloc.databinding.FragmentRegisterStep3Binding
 class RegisterStep3Fragment : BoundFragment<FragmentRegisterStep3Binding>(FragmentRegisterStep3Binding::inflate) {
     override fun onViewCreated(view: View, state: Bundle?) {
         val p = vm.details.value?.personal
-        binding.spSmoking.adapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_dropdown_item, listOf("Non renseigné", "Non-fumeur", "Fumeur"))
+        binding.spSmoking.adapter = ArrayAdapter(requireContext(), com.iset.fastcolloc.R.layout.item_fc_dropdown, listOf("Non renseigné", "Non-fumeur", "Fumeur"))
         if (state == null) {
             binding.etActivities.setText(p?.list("main_activities")); binding.etHobbies.setText(p?.list("hobbies"))
             binding.etNationality.setText(p?.string("nationality_code")); binding.etLanguages.setText(p?.list("spoken_languages"))

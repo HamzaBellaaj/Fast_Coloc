@@ -22,10 +22,11 @@ class ListingPhotoAdapter(private val remove: ((String) -> Unit)? = null) :
     inner class Holder(private val b: ItemListingPhotoBinding) : RecyclerView.ViewHolder(b.root) {
         fun bind(row: ListingPhotoDto) {
             b.ivPhoto.load(row.url) {
+                crossfade(if (com.iset.fastcolloc.ui.motion.Motion.enabled(b.root.context)) 140 else 0)
                 placeholder(R.drawable.ic_fastcoloc_symbol)
                 error(R.drawable.ic_fastcoloc_symbol)
                 diskCachePolicy(CachePolicy.DISABLED)
-                memoryCachePolicy(CachePolicy.DISABLED)
+                memoryCachePolicy(CachePolicy.ENABLED)
             }
             b.ivPhoto.contentDescription = row.caption.ifBlank { "Photo de l’annonce" }
             b.tvCaption.text = row.caption

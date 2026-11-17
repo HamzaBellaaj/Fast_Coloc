@@ -1,264 +1,748 @@
-<div [class.panel-layout]="adminMode">
-  @if (adminMode) {
-    <fc-admin-nav />
-  }
-  <section>
-    <a
-      class="link"
-      [routerLink]="adminMode ? ['/admin/annonces', saved()?.id] : ['/mes-annonces']"
-      >{{ adminMode ? '← Retour à la fiche administrative' : '← Mes annonces' }}</a
-    >
-    <div class="content-head">
-      <div>
-        <span class="tag">{{
-          adminMode ? 'ADMINISTRATION · CORRECTION' : 'UNE NOUVELLE AVENTURE'
-        }}</span>
-        <h1 class="listing-title">
-          {{
-            adminMode
-              ? 'Une annonce claire et juste.'
-              : saved()
-                ? 'Ton annonce, à ta façon.'
-                : 'Fais une place à la coloc.'
-          }}
-        </h1>
-        <p class="muted">
-          {{
-            adminMode
-              ? 'Corrige les informations de l’annonce. La publication et l’expiration restent inchangées.'
-              : 'Offre ou demande : raconte ce que tu proposes ou recherches.'
-          }}
-        </p>
-      </div>
-    </div>
-    @if (busy()) {
-      <p role="status" class="notice">Enregistrement ou chargement…</p>
+@if (adminMode) {
+  <div [class.panel-layout]="adminMode">
+    @if (adminMode) {
+      <fc-admin-nav />
     }
+    <section>
+      <a
+        class="link"
+        [routerLink]="adminMode ? ['/admin/annonces', saved()?.id] : ['/mes-annonces']"
+        >{{ adminMode ? '← Retour à la fiche administrative' : '← Mes annonces' }}</a
+      >
+      <div class="content-head">
+        <div>
+          <span class="tag">{{
+            adminMode ? 'ADMINISTRATION · CORRECTION' : 'UNE NOUVELLE AVENTURE'
+          }}</span>
+          <h1 class="listing-title">
+            {{
+              adminMode
+                ? 'Une annonce claire et juste.'
+                : saved()
+                  ? 'Ton annonce, à ta façon.'
+                  : 'Fais une place à la coloc.'
+            }}
+          </h1>
+          <p class="muted">
+            {{
+              adminMode
+                ? 'Corrige les informations de l’annonce. La publication et l’expiration restent inchangées.'
+                : 'Offre ou demande : raconte ce que tu proposes ou recherches.'
+            }}
+          </p>
+        </div>
+      </div>
+      @if (busy()) {
+        <p role="status" class="notice">Enregistrement ou chargement…</p>
+      }
+      @if (!allowed()) {
+        <section class="section-card">
+          <h2>Un profil complet pour commencer</h2>
+          <p>
+            Termine ton inscription pour publier. Tu peux modifier uniquement tes propres annonces.
+          </p>
+          <a class="btn" routerLink="/profile">Mon profil</a>
+        </section>
+      } @else if (!busy() || saved()) {
+        <div class="listing-steps" aria-label="Étapes de l’annonce">
+          <span [class.active]="step === 1">01 · Présentation</span
+          ><span [class.active]="step === 2">02 · Localisation</span
+          ><span [class.active]="step === 3">03 · Conditions et photos</span>
+        </div>
+        <form
+          #editor="ngForm"
+          class="section-card listing-editor"
+          (ngSubmit)="step < 3 ? next(editor) : save(editor)"
+        >
+          @if (step === 1) {
+            <h2>Parle-nous de ta coloc.</h2>
+            <label
+              >Type d’annonce<select name="kind" required [(ngModel)]="form.kind">
+                <option value="OFFER">Je propose une colocation</option>
+                <option value="REQUEST">Je recherche une colocation</option>
+              </select></label
+            ><label
+              >Titre<input
+                name="title"
+                required
+                minlength="5"
+                maxlength="160"
+                [(ngModel)]="form.title"
+                placeholder="Un titre clair qui donne envie" /></label
+            ><label
+              >Description<textarea
+                name="description"
+                required
+                minlength="20"
+                maxlength="10000"
+                rows="7"
+                [(ngModel)]="form.description"
+                placeholder="Le logement, l’ambiance, ce que tu recherches…"
+              ></textarea></label
+            ><label
+              >Type de logement<input
+                name="propertyType"
+                list="fc-property-suggestions"
+                required
+                maxlength="80"
+                [(ngModel)]="form.propertyType"
+                placeholder="Ex. Appartement, chambre…" /></label
+            ><label
+              >Type de colocataire recherché (facultatif)<input
+                name="roommateType"
+                list="fc-roommate-suggestions"
+                maxlength="80"
+                [(ngModel)]="form.roommateType"
+                placeholder="Ex. Étudiant, actif…"
+            /></label>
+          }
+          @if (step === 2) {
+            <h2>Où se retrouve-t-on ?</h2>
+            <label
+              >Localité<select name="localityId" required [(ngModel)]="form.localityId">
+                <option [ngValue]="null">Choisir une ville / localité</option>
+                @for (a of areas(); track a.id) {
+                  <option [ngValue]="a.id">{{ a.governorate }} · {{ a.locality }}</option>
+                }
+              </select></label
+            ><label
+              >Adresse<input
+                name="street"
+                [required]="form.kind === 'OFFER'"
+                maxlength="250"
+                [(ngModel)]="form.street"
+                placeholder="Rue ou secteur recherché" /></label
+            ><fc-location-picker
+              [latitude]="form.latitude"
+              [longitude]="form.longitude"
+              (position)="form.latitude = $event.latitude; form.longitude = $event.longitude"
+            />
+            <div class="grid2">
+              <label
+                >Latitude<input
+                  name="latitude"
+                  type="number"
+                  [required]="form.kind === 'OFFER'"
+                  min="30"
+                  max="38"
+                  step="0.000001"
+                  [(ngModel)]="form.latitude" /></label
+              ><label
+                >Longitude<input
+                  name="longitude"
+                  type="number"
+                  [required]="form.kind === 'OFFER'"
+                  min="7"
+                  max="12"
+                  step="0.000001"
+                  [(ngModel)]="form.longitude"
+              /></label>
+            </div>
+          }
+          @if (step === 3) {
+            <h2>Les petits détails qui comptent.</h2>
+            <div class="grid2">
+              <label
+                >{{ form.kind === 'OFFER' ? 'Loyer mensuel' : 'Budget mensuel' }} (TND)<input
+                  name="rent"
+                  type="number"
+                  min="0"
+                  max="999999999.999"
+                  step="0.001"
+                  required
+                  [(ngModel)]="form.rent" /></label
+              ><label
+                >Capacité (personnes)<input
+                  name="capacity"
+                  type="number"
+                  required
+                  min="1"
+                  max="50"
+                  [(ngModel)]="form.capacity" /></label
+              ><label
+                >Disponible dès le<input
+                  name="availableFrom"
+                  [max]="form.availableUntil || null"
+                  type="date"
+                  fcCalendar
+                  required
+                  [(ngModel)]="form.availableFrom" /></label
+              ><label
+                >Jusqu’au (facultatif)<input
+                  name="availableUntil"
+                  type="date"
+                  fcCalendar
+                  [min]="form.availableFrom"
+                  [(ngModel)]="form.availableUntil" /></label
+              ><label
+                >Durée de publication (jours)<input
+                  name="publicationDays"
+                  type="number"
+                  required
+                  min="1"
+                  max="365"
+                  [(ngModel)]="form.publicationDays"
+              /></label>
+            </div>
+            <label
+              >Équipements (séparés par une virgule)<input
+                name="equipment"
+                maxlength="2400"
+                [(ngModel)]="form.equipment"
+                placeholder="Ex. WiFi, Cuisine, Climatisation"
+            /></label>
+            @if (adminMode) {
+              <label
+                >Motif de correction obligatoire<textarea
+                  name="reason"
+                  required
+                  maxlength="1000"
+                  rows="3"
+                  [(ngModel)]="reason"
+                ></textarea>
+              </label>
+              <p class="muted">
+                Cette correction conserve le statut, le masquage et les dates de publication et
+                d’expiration. La durée choisie s’appliquera au prochain renouvellement par l’auteur.
+              </p>
+            } @else {
+              <p class="muted">
+                La publication ou le renouvellement lance la durée choisie. Enregistrer conserve le
+                statut actuel.
+              </p>
+            }
+          }
+          <div class="row wrap">
+            <button
+              type="button"
+              class="btn ghost"
+              [disabled]="busy() || step === 1"
+              (click)="step = step - 1"
+            >
+              ← Retour</button
+            ><button class="btn coral" [disabled]="busy()">
+              {{ step < 3 ? 'Continuer →' : 'Enregistrer l’annonce' }}
+            </button>
+          </div>
+        </form>
+      }
+    </section>
+  </div>
+
+  <datalist id="fc-property-suggestions">
+    <option value="Appartement"></option>
+    <option value="Maison"></option>
+    <option value="Studio"></option>
+    <option value="Chambre"></option>
+  </datalist>
+  <datalist id="fc-roommate-suggestions">
+    <option value="Étudiant"></option>
+    <option value="Jeune actif"></option>
+    <option value="Sans préférence"></option>
+  </datalist>
+} @else {
+  <section class="announcement-flow">
+    <a class="link" routerLink="/mes-annonces">← Mes annonces</a>
+    <header class="flow-heading">
+      <span class="tag">TON ANNONCE, À TA FAÇON</span>
+      <h1>{{ isRequest ? 'Fais une place à tes projets.' : 'Une place à partager.' }}</h1>
+      <p class="muted">
+        {{
+          isRequest
+            ? 'Raconte ce que tu cherches, pas un logement que tu possèdes.'
+            : 'Présente ton logement et donne envie de s’y installer.'
+        }}
+      </p>
+    </header>
     @if (!allowed()) {
       <section class="section-card">
-        <h2>Un profil complet pour commencer</h2>
-        <p>
-          Termine ton inscription pour publier. Tu peux modifier uniquement tes propres annonces.
-        </p>
+        <h2>Complète ton profil pour continuer.</h2>
         <a class="btn" routerLink="/profile">Mon profil</a>
       </section>
-    } @else if (!busy() || saved()) {
-      <div class="listing-steps" aria-label="Étapes de l’annonce">
-        <span [class.active]="step === 1">01 · Présentation</span
-        ><span [class.active]="step === 2">02 · Localisation</span
-        ><span [class.active]="step === 3">03 · Conditions et photos</span>
-      </div>
+    } @else {
+      <nav class="flow-progress" aria-label="Progression de l’annonce">
+        @for (label of steps; track $index) {
+          <span
+            [class.current]="step === $index"
+            [class.complete]="step > $index"
+            [attr.aria-current]="step === $index ? 'step' : null"
+            ><b>{{ $index + 1 }}</b
+            >{{ label }}</span
+          >
+        }
+      </nav>
       <form
-        #editor="ngForm"
+        #flow="ngForm"
         class="section-card listing-editor"
-        (ngSubmit)="step < 3 ? next(editor) : save(editor)"
+        (ngSubmit)="step < 4 ? next(flow) : save(flow)"
       >
-        @if (step === 1) {
-          <h2>Parle-nous de ta coloc.</h2>
-          <label
-            >Type d’annonce<select name="kind" required [(ngModel)]="form.kind">
-              <option value="OFFER">Je propose une colocation</option>
-              <option value="REQUEST">Je recherche une colocation</option>
-            </select></label
-          ><label
-            >Titre<input
-              name="title"
-              required
-              minlength="5"
-              maxlength="160"
-              [(ngModel)]="form.title"
-              placeholder="Un titre clair qui donne envie" /></label
-          ><label
-            >Description<textarea
-              name="description"
-              required
-              minlength="20"
-              maxlength="10000"
-              rows="7"
-              [(ngModel)]="form.description"
-              placeholder="Le logement, l’ambiance, ce que tu recherches…"
-            ></textarea></label
-          ><label
-            >Type de logement<input
-              name="propertyType"
-              required
-              maxlength="80"
-              [(ngModel)]="form.propertyType"
-              placeholder="Ex. Appartement, chambre…" /></label
-          ><label
-            >Type de colocataire recherché (facultatif)<input
-              name="roommateType"
-              maxlength="80"
-              [(ngModel)]="form.roommateType"
-              placeholder="Ex. Étudiant, actif…"
-          /></label>
-        }
-        @if (step === 2) {
-          <h2>Où se retrouve-t-on ?</h2>
-          <label
-            >Localité<select name="localityId" required [(ngModel)]="form.localityId">
-              <option [ngValue]="null">Choisir une ville / localité</option>
-              @for (a of areas(); track a.id) {
-                <option [ngValue]="a.id">{{ a.governorate }} · {{ a.locality }}</option>
-              }
-            </select></label
-          ><label
-            >Adresse<input
-              name="street"
-              required
-              maxlength="250"
-              [(ngModel)]="form.street"
-              placeholder="Rue ou secteur recherché" /></label
-          ><fc-location-picker
-            [latitude]="form.latitude"
-            [longitude]="form.longitude"
-            (position)="form.latitude = $event.latitude; form.longitude = $event.longitude"
-          />
-          <div class="grid2">
+        <fieldset [disabled]="busy()">
+          @if (step === 0) {
+            <h2>Qu’est-ce qui t’amène ?</h2>
+            <p class="muted">Deux envies, un parcours fait pour toi.</p>
+            <div class="kind-choices">
+              <button
+                type="button"
+                class="kind-choice"
+                [class.selected]="!isRequest"
+                [attr.aria-pressed]="!isRequest"
+                (click)="form.kind = 'OFFER'"
+              >
+                <svg viewBox="0 0 80 64" aria-hidden="true">
+                  <path
+                    d="M8 29 40 6 72 29M16 26v31h48V26M31 57V37h18v20"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="5"
+                    stroke-linejoin="round"
+                  /></svg
+                ><strong>Je propose un logement</strong
+                ><span>Un appartement, une chambre ou une place en colocation.</span
+                ><small>{{ !isRequest ? 'Sélectionné' : 'Choisir ce parcours' }}</small></button
+              ><button
+                type="button"
+                class="kind-choice"
+                [class.selected]="isRequest"
+                [attr.aria-pressed]="isRequest"
+                (click)="form.kind = 'REQUEST'"
+              >
+                <svg viewBox="0 0 80 64" aria-hidden="true">
+                  <circle
+                    cx="33"
+                    cy="27"
+                    r="20"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="5"
+                  />
+                  <path
+                    d="m49 42 22 17M23 28l10-8 10 8M27 27v12h12V27"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="4"
+                    stroke-linecap="round"
+                  /></svg
+                ><strong>Je cherche une coloc</strong
+                ><span>Un logement partagé ou des colocataires pour ton prochain départ.</span
+                ><small>{{ isRequest ? 'Sélectionné' : 'Choisir ce parcours' }}</small>
+              </button>
+            </div>
+            <p class="help">
+              Changer de parcours conserve les informations saisies et les photos existantes.
+            </p>
+          }
+          @if (step === 1) {
+            <h2>{{ steps[1] }}</h2>
             <label
-              >Latitude<input
-                name="latitude"
-                type="number"
+              >Titre<input
+                name="title"
+                [(ngModel)]="form.title"
                 required
-                min="30"
-                max="38"
-                step="0.000001"
-                [(ngModel)]="form.latitude" /></label
+                minlength="5"
+                maxlength="160" /></label
             ><label
-              >Longitude<input
-                name="longitude"
-                type="number"
+              >{{ isRequest ? 'Présente ta recherche' : 'Décris ton logement'
+              }}<textarea
+                name="description"
+                [(ngModel)]="form.description"
                 required
-                min="7"
-                max="12"
-                step="0.000001"
-                [(ngModel)]="form.longitude"
-            /></label>
-          </div>
-        }
-        @if (step === 3) {
-          <h2>Les petits détails qui comptent.</h2>
-          <div class="grid2">
-            <label
-              >{{ form.kind === 'OFFER' ? 'Loyer mensuel' : 'Budget mensuel' }} (TND)<input
-                name="rent"
-                type="number"
-                min="0"
-                max="999999999.999"
-                step="0.001"
-                required
-                [(ngModel)]="form.rent" /></label
+                minlength="20"
+                maxlength="10000"
+                rows="5"
+              ></textarea></label
             ><label
-              >Capacité (personnes)<input
+              >{{ isRequest ? 'Type de logement recherché' : 'Type de logement'
+              }}<input
+                name="propertyType"
+                [(ngModel)]="form.propertyType"
+                required
+                maxlength="80"
+                list="fc-properties" /></label
+            ><label
+              >{{ isRequest ? 'Nombre de personnes concernées' : 'Capacité du logement (personnes)'
+              }}<input
                 name="capacity"
+                [(ngModel)]="form.capacity"
                 type="number"
                 required
                 min="1"
                 max="50"
-                [(ngModel)]="form.capacity" /></label
-            ><label
-              >Disponible dès le<input
-                name="availableFrom"
-                type="date"
+            /></label>
+            @if (!isRequest) {
+              <div class="grid2">
+                <label
+                  >Gouvernorat<select
+                    name="region"
+                    [(ngModel)]="regionId"
+                    (ngModelChange)="form.localityId = null"
+                    required
+                  >
+                    <option [ngValue]="null">Choisir un gouvernorat</option>
+                    @for (r of regions; track r.id) {
+                      <option [ngValue]="r.id">{{ r.name }}</option>
+                    }
+                  </select></label
+                ><label
+                  >{{ isRequest ? 'Localité souhaitée' : 'Localité du logement'
+                  }}<select name="locality" [(ngModel)]="form.localityId" required>
+                    <option [ngValue]="null">Choisir une localité</option>
+                    @for (a of towns; track a.id) {
+                      <option [ngValue]="a.id">{{ a.locality }}</option>
+                    }
+                  </select></label
+                >
+              </div>
+              <label
+                >{{ isRequest ? 'Quartier ou secteur (facultatif)' : 'Adresse du logement'
+                }}<input
+                  name="street"
+                  [(ngModel)]="form.street"
+                  [required]="!isRequest"
+                  maxlength="250"
+              /></label>
+              @if (!isRequest) {
+                <p class="help">Place le logement sur la carte pour préciser sa position.</p>
+                <fc-location-picker
+                  [latitude]="form.latitude"
+                  [longitude]="form.longitude"
+                  (position)="form.latitude = $event.latitude; form.longitude = $event.longitude"
+                />
+                <div class="grid2">
+                  <label
+                    >Latitude<input
+                      name="latitude"
+                      [(ngModel)]="form.latitude"
+                      type="number"
+                      required
+                      min="30"
+                      max="38"
+                      step="0.000001" /></label
+                  ><label
+                    >Longitude<input
+                      name="longitude"
+                      [(ngModel)]="form.longitude"
+                      type="number"
+                      required
+                      min="7"
+                      max="12"
+                      step="0.000001"
+                  /></label>
+                </div>
+              }
+            }
+          }
+          @if (step === 2) {
+            <h2>{{ steps[2] }}</h2>
+            @if (isRequest) {
+              <div class="grid2">
+                <label
+                  >Gouvernorat<select
+                    name="region"
+                    [(ngModel)]="regionId"
+                    (ngModelChange)="form.localityId = null"
+                    required
+                  >
+                    <option [ngValue]="null">Choisir un gouvernorat</option>
+                    @for (r of regions; track r.id) {
+                      <option [ngValue]="r.id">{{ r.name }}</option>
+                    }
+                  </select></label
+                ><label
+                  >{{ isRequest ? 'Localité souhaitée' : 'Localité du logement'
+                  }}<select name="locality" [(ngModel)]="form.localityId" required>
+                    <option [ngValue]="null">Choisir une localité</option>
+                    @for (a of towns; track a.id) {
+                      <option [ngValue]="a.id">{{ a.locality }}</option>
+                    }
+                  </select></label
+                >
+              </div>
+              <label
+                >{{ isRequest ? 'Quartier ou secteur (facultatif)' : 'Adresse du logement'
+                }}<input
+                  name="street"
+                  [(ngModel)]="form.street"
+                  [required]="!isRequest"
+                  maxlength="250"
+              /></label>
+              @if (!isRequest) {
+                <p class="help">Place le logement sur la carte pour préciser sa position.</p>
+                <fc-location-picker
+                  [latitude]="form.latitude"
+                  [longitude]="form.longitude"
+                  (position)="form.latitude = $event.latitude; form.longitude = $event.longitude"
+                />
+                <div class="grid2">
+                  <label
+                    >Latitude<input
+                      name="latitude"
+                      [(ngModel)]="form.latitude"
+                      type="number"
+                      required
+                      min="30"
+                      max="38"
+                      step="0.000001" /></label
+                  ><label
+                    >Longitude<input
+                      name="longitude"
+                      [(ngModel)]="form.longitude"
+                      type="number"
+                      required
+                      min="7"
+                      max="12"
+                      step="0.000001"
+                  /></label>
+                </div>
+              }
+            }
+            <label
+              >{{ isRequest ? 'Budget maximum par mois (TND)' : 'Loyer mensuel (TND)'
+              }}<input
+                name="rent"
+                [(ngModel)]="form.rent"
+                type="number"
                 required
-                [(ngModel)]="form.availableFrom" /></label
+                min="0"
+                max="999999999.999"
+                step="0.001"
+            /></label>
+            @if (!isRequest) {
+              <div class="grid2">
+                <label
+                  >{{ isRequest ? 'Date d’emménagement souhaitée' : 'Disponible à partir du'
+                  }}<input
+                    name="availableFrom"
+                    [(ngModel)]="form.availableFrom"
+                    type="date"
+                    fcCalendar
+                    required
+                    [max]="form.availableUntil || null" /></label
+                ><label
+                  >{{
+                    isRequest
+                      ? 'Fin de recherche (facultatif)'
+                      : 'Disponible jusqu’au (facultatif)'
+                  }}<input
+                    name="availableUntil"
+                    [(ngModel)]="form.availableUntil"
+                    type="date"
+                    fcCalendar
+                    [min]="form.availableFrom"
+                /></label>
+              </div>
+              <label
+                >Durée de publication (jours)<input
+                  name="publicationDays"
+                  [(ngModel)]="form.publicationDays"
+                  type="number"
+                  required
+                  min="1"
+                  max="365"
+              /></label>
+            }
+          }
+          @if (step === 3) {
+            <h2>{{ steps[3] }}</h2>
+            <label
+              >{{ isRequest ? 'Équipements souhaités' : 'Équipements disponibles'
+              }}<input
+                name="equipment"
+                [(ngModel)]="form.equipment"
+                maxlength="2400"
+                placeholder="WiFi, cuisine, climatisation…" /></label
             ><label
-              >Jusqu’au (facultatif)<input
-                name="availableUntil"
-                type="date"
-                [min]="form.availableFrom"
-                [(ngModel)]="form.availableUntil" /></label
-            ><label
+              >Type de colocataire (facultatif)<input
+                name="roommateType"
+                [(ngModel)]="form.roommateType"
+                maxlength="80"
+                list="fc-roommates"
+            /></label>
+            @if (isRequest) {
+              <div class="grid2">
+                <label
+                  >{{ isRequest ? 'Date d’emménagement souhaitée' : 'Disponible à partir du'
+                  }}<input
+                    name="availableFrom"
+                    [(ngModel)]="form.availableFrom"
+                    type="date"
+                    fcCalendar
+                    required
+                    [max]="form.availableUntil || null" /></label
+                ><label
+                  >{{
+                    isRequest
+                      ? 'Fin de recherche (facultatif)'
+                      : 'Disponible jusqu’au (facultatif)'
+                  }}<input
+                    name="availableUntil"
+                    [(ngModel)]="form.availableUntil"
+                    type="date"
+                    fcCalendar
+                    [min]="form.availableFrom"
+                /></label>
+              </div>
+            } @else {
+              @if (saved(); as row) {
+                <div class="listing-gallery">
+                  @for (photo of row.photos; track photo.id) {
+                    <figure>
+                      <img
+                        [src]="photo.url"
+                        [alt]="photo.caption || 'Photo du logement'"
+                        loading="lazy"
+                      />
+                      <figcaption>{{ photo.caption }}</figcaption>
+                      <button type="button" class="btn small ghost" (click)="removePhoto(photo.id)">
+                        Supprimer cette photo
+                      </button>
+                    </figure>
+                  }
+                </div>
+                <label
+                  >Légende de la prochaine photo<input
+                    name="caption"
+                    [(ngModel)]="caption"
+                    maxlength="500" /></label
+                ><label class="btn ghost"
+                  >Ajouter une photo réelle<input
+                    type="file"
+                    accept="image/jpeg,image/png,image/webp"
+                    [disabled]="busy() || row.photos.length >= 10"
+                    (change)="upload($event)"
+                /></label>
+                <p class="help">
+                  10 photos maximum · 5 MiB chacune. Les photos existantes sont conservées.
+                </p>
+              } @else {
+                <div class="photo-invite">
+                  <h3>Montre le logement tel qu’il est.</h3>
+                  <p>
+                    Enregistre d’abord le brouillon pour ajouter les photos. Tu resteras à cette
+                    étape.
+                  </p>
+                  <button type="button" class="btn ghost" (click)="save()">
+                    Enregistrer et ajouter des photos
+                  </button>
+                </div>
+              }
+            }
+          }
+          @if (step === 4) {
+            <h2>Un dernier regard avant de publier.</h2>
+            <p class="muted">
+              {{
+                isRequest
+                  ? 'Voici la recherche que les autres découvriront.'
+                  : 'Voici le logement que les autres découvriront.'
+              }}
+            </p>
+            <div class="flow-review">
+              <span class="tag">{{
+                isRequest ? 'JE CHERCHE UNE COLOC' : 'JE PROPOSE UN LOGEMENT'
+              }}</span>
+              <h3>{{ form.title }}</h3>
+              <p class="review-description">{{ form.description }}</p>
+              <dl>
+                <dt>{{ isRequest ? 'Zone souhaitée' : 'Adresse' }}</dt>
+                <dd>
+                  {{ areaName }}
+                  @if (form.street) {
+                    · {{ form.street }}
+                  }
+                </dd>
+                <dt>{{ isRequest ? 'Budget maximum' : 'Loyer mensuel' }}</dt>
+                <dd>{{ form.rent }} TND / mois</dd>
+                <dt>{{ isRequest ? 'Recherche' : 'Logement' }}</dt>
+                <dd>{{ form.propertyType }} · {{ form.capacity }} personne(s)</dd>
+                <dt>{{ isRequest ? 'Emménagement souhaité' : 'Disponibilité' }}</dt>
+                <dd>
+                  {{ form.availableFrom | date: 'dd/MM/yyyy' }}
+                  @if (form.availableUntil) {
+                    → {{ form.availableUntil | date: 'dd/MM/yyyy' }}
+                  }
+                </dd>
+                <dt>{{ isRequest ? 'Préférences' : 'Équipements' }}</dt>
+                <dd>
+                  {{ form.equipment || 'Non renseignés' }}
+                  @if (form.roommateType) {
+                    · {{ form.roommateType }}
+                  }
+                </dd>
+                @if (!isRequest) {
+                  <dt>Photos du logement</dt>
+                  <dd>{{ saved()?.photos?.length || 0 }} photo(s)</dd>
+                }
+              </dl>
+            </div>
+            <label
               >Durée de publication (jours)<input
                 name="publicationDays"
+                [(ngModel)]="form.publicationDays"
                 type="number"
                 required
                 min="1"
                 max="365"
-                [(ngModel)]="form.publicationDays"
             /></label>
-          </div>
-          <label
-            >Équipements (séparés par une virgule)<input
-              name="equipment"
-              maxlength="2400"
-              [(ngModel)]="form.equipment"
-              placeholder="Ex. WiFi, Cuisine, Climatisation"
-          /></label>
-          @if (adminMode) {
-            <label
-              >Motif de correction obligatoire<textarea
-                name="reason"
-                required
-                maxlength="1000"
-                rows="3"
-                [(ngModel)]="reason"
-              ></textarea>
-            </label>
-            <p class="muted">
-              Cette correction conserve le statut, le masquage et les dates de publication et
-              d’expiration. La durée choisie s’appliquera au prochain renouvellement par l’auteur.
+            <p class="help">
+              La durée démarre à la publication ou au renouvellement. Enregistrer conserve le statut
+              actuel.
             </p>
-          } @else {
-            <p class="muted">
-              La publication ou le renouvellement lance la durée choisie. Enregistrer conserve le
-              statut actuel.
-            </p>
+            @if (saved()?.is_hidden) {
+              <p class="notice">
+                Annonce masquée : tu peux enregistrer tes corrections. La publication nécessite une
+                réactivation par l’administration.
+              </p>
+            }
           }
-        }
-        <div class="row wrap">
-          <button
-            type="button"
-            class="btn ghost"
-            [disabled]="busy() || step === 1"
-            (click)="step = step - 1"
-          >
-            ← Retour</button
-          ><button class="btn coral" [disabled]="busy()">
-            {{ step < 3 ? 'Continuer →' : 'Enregistrer l’annonce' }}
-          </button>
-        </div>
-      </form>
-      @if (!adminMode && saved(); as r) {
-        <section class="section-card">
-          <h2>Fais entrer la lumière.</h2>
-          <p class="muted">
-            Jusqu’à 10 photos, 5 MiB chacune. JPEG, PNG ou WebP. Enregistre les modifications du
-            formulaire avant de publier.
-          </p>
-          <div class="listing-gallery">
-            @for (p of r.photos; track p.id) {
-              <figure>
-                <img [src]="p.url" [alt]="p.caption || 'Photo de l’annonce'" />
-                <figcaption>{{ p.caption }}</figcaption>
-                <button class="btn small ghost" [disabled]="busy()" (click)="removePhoto(p.id)">
-                  Supprimer cette photo
-                </button>
-              </figure>
+          @if (flowError) {
+            <p class="field-error" role="alert">{{ flowError }}</p>
+          }
+          <div class="flow-actions">
+            <button type="button" class="btn ghost" [disabled]="step === 0" (click)="back()">
+              ← Retour
+            </button>
+            @if (step < 4) {
+              <button class="btn coral">Continuer →</button>
+            } @else {
+              <button type="submit" class="btn ghost">
+                {{
+                  saved()?.status === 'PUBLISHED'
+                    ? 'Enregistrer les modifications'
+                    : 'Garder en brouillon'
+                }}</button><button
+                type="button"
+                class="btn coral"
+                [disabled]="!!saved()?.is_hidden"
+                (click)="publish()"
+              >
+                {{
+                  saved()?.status === 'PUBLISHED'
+                    ? 'Enregistrer et renouveler'
+                    : 'Publier mon annonce'
+                }}
+              </button>
             }
           </div>
-          <label>Légende de la prochaine photo<input maxlength="500" [(ngModel)]="caption" /></label
-          ><label class="btn ghost"
-            >Ajouter une photo<input
-              type="file"
-              accept="image/jpeg,image/png,image/webp"
-              [disabled]="busy() || r.photos.length >= 10"
-              (change)="upload($event)"
-          /></label>
-          @if (r.is_hidden) {
-            <p class="notice">
-              Annonce masquée par un administrateur. Tu peux la corriger, mais seule
-              l’administration peut lever le masquage.
-            </p>
-          }
-          <div class="row wrap">
-            <button class="btn coral" [disabled]="busy() || r.is_hidden" (click)="publish()">
-              {{
-                r.status === 'DRAFT' ? 'Publier mon annonce' : 'Renouveler mon annonce'
-              }}</button><a class="btn ghost" [routerLink]="['/annonces', r.id]">Voir la fiche</a>
-          </div>
-        </section>
+        </fieldset>
+      </form>
+      @if (busy()) {
+        <p role="status" class="notice">Enregistrement en cours…</p>
+      }
+      @if (saved(); as row) {
+        <p class="help flow-saved">
+          Ton annonce est enregistrée.
+          <a class="link" routerLink="/mes-annonces">Retrouver mes annonces ↗</a>
+        </p>
       }
     }
+    <datalist id="fc-properties">
+      <option value="Appartement"></option>
+      <option value="Chambre"></option>
+      <option value="Maison"></option>
+      <option value="Studio"></option></datalist
+    ><datalist id="fc-roommates">
+      <option value="Étudiant"></option>
+      <option value="Jeune actif"></option>
+    </datalist>
   </section>
-</div>
+}

@@ -22,7 +22,9 @@ import { RouterLink } from '@angular/router';
           </p>
         </div>
       </div>
-      <div class="side-art" aria-hidden="true">🏡 ✨</div>
+      <div class="side-art" aria-hidden="true">
+        <img src="/assets/fastcoloc-symbol.svg" width="130" height="130" alt="" />
+      </div>
     </aside>
     <section class="split-main">
       <span class="tag">BIENVENUE CHEZ FASTCOLOC</span><ng-content />

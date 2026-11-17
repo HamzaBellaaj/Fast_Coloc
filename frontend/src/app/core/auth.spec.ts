@@ -84,6 +84,27 @@ describe('Session et autorisations Web', () => {
       '/login',
     );
   });
+  it('conserve les filtres de la page demandée avant connexion', async () => {
+    const url = '/favoris?sort=RENT_ASC&page=2';
+    const result = await TestBed.runInInjectionContext(() =>
+      sessionGuard({} as never, { url } as never),
+    );
+    expect((result as import('@angular/router').UrlTree).queryParams['returnUrl']).toBe(url);
+    expect(auth.takeDestination()).toBe(url);
+    expect(auth.takeDestination()).toBe('/');
+  });
+  it('refuse les destinations externes ou les routes d’authentification en retour', () => {
+    for (const url of [
+      'https://example.test',
+      '//example.test',
+      '/login',
+      '/auth/callback',
+      '/annonces\\external',
+    ]) {
+      auth.rememberDestination(url);
+      expect(auth.takeDestination()).toBe('/');
+    }
+  });
   it('redirige vers la connexion si le refresh échoue pendant une action', async () => {
     const navigation = vi.spyOn(TestBed.inject(Router), 'navigateByUrl').mockResolvedValue(true);
     auth.accept({ ...session, expires_at: 0 });
@@ -108,18 +129,16 @@ describe('Session et autorisations Web', () => {
       .flush({ emailConfirmed: true, email: 'same@example.test' });
     await Promise.resolve();
     await Promise.resolve();
-    http
-      .expectOne('/api/v1/users/sync')
-      .flush({
-        id: 'own-user',
-        firstName: 'Identité conservée',
-        lastName: 'Existante',
-        age: 30,
-        role: 'USER',
-        status: 'ACTIVE',
-        completedAt: '2026-11-12T00:00:00Z',
-        validatedSteps: [1, 2, 3, 4, 5],
-      });
+    http.expectOne('/api/v1/users/sync').flush({
+      id: 'own-user',
+      firstName: 'Identité conservée',
+      lastName: 'Existante',
+      age: 30,
+      role: 'USER',
+      status: 'ACTIVE',
+      completedAt: '2026-11-12T00:00:00Z',
+      validatedSteps: [1, 2, 3, 4, 5],
+    });
     await completion;
     http.expectNone('/api/v1/onboarding/steps/1');
     expect(auth.profile()?.firstName).toBe('Identité conservée');

@@ -5,7 +5,9 @@ import { errorMessage } from '../../core/feedback';
 @Component({
   imports: [RouterLink],
   template: `<section class="success-box" [attr.aria-busy]="!error">
-    <div class="illustration" aria-hidden="true">{{ error ? '🔐' : '💌' }}</div>
+    <div class="illustration" aria-hidden="true">
+      <img src="/assets/fastcoloc-symbol.svg" width="100" height="100" alt="" />
+    </div>
     <h1 class="form-title">{{ error ? 'Le lien n’a pas abouti' : 'Vérification en cours…' }}</h1>
     <p role="status">{{ error || 'Nous vérifions ton lien sécurisé. Un instant.' }}</p>
     @if (error) {

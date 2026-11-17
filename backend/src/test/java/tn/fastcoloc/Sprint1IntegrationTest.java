@@ -44,6 +44,7 @@ class Sprint1IntegrationTest {
     s.execute("alter role fastcoloc_backend login");
     s.execute(Files.readString(Path.of("supabase/migrations/20261112050615_sprint1_backend_capabilities.sql")));
     s.execute(Files.readString(Path.of("supabase/migrations/20261116215125_sprint2_listings.sql")));
+    s.execute(Files.readString(Path.of("supabase/migrations/20261117062435_listing_request_location.sql")));
     s.execute(Files.readString(Path.of("supabase/migrations/20261116233807_us29_listing_moderation.sql")));
     s.execute(Files.readString(Path.of("supabase/migrations/20261117000621_admin_contact_read.sql")));
     s.execute("insert into fastcoloc.countries values('TN','Tunisia');insert into fastcoloc.governorates(country_code,name) values('TN','Tunis');insert into fastcoloc.localities(governorate_id,name) values(1,'Tunis')");
@@ -296,6 +297,19 @@ class Sprint1IntegrationTest {
  UUID listing(String kind,int rent)throws Exception{var r=request(HttpMethod.POST,"/api/v1/listings",listingBody(kind,rent),USER);assertThat(r.getStatusCode()).as(r.getBody()).isEqualTo(HttpStatus.CREATED);return UUID.fromString(JSON.readTree(r.getBody()).path("id").asText());}
  void publish(UUID id)throws Exception{var r=request(HttpMethod.POST,"/api/v1/listings/"+id+"/publish",null,USER);assertThat(r.getStatusCode()).as(r.getBody()).isEqualTo(HttpStatus.OK);}
  long found(String query,UUID actor)throws Exception{var r=request(HttpMethod.GET,"/api/v1/listings"+query,null,actor);assertThat(r.getStatusCode()).as(r.getBody()).isEqualTo(HttpStatus.OK);return JSON.readTree(r.getBody()).path("total").asLong();}
+ @Test void requestWithoutGpsAndOfferValidationUseRealApi() throws Exception {
+  listingAccounts();
+  var requestBody=listingBody("REQUEST",600);requestBody.remove("latitude");requestBody.remove("longitude");requestBody.put("street","");
+  var created=request(HttpMethod.POST,"/api/v1/listings",requestBody,USER);
+  assertThat(created.getStatusCode()).as(created.getBody()).isEqualTo(HttpStatus.CREATED);
+  var row=JSON.readTree(created.getBody());var id=UUID.fromString(row.path("id").asText());
+  assertThat(row.path("latitude").isNull()).isTrue();assertThat(row.path("rent").asInt()).isEqualTo(600);publish(id);
+  assertThat(JSON.readTree(request(HttpMethod.GET,"/api/v1/listings/"+id,null,OTHER).getBody()).path("status").asText()).isEqualTo("PUBLISHED");
+  requestBody.put("kind","OFFER");assertThat(request(HttpMethod.POST,"/api/v1/listings",requestBody,USER).getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+  var offer=listing("OFFER",350);publish(offer);
+  var badDates=listingBody("REQUEST",600);badDates.put("availableUntil","2020-01-01");assertThat(request(HttpMethod.POST,"/api/v1/listings",badDates,USER).getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+  var incomplete=listingBody("REQUEST",600);incomplete.remove("longitude");assertThat(request(HttpMethod.POST,"/api/v1/listings",incomplete,USER).getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+ }
  @Test void sprint2DraftPublishFiltersPaginationAndRequestAreShared()throws Exception{
   listingAccounts();UUID offer=listing("OFFER",350);assertThat(found("",null)).isZero();
   assertThat(request(HttpMethod.GET,"/api/v1/listings/"+offer,null,OTHER).getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);

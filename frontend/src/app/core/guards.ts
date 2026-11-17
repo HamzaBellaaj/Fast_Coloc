@@ -3,11 +3,13 @@ import { CanActivateFn, Router } from '@angular/router';
 import { Auth } from './auth';
 import { Api } from './api';
 import { Feedback } from './feedback';
-export const sessionGuard: CanActivateFn = async () => {
+export const sessionGuard: CanActivateFn = async (_, state) => {
   const auth = inject(Auth),
     router = inject(Router);
   await auth.restore();
-  return auth.session() ? true : router.parseUrl('/login');
+  if (auth.session()) return true;
+  auth.rememberDestination(state.url);
+  return router.createUrlTree(['/login'], { queryParams: { returnUrl: state.url } });
 };
 export const registrationGuard: CanActivateFn = async (route) => {
   const auth = inject(Auth),

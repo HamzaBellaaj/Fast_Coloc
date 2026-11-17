@@ -43,7 +43,7 @@
         <item name="android:insetBottom">0dp</item>
         <item name="android:paddingTop">12dp</item>
         <item name="android:paddingBottom">12dp</item>
-        <item name="cornerRadius">16dp</item>
+        <item name="cornerRadius">@dimen/fc_control_radius</item>
         <item name="backgroundTint">@color/fc_button_primary</item>
         <item name="android:textColor">@color/fc_white</item>
         <item name="iconTint">@color/fc_white</item>
@@ -55,7 +55,7 @@
         <item name="iconTint">@color/fc_plum</item>
     </style>
     <style name="Widget.FastColoc.Button.Outlined" parent="Widget.Material3.Button.OutlinedButton">
-        <item name="android:minHeight">48dp</item>
+        <item name="android:minHeight">@dimen/fc_touch_target</item>
         <item name="android:fontFamily">@font/dm_sans</item>
         <item name="android:textStyle">bold</item>
         <item name="android:textAllCaps">false</item>
@@ -63,7 +63,7 @@
         <item name="android:letterSpacing">0</item>
         <item name="android:insetTop">0dp</item>
         <item name="android:insetBottom">0dp</item>
-        <item name="cornerRadius">16dp</item>
+        <item name="cornerRadius">@dimen/fc_control_radius</item>
         <item name="strokeColor">@color/fc_control_stroke</item>
         <item name="strokeWidth">1dp</item>
         <item name="backgroundTint">@color/fc_control_background</item>
@@ -77,10 +77,10 @@
         <item name="boxStrokeErrorColor">@color/fc_error</item>
         <item name="boxStrokeWidth">1dp</item>
         <item name="boxStrokeWidthFocused">2dp</item>
-        <item name="boxCornerRadiusTopStart">13dp</item>
-        <item name="boxCornerRadiusTopEnd">13dp</item>
-        <item name="boxCornerRadiusBottomStart">13dp</item>
-        <item name="boxCornerRadiusBottomEnd">13dp</item>
+        <item name="boxCornerRadiusTopStart">@dimen/fc_field_radius</item>
+        <item name="boxCornerRadiusTopEnd">@dimen/fc_field_radius</item>
+        <item name="boxCornerRadiusBottomStart">@dimen/fc_field_radius</item>
+        <item name="boxCornerRadiusBottomEnd">@dimen/fc_field_radius</item>
         <item name="endIconTint">@color/fc_violet</item>
         <item name="errorTextColor">@color/fc_error</item>
         <item name="android:textColorHint">@color/fc_muted</item>
@@ -91,10 +91,10 @@
         <item name="boxStrokeColor">@color/fc_control_stroke</item>
         <item name="boxStrokeWidth">1dp</item>
         <item name="boxStrokeWidthFocused">2dp</item>
-        <item name="boxCornerRadiusTopStart">13dp</item>
-        <item name="boxCornerRadiusTopEnd">13dp</item>
-        <item name="boxCornerRadiusBottomStart">13dp</item>
-        <item name="boxCornerRadiusBottomEnd">13dp</item>
+        <item name="boxCornerRadiusTopStart">@dimen/fc_field_radius</item>
+        <item name="boxCornerRadiusTopEnd">@dimen/fc_field_radius</item>
+        <item name="boxCornerRadiusBottomStart">@dimen/fc_field_radius</item>
+        <item name="boxCornerRadiusBottomEnd">@dimen/fc_field_radius</item>
         <item name="endIconTint">@color/fc_violet</item>
     </style>
     <style name="Widget.FastColoc.Chip" parent="Widget.Material3.Chip.Filter">
@@ -108,4 +108,4 @@
         <item name="android:textStyle">bold</item>
         <item name="checkedIconTint">@color/fc_violet</item>
     </style>
-</resources>
+<style name="ShapeAppearance.FastColoc.DrawerItem" parent=""><item name="cornerFamily">rounded</item><item name="cornerSize">@dimen/fc_control_radius</item></style></resources>

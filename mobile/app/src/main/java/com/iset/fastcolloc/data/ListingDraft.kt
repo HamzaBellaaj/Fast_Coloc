@@ -33,11 +33,11 @@ object ListingDraft {
         require(description.length in 20..10000) {
             "La description doit contenir au moins 20 caractères."
         }
-        require(value("street").isNotBlank()) { "L’adresse ou le secteur est obligatoire." }
+        require(kind == "REQUEST" || value("street").isNotBlank()) { "L’adresse ou le secteur est obligatoire." }
         require(value("propertyType").isNotBlank()) { "Le type de logement est obligatoire." }
-        val lat = number("latitude")
-        val lng = number("longitude")
-        require(lat in 30.0..38.0 && lng in 7.0..12.0) { "Position hors de la Tunisie." }
+        val lat = if (value("latitude").isBlank() && kind == "REQUEST") null else number("latitude")
+        val lng = if (value("longitude").isBlank() && kind == "REQUEST") null else number("longitude")
+        require((lat == null) == (lng == null) && (lat == null || lat in 30.0..38.0) && (lng == null || lng in 7.0..12.0)) { "Position hors de la Tunisie." }
         val rent = number("rent")
         require(
             rent in 0.0..999999999.999 &&

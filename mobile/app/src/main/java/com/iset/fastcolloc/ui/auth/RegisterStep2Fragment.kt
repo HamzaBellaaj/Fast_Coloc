@@ -32,7 +32,7 @@ class RegisterStep2Fragment : BoundFragment<FragmentRegisterStep2Binding>(Fragme
     }
     private fun fill(spinner: Spinner, names: List<String>, selected: Int, onSelect: (Int) -> Unit) {
         spinner.onItemSelectedListener = null
-        spinner.adapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_dropdown_item, listOf("Choisir…") + names)
+        spinner.adapter = ArrayAdapter(requireContext(), com.iset.fastcolloc.R.layout.item_fc_dropdown, listOf("Choisir…") + names)
         spinner.setSelection(selected + 1, false)
         spinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onNothingSelected(parent: AdapterView<*>?) = Unit

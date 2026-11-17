@@ -15,8 +15,8 @@ export interface Listing {
   governorate_id: number;
   governorate: string;
   street: string;
-  latitude: number;
-  longitude: number;
+  latitude: number | null;
+  longitude: number | null;
   rent: number;
   capacity: number;
   property_type: string;

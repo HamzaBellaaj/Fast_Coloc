@@ -88,6 +88,7 @@ class ListingViewModel(
     }
 
     fun loadAreas() {
+        if (_areas.value?.isNotEmpty() == true) return
         viewModelScope.launch(Dispatchers.IO) {
             try {
                 _areas.postValue(repository.areas())
@@ -127,7 +128,7 @@ class ListingViewModel(
         _selected.value = null
     }
 
-    fun saveFields(fields: Map<String, String>, kind: String, locality: Long) {
+    fun saveFields(fields: Map<String, String>, kind: String, locality: Long, publishAfter: Boolean = false) {
         try {
             save(
                 ListingDraft.parse(
@@ -135,21 +136,27 @@ class ListingViewModel(
                     kind,
                     locality,
                     fields["version"]?.toLongOrNull() ?: _selected.value?.version,
-                )
+                ), publishAfter
             )
         } catch (e: IllegalArgumentException) {
             formError(e.message ?: "Vérifie les champs.")
         }
     }
 
-    fun save(body: ListingWriteDto) {
+    fun save(body: ListingWriteDto, publishAfter: Boolean = false) {
         work {
             val row = repository.save(editorId, body)
             editorId = row.id
             draft["version"] = row.version.toString()
             _selected.postValue(row)
             _offline.postValue(false)
-            _message.postValue("Annonce enregistrée. Tu peux ajouter des photos et la publier.")
+            _message.postValue("Annonce enregistrée.")
+            if (publishAfter) {
+                val published = repository.publish(row)
+                _selected.postValue(published)
+                draft["version"] = published.version.toString()
+                _event.postValue(UiEvent("detail:" + published.id))
+            }
         }
     }
 

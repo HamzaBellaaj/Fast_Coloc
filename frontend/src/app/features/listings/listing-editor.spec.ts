@@ -1,0 +1,25 @@
+import { afterEach, expect, it, vi } from 'vitest';
+import { TestBed } from '@angular/core/testing';
+import { ActivatedRoute, Router, convertToParamMap } from '@angular/router';
+import { ListingEditor } from './listing-editor';
+import { Api } from '../../core/api';
+import { Auth } from '../../core/auth';
+import { Feedback } from '../../core/feedback';
+afterEach(() => TestBed.resetTestingModule());
+it('saves the current request before publication and keeps it editable if publication fails', async () => {
+  const failure = new Error('Publication indisponible');
+  const request = vi.fn().mockResolvedValueOnce({ id:'draft',kind:'REQUEST',title:'Ma recherche de colocation',description:'Je recherche une colocation calme proche des transports.',locality_id:1,street:'',latitude:null,longitude:null,rent:600,capacity:1,property_type:'Appartement',roommate_type:'Étudiant',equipment:['WiFi'],available_from:'2026-12-01',available_until:null,publication_days:30,version:1,status:'DRAFT',photos:[] }).mockRejectedValueOnce(failure);
+  const error = vi.fn(); const navigate = vi.fn();
+  TestBed.configureTestingModule({providers:[{provide:Api,useValue:{request}},{provide:Auth,useValue:{profile:()=>({id:'owner',completedAt:'2026-11-01'})}},{provide:Feedback,useValue:{show:vi.fn(),error}},{provide:Router,useValue:{navigate}},{provide:ActivatedRoute,useValue:{snapshot:{data:{},paramMap:convertToParamMap({}),queryParamMap:convertToParamMap({})}}}]});
+  const editor = TestBed.runInInjectionContext(() => new ListingEditor());
+  editor.busy.set(false);
+  Object.assign(editor.form,{kind:'REQUEST',title:'Ma recherche de colocation',description:'Je recherche une colocation calme proche des transports.',localityId:1,rent:600,propertyType:'Appartement',roommateType:'Étudiant',equipment:'WiFi',availableFrom:'2026-12-01'});
+  editor.step=4;
+  await editor.publish();
+  expect(request.mock.calls.map(call=>call.slice(0,2))).toEqual([['POST','/listings'],['POST','/listings/draft/publish']]);
+  expect(request.mock.calls[0][2]).toMatchObject({kind:'REQUEST',latitude:null,longitude:null,rent:600});
+  expect(editor.saved()?.version).toBe(1);
+  expect(editor.form.title).toBe('Ma recherche de colocation');
+  expect(editor.step).toBe(4); expect(editor.busy()).toBe(false);
+  expect(error).toHaveBeenCalledWith(failure); expect(navigate).not.toHaveBeenCalled();
+});

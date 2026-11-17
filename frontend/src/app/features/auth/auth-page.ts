@@ -26,6 +26,8 @@ export class AuthPage {
     confirm: [''],
   });
   constructor() {
+    if (this.mode === 'login')
+      this.auth.rememberDestination(inject(ActivatedRoute).snapshot.queryParamMap.get('returnUrl'));
     if (this.mode === 'reset') {
       this.form.controls.email.disable();
       this.form.controls.password.setValidators(passwordPolicy);

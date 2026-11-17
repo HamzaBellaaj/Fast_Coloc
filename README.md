@@ -1,3 +1,5 @@
+> Refonte UI/UX Web et Android : [interface, vérifications et démarrage](docs/19-REFONTE-UI-UX.md).
+>
 > État au 17 novembre 2026 : Sprints 1 et 2 intégrés sur Spring Boot, Angular et Android natif. Offres/demandes, publication, recherche, photos et favoris utilisent les mêmes comptes et API. [Rapport Sprint 2 et démarrage](docs/17-SPRINT2-ANNONCES-RECHERCHE.md), [périmètre](docs/15-SPRINT2-PERIMETRE.md), [cours Android et conformité](docs/16-SPRINT2-REFERENCES-ANDROID.md). L'intégration Sprint 1 est conservée dans le [rapport Android initial](docs/14-SPRINT1-ANDROID-INTEGRATION.md).
 > US29 est également intégrée sur le Web : gestion administrative des annonces, correction, masquage/réactivation, suppression et historique. [Documentation US29](docs/18-US29-GESTION-ADMIN-ANNONCES.md). La correction des contacts ADMIN charge désormais les valeurs existantes dans un dialogue responsive.
 >

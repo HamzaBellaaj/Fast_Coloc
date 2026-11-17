@@ -1,0 +1,153 @@
+.announcement-flow {
+  max-width: 960px;
+  margin: auto;
+}
+.flow-heading {
+  margin: 28px 0;
+}
+.flow-heading h1 {
+  font-size: clamp(34px, 4vw, 52px);
+  margin: 14px 0;
+}
+.flow-progress {
+  display: flex;
+  gap: 12px;
+  margin: 28px 0;
+  flex-wrap: wrap;
+}
+.flow-progress span {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--muted);
+}
+.flow-progress b {
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  width: 30px;
+  height: 30px;
+  background: white;
+}
+.flow-progress .current {
+  color: var(--violet);
+  font-weight: 800;
+}
+.flow-progress .current b {
+  background: var(--violet);
+  color: white;
+}
+.flow-progress .complete b {
+  background: var(--pink);
+  color: var(--plum);
+}
+fieldset {
+  border: 0;
+  min-width: 0;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 22px;
+}
+.kind-choices {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+.kind-choice {
+  display: flex;
+  flex-direction: column;
+  align-items: start;
+  gap: 14px;
+  text-align: left;
+  background: var(--cream);
+  border: 2px solid var(--line);
+  border-radius: 24px;
+  padding: 26px;
+  color: var(--plum);
+  transition:
+    border-color 0.18s,
+    box-shadow 0.18s;
+}
+.kind-choice svg {
+  width: 80px;
+  height: 64px;
+  color: var(--violet);
+}
+.kind-choice strong {
+  font-family: 'Baloo 2';
+  font-weight: 800;
+  font-size: 25px;
+  line-height: 1.15;
+}
+.kind-choice span {
+  font-size: 14px;
+  line-height: 1.6;
+}
+.kind-choice small {
+  font-weight: 700;
+  color: var(--violet);
+}
+.kind-choice.selected {
+  border-color: var(--violet);
+  background: #f4edff;
+  box-shadow: 0 0 0 4px #7138d80b;
+}
+.flow-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  flex-wrap: wrap;
+  border-top: 1px solid var(--line);
+  padding-top: 22px;
+}
+.flow-actions > button:first-child {
+  margin-right: auto;
+}
+.flow-review,
+.photo-invite {
+  background: var(--cream);
+  padding: 24px;
+  border-radius: 20px;
+}
+.flow-review h3 {
+  margin: 16px 0;
+}
+.review-description {
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+}
+.flow-review dl {
+  margin-top: 22px;
+}
+.flow-saved {
+  margin: 18px 0;
+}
+.listing-editor h2 {
+  font-size: 30px;
+}
+@media (max-width: 600px) {
+  .kind-choices {
+    grid-template-columns: 1fr;
+  }
+  .kind-choice {
+    padding: 22px;
+  }
+  .flow-progress {
+    gap: 10px;
+  }
+  .flow-progress span {
+    font-size: 10px;
+  }
+  .flow-actions .btn {
+    flex: 1 1 140px;
+  }
+  .flow-actions > button:first-child {
+    margin-right: 0;
+  }
+  .flow-review {
+    padding: 18px;
+  }
+}

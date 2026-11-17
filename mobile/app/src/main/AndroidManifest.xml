@@ -17,6 +17,7 @@
             android:windowSoftInputMode="adjustResize" />
         <activity
             android:name=".ui.auth.AuthActivity"
+            android:theme="@style/Theme.FastColoc.Starting"
             android:exported="true"
             android:launchMode="singleTask"
             android:windowSoftInputMode="adjustResize">

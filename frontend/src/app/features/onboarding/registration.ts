@@ -32,11 +32,11 @@ export class Registration implements OnInit, OnDestroy {
   localities: Place[] = [];
   details: Details | null = null;
   titles = [
-    'Tes infos, ton départ ✨',
-    'Où es-tu actuellement ? 📍',
-    'Parlons un peu de toi 💜',
+    'Tes infos, ton départ',
+    'Où es-tu actuellement ?',
+    'Parlons un peu de toi',
     'Comment te contacter ? 💬',
-    'Montre ton meilleur sourire 📸',
+    'Montre ton meilleur sourire',
   ];
   labels = [
     'Informations générales',
@@ -218,7 +218,7 @@ export class Registration implements OnInit, OnDestroy {
           : 'Étape enregistrée. Tu peux la reprendre à tout moment.',
       );
       await this.router.navigateByUrl(
-        this.step === 5 ? '/profile' : '/register/' + (this.step + 1),
+        this.step === 5 ? this.auth.takeDestination('/profile') : '/register/' + (this.step + 1),
       );
     } catch (error) {
       this.feedback.error(error);
