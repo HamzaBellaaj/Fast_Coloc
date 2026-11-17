@@ -1,0 +1,55 @@
+<a class="skip-link" href="#main">Aller au contenu</a>
+<div class="shell">
+  <nav class="nav" aria-label="Navigation principale">
+    <a class="brand" routerLink="/" aria-label="FastColoc, accueil"
+      ><img
+        class="brand-icon"
+        src="/assets/fastcoloc-symbol.svg"
+        alt=""
+        width="38"
+        height="38"
+      />fast<b>coloc</b><span class="coral-text">.</span></a
+    >
+    <button
+      class="btn small ghost menu-button"
+      (click)="menuOpen = !menuOpen"
+      [attr.aria-expanded]="menuOpen"
+      aria-controls="navigation"
+    >
+      Menu ☰
+    </button>
+    <div class="navlinks" id="navigation" [class.open]="menuOpen" (click)="menuOpen = false">
+      <a routerLink="/">Accueil</a>
+      <a routerLink="/annonces">Annonces</a>
+      @if (auth.session()) {
+        <a routerLink="/mes-annonces">Mes annonces</a>
+        <a routerLink="/favoris">Favoris</a>
+        <a routerLink="/profile">Mon profil</a>
+        @if (auth.profile()?.role === 'ADMIN') {
+          <a routerLink="/admin">Administration</a>
+        }
+        <button class="btn small ghost" (click)="auth.logout()">Se déconnecter</button>
+      } @else {
+        <a routerLink="/login">Se connecter</a
+        ><a class="btn small coral" routerLink="/register/1">S’inscrire ↗</a>
+      }
+    </div>
+  </nav>
+  @if (feedback.message()) {
+    <div class="notice" [class.error]="feedback.failure()" role="status" aria-live="polite">
+      <span>{{ feedback.message() }}</span><button
+        type="button"
+        aria-label="Fermer la notification"
+        (click)="feedback.clear()"
+      >
+        ×
+      </button>
+    </div>
+  }
+  <main id="main" tabindex="-1"><router-outlet /></main>
+  <footer class="footer">
+    © FastColoc · La coloc, c’est mieux ensemble.<br /><span class="tiny"
+      >Ton profil reste privé. Tes annonces publiées sont visibles dans le catalogue.</span
+    >
+  </footer>
+</div>

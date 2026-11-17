@@ -1,0 +1,112 @@
+<app-auth-layout>
+  <h1 class="form-title">
+    {{
+      mode === 'login'
+        ? 'Heureux de te revoir 👋'
+        : mode === 'forgot'
+          ? 'Mot de passe oublié ? 🔐'
+          : 'Nouveau mot de passe ✨'
+    }}
+  </h1>
+  <p class="muted">
+    {{
+      mode === 'login'
+        ? 'Connecte-toi pour retrouver ton espace FastColoc.'
+        : mode === 'forgot'
+          ? 'On t’envoie un lien de réinitialisation sécurisé.'
+          : 'Choisis un mot de passe solide pour sécuriser ton compte.'
+    }}
+  </p>
+  @if (mode === 'reset' && !auth.recovery()) {
+    <div class="side-note form">
+      Ce lien de récupération est absent ou a expiré. Demande un nouveau lien.
+    </div>
+    <a class="btn" routerLink="/forgot-password">Recevoir un nouveau lien</a>
+  } @else if (sent) {
+    <div class="side-note form" role="status">
+      Si cette demande est admissible, un e-mail sera envoyé. Vérifie aussi tes courriers
+      indésirables. Ouvre le lien dans ce navigateur.
+    </div>
+    <a class="link" routerLink="/login">← Retour à la connexion</a>
+  } @else {
+    <form class="form" [formGroup]="form" (ngSubmit)="submit()" [attr.aria-busy]="busy" novalidate>
+      @if (mode !== 'reset') {
+        <app-field fieldId="email" label="Adresse e-mail" [control]="form.controls.email"
+          ><input
+            id="email"
+            type="email"
+            autocomplete="email"
+            formControlName="email"
+            maxlength="254"
+            [attr.aria-invalid]="form.controls.email.touched && form.controls.email.invalid"
+            aria-describedby="email-error"
+        /></app-field>
+      }
+      @if (mode !== 'forgot') {
+        <app-field
+          fieldId="password"
+          [label]="mode === 'reset' ? 'Nouveau mot de passe' : 'Mot de passe'"
+          [control]="form.controls.password"
+          ><div class="password-input">
+            <input
+              id="password"
+              [type]="showPassword ? 'text' : 'password'"
+              [autocomplete]="mode === 'login' ? 'current-password' : 'new-password'"
+              formControlName="password"
+              aria-describedby="password-error"
+            /><button
+              type="button"
+              (click)="showPassword = !showPassword"
+              [attr.aria-label]="
+                showPassword ? 'Masquer le mot de passe' : 'Afficher le mot de passe'
+              "
+            >
+              {{ showPassword ? 'Masquer' : 'Afficher' }}
+            </button>
+          </div></app-field
+        >
+        @if (mode === 'reset') {
+          <app-field
+            fieldId="confirm"
+            label="Confirmer le mot de passe"
+            [control]="form.controls.confirm"
+            ><input
+              id="confirm"
+              [type]="showPassword ? 'text' : 'password'"
+              autocomplete="new-password"
+              formControlName="confirm"
+          /></app-field>
+          <p class="help">12 à 72 caractères, au maximum 72 octets UTF-8.</p>
+          @if (form.hasError('passwordMismatch') && form.controls.confirm.touched) {
+            <p class="field-error" role="alert">Les mots de passe ne correspondent pas.</p>
+          }
+        }
+      }
+      @if (mode === 'login') {
+        <a class="link help" routerLink="/forgot-password">Mot de passe oublié ?</a>
+      }
+      <button class="btn" type="submit" [disabled]="busy">
+        {{
+          busy
+            ? 'Un instant…'
+            : mode === 'login'
+              ? 'Se connecter →'
+              : mode === 'forgot'
+                ? 'Recevoir le lien →'
+                : 'Enregistrer le mot de passe →'
+        }}
+      </button>
+      @if (mode === 'login') {
+        <div class="or">ou continuer avec</div>
+        <button class="btn ghost" type="button" (click)="google()" [disabled]="busy">
+          Continuer avec Google
+        </button>
+        <p class="help center">
+          Pas encore de compte ? <a routerLink="/register/1">Rejoins FastColoc</a>
+        </p>
+      } @else {
+        <a class="link help" routerLink="/login">← Retour à la connexion</a>
+      }
+    </form>
+  }
+</app-auth-layout>

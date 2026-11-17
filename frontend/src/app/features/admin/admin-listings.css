@@ -1,0 +1,169 @@
+:host {
+  display: block;
+}
+.moderation-filters {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  margin: 24px 0;
+}
+.moderation-filters label {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  font-weight: 600;
+  font-size: 14px;
+}
+.moderation-filters input,
+.moderation-filters select {
+  width: 100%;
+  min-width: 0;
+}
+.moderation-filters .wide {
+  grid-column: span 2;
+}
+.filter-actions {
+  display: flex;
+  gap: 10px;
+  align-items: end;
+  flex-wrap: wrap;
+}
+.listing-link {
+  font-weight: 700;
+  color: var(--violet);
+  display: block;
+  max-width: 270px;
+  overflow-wrap: anywhere;
+}
+.nowrap {
+  white-space: nowrap;
+}
+.empty-moderation {
+  text-align: center;
+  padding: 32px 16px;
+}
+.empty-moderation > span {
+  font-size: 48px;
+  color: var(--coral);
+}
+.back-link {
+  display: block;
+  margin: 24px 0;
+}
+.detail-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 24px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.detail-head .page-title {
+  font-size: 36px;
+  overflow-wrap: anywhere;
+}
+.moderation-actions {
+  display: flex;
+  gap: 20px;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.moderation-actions h2 {
+  margin: 0;
+}
+.moderation-facts {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+  margin: 28px 0;
+}
+.moderation-facts dt {
+  font-size: 13px;
+  color: var(--muted);
+  margin-bottom: 5px;
+}
+.moderation-facts dd {
+  margin: 0;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+.description {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  line-height: 1.7;
+}
+.reference {
+  margin-top: 30px;
+  overflow-wrap: anywhere;
+}
+.history-event {
+  border-top: 1px solid #25153216;
+  padding: 20px 0;
+}
+.history-event p {
+  margin: 8px 0;
+}
+.history details {
+  margin-top: 12px;
+}
+.history summary {
+  cursor: pointer;
+  color: var(--violet);
+  font-weight: 700;
+}
+.history td {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  min-width: 150px;
+  max-width: 300px;
+}
+.history .table-scroll {
+  max-height: 420px;
+  overflow: auto;
+}
+dialog label {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+input[type='date'] {
+  cursor: pointer;
+}
+.listing-gallery a {
+  display: block;
+}
+.listing-gallery img {
+  max-height: 300px;
+  object-fit: cover;
+  width: 100%;
+}
+@media (max-width: 900px) {
+  .moderation-filters {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 580px) {
+  .moderation-filters,
+  .moderation-facts {
+    grid-template-columns: 1fr;
+  }
+  .moderation-filters .wide {
+    grid-column: auto;
+  }
+  .detail-head .page-title {
+    font-size: 28px;
+  }
+  .moderation-actions .row {
+    width: 100%;
+  }
+}
+
+.section-card {
+  margin-bottom: 20px;
+}
+.section-card h2 {
+  font-size: 28px;
+}
+.moderation-actions h2 {
+  font-size: 24px;
+}

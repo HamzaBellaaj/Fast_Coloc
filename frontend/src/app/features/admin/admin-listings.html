@@ -1,0 +1,398 @@
+<div class="panel-layout">
+  <fc-admin-nav />
+  <section>
+    <span class="tag">ADMINISTRATION · ANNONCES</span>
+    @if (!id) {
+      <h1 class="page-title">Des colocs en confiance.</h1>
+      <p class="muted">Consulte et modère les offres et demandes de la communauté.</p>
+      <div class="stats">
+        <div class="stat">
+          Résultats du filtre<strong>{{ total() }}</strong
+          ><span class="help">Toutes les annonces correspondantes</span>
+        </div>
+        <div class="stat">
+          Page courante<strong>{{ items().length }}</strong
+          ><span class="help">{{ size }} annonces maximum</span>
+        </div>
+        <div class="stat">
+          Publication<strong>Immédiate</strong
+          ><span class="help">Modération après publication</span>
+        </div>
+      </div>
+      <section class="section-card">
+        <h2 class="card-heading">Gestion des annonces</h2>
+        <form class="moderation-filters" (ngSubmit)="load(true)">
+          <label class="field wide"
+            >Rechercher<input
+              name="q"
+              [(ngModel)]="filters.q"
+              maxlength="160"
+              placeholder="Titre, auteur ou localisation"
+          /></label>
+          <label class="field"
+            >Type<select name="kind" [(ngModel)]="filters.kind">
+              <option value="">Tous les types</option>
+              <option value="OFFER">Offre</option>
+              <option value="REQUEST">Demande</option>
+            </select></label
+          >
+          <label class="field"
+            >Statut<select name="status" [(ngModel)]="filters.status">
+              <option value="">Tous les statuts</option>
+              <option value="PUBLISHED">Publiée</option>
+              <option value="DRAFT">Brouillon</option>
+              <option value="EXPIRED">Expirée</option>
+              <option value="HIDDEN">Masquée</option>
+            </select></label
+          >
+          <label class="field"
+            >Créée à partir du<input
+              #from
+              type="date"
+              name="from"
+              [(ngModel)]="filters.from"
+              [max]="filters.to"
+              (click)="calendar(from)"
+          /></label>
+          <label class="field"
+            >Créée jusqu’au<input
+              #to
+              type="date"
+              name="to"
+              [(ngModel)]="filters.to"
+              [min]="filters.from"
+              (click)="calendar(to)"
+          /></label>
+          <label class="field"
+            >Trier par<select name="sort" [(ngModel)]="filters.sort">
+              <option value="NEWEST">Plus récentes</option>
+              <option value="OLDEST">Plus anciennes</option>
+              <option value="RENT_ASC">Loyer croissant</option>
+              <option value="RENT_DESC">Loyer décroissant</option>
+            </select></label
+          >
+          <div class="filter-actions">
+            <button class="btn small" [disabled]="loading()">Rechercher</button
+            ><button type="button" class="btn small ghost" (click)="reset()" [disabled]="loading()">
+              Réinitialiser
+            </button>
+          </div>
+        </form>
+        @if (!loading() && !failed()) {
+          <div class="table-scroll">
+            <table class="table">
+              <caption class="sr-only">
+                Toutes les annonces FastColoc correspondant aux filtres
+              </caption>
+              <thead>
+                <tr>
+                  <th scope="col">Annonce / auteur</th>
+                  <th scope="col">Localisation</th>
+                  <th scope="col">Loyer / mois</th>
+                  <th scope="col">Type / statut</th>
+                  <th scope="col">Création</th>
+                  <th scope="col">Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (r of items(); track r.id) {
+                  <tr>
+                    <td>
+                      <a class="listing-link" [routerLink]="['/admin/annonces', r.id]">{{
+                        r.title
+                      }}</a><span class="tiny user-id">{{
+                        r.author_name || 'Auteur sans nom'
+                      }}</span>
+                    </td>
+                    <td>
+                      {{ r.locality }}<span class="tiny user-id">{{ r.governorate }}</span>
+                    </td>
+                    <td class="nowrap">{{ r.rent | number: '1.0-3' }} TND</td>
+                    <td>
+                      {{ r.kind === 'OFFER' ? 'Offre' : 'Demande' }}<br /><span
+                        class="status"
+                        [class.blocked]="r.is_hidden"
+                        >{{ labels[r.display_status] }}</span
+                      >
+                    </td>
+                    <td class="nowrap">{{ r.created_at | date: 'dd/MM/yyyy' : 'UTC' }}</td>
+                    <td>
+                      <a class="btn small ghost" [routerLink]="['/admin/annonces', r.id]"
+                        >Consulter</a
+                      >
+                    </td>
+                  </tr>
+                } @empty {
+                  <tr>
+                    <td colspan="6">
+                      <div class="empty-moderation">
+                        <span aria-hidden="true">⌂</span>
+                        <h3>Aucune annonce pour ces critères.</h3>
+                        <p class="muted">Essaie un autre titre ou élargis les filtres.</p>
+                      </div>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+          <div class="row between wrap spaced">
+            <button class="btn small ghost" [disabled]="page === 0" (click)="paginate(-1)">
+              ← Précédent</button
+            ><span class="help"
+              >{{ total() ? page * size + 1 : 0 }}–{{ page * size + items().length }} /
+              {{ total() }} · Page {{ page + 1 }}</span
+            ><button
+              class="btn small ghost"
+              [disabled]="(page + 1) * size >= total()"
+              (click)="paginate(1)"
+            >
+              Suivant →
+            </button>
+          </div>
+        }
+      </section>
+    } @else {
+      <a class="link back-link" routerLink="/admin/annonces">← Gestion des annonces</a>
+      @if (row(); as r) {
+        <div class="detail-head">
+          <div>
+            <h1 class="page-title">{{ r.title }}</h1>
+            <p class="muted">
+              {{ r.author_name || 'Auteur sans nom' }} · {{ r.locality }}, {{ r.governorate }}
+            </p>
+          </div>
+          <span class="status" [class.blocked]="r.is_hidden">{{ labels[r.display_status] }}</span>
+        </div>
+        <section class="section-card moderation-actions">
+          <div>
+            <h2>Actions administratives</h2>
+            <p class="help">Chaque action conserve son motif et son historique.</p>
+          </div>
+          <div class="row wrap">
+            <a class="btn small ghost" [routerLink]="['/admin/annonces', r.id, 'modifier']"
+              >Modifier l’annonce</a
+            >
+            @if (r.is_hidden) {
+              <button class="btn small" (click)="open('restore')" [disabled]="busy()">
+                Réactiver
+              </button>
+            } @else {
+              <button class="btn small coral" (click)="open('hide')" [disabled]="busy()">
+                Masquer
+              </button>
+            }
+            <button class="btn small danger" (click)="open('delete')" [disabled]="busy()">
+              Supprimer
+            </button>
+          </div>
+        </section>
+        @if (r.is_hidden) {
+          <p class="notice">
+            Cette annonce est masquée. Son auteur peut encore la consulter et la corriger. Sa
+            réactivation conservera la date d’expiration.
+          </p>
+        }
+        <section class="section-card">
+          <div class="detail-head">
+            <h2>La fiche de l’annonce</h2>
+            <p class="rent">{{ r.rent | number: '1.0-3' }} <small>TND / mois</small></p>
+          </div>
+          <div class="listing-gallery">
+            @for (p of r.photos; track p.id) {
+              <figure>
+                <a [href]="p.url" target="_blank" rel="noopener"
+                  ><img [src]="p.url" [alt]="p.caption || r.title" loading="lazy"
+                /></a>
+                @if (p.caption) {
+                  <figcaption>{{ p.caption }}</figcaption>
+                }
+              </figure>
+            } @empty {
+              <p class="muted">Aucune photo pour cette annonce.</p>
+            }
+          </div>
+          <h3>Description</h3>
+          <p class="description">{{ r.description }}</p>
+          <dl class="moderation-facts">
+            <div>
+              <dt>Type d’annonce</dt>
+              <dd>{{ r.kind === 'OFFER' ? 'Offre de colocation' : 'Demande de colocation' }}</dd>
+            </div>
+            <div>
+              <dt>Logement</dt>
+              <dd>{{ r.property_type }}</dd>
+            </div>
+            <div>
+              <dt>Capacité</dt>
+              <dd>{{ r.capacity }} personne(s)</dd>
+            </div>
+            <div>
+              <dt>Colocataire recherché</dt>
+              <dd>{{ r.roommate_type || 'Non précisé' }}</dd>
+            </div>
+            <div>
+              <dt>Adresse</dt>
+              <dd>{{ r.street }}, {{ r.locality }}, {{ r.governorate }}</dd>
+            </div>
+            <div>
+              <dt>Position</dt>
+              <dd>{{ r.latitude }}, {{ r.longitude }}</dd>
+            </div>
+            <div>
+              <dt>Disponibilité</dt>
+              <dd>
+                Du {{ r.available_from | date: 'dd/MM/yyyy' }}
+                @if (r.available_until) {
+                  au {{ r.available_until | date: 'dd/MM/yyyy' }}
+                } @else {
+                  · sans date de fin
+                }
+              </dd>
+            </div>
+            <div>
+              <dt>Durée de publication</dt>
+              <dd>{{ r.publication_days }} jours</dd>
+            </div>
+            <div>
+              <dt>Publication</dt>
+              <dd>
+                {{ (r.published_at | date: 'dd/MM/yyyy HH:mm' : 'UTC') || 'Brouillon non publié' }}
+              </dd>
+            </div>
+            <div>
+              <dt>Expiration</dt>
+              <dd>{{ (r.expires_at | date: 'dd/MM/yyyy HH:mm' : 'UTC') || 'Non définie' }}</dd>
+            </div>
+            <div>
+              <dt>Création</dt>
+              <dd>{{ r.created_at | date: 'dd/MM/yyyy HH:mm' : 'UTC' }}</dd>
+            </div>
+            <div>
+              <dt>Dernière modification</dt>
+              <dd>{{ r.updated_at | date: 'dd/MM/yyyy HH:mm' : 'UTC' }}</dd>
+            </div>
+          </dl>
+          <p class="help">Dates et heures affichées en UTC.</p>
+          <h3>Équipements</h3>
+          <div class="row wrap">
+            @for (item of r.equipment; track $index) {
+              <span class="pill">{{ item }}</span>
+            } @empty {
+              <p class="muted">Non précisés</p>
+            }
+          </div>
+          <p class="tiny muted reference">
+            Référence annonce : {{ r.id }} · Auteur : {{ r.author_name }} ({{ r.author_id }})
+          </p>
+        </section>
+      }
+      @if (deleted()) {
+        <section class="section-card">
+          <h1 class="page-title">Annonce supprimée.</h1>
+          <p>Les photos et favoris ont été retirés. L’historique reste consultable ci-dessous.</p>
+        </section>
+      }
+      @if (!failed() && !loading()) {
+        <section class="section-card history">
+          <h2>Historique de modération</h2>
+          <p class="muted">Les corrections et décisions administratives pour cette annonce.</p>
+          @for (event of history(); track event.id) {
+            <article class="history-event">
+              <div class="row between wrap">
+                <strong>{{ labels[event.action] }}</strong><span class="tiny muted"
+                  >{{ event.created_at | date: 'dd/MM/yyyy HH:mm' : 'UTC' }} UTC</span
+                >
+              </div>
+              <p>Par {{ event.actor_name || 'Administrateur' }}</p>
+              <p class="description">{{ event.reason }}</p>
+              <details>
+                <summary>Voir les changements</summary>
+                <div class="table-scroll">
+                  <table class="table">
+                    <thead>
+                      <tr>
+                        <th>Information</th>
+                        <th>Avant</th>
+                        <th>Après</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      @for (change of changes(event); track change.label) {
+                        <tr>
+                          <th scope="row">{{ change.label }}</th>
+                          <td>{{ change.before }}</td>
+                          <td>{{ change.after }}</td>
+                        </tr>
+                      }
+                    </tbody>
+                  </table>
+                </div>
+              </details>
+            </article>
+          } @empty {
+            <p class="notice">Aucune action administrative enregistrée pour cette annonce.</p>
+          }
+        </section>
+      }
+    }
+    @if (loading()) {
+      <p class="notice" role="status">Chargement des annonces…</p>
+    }
+    @if (failed()) {
+      <section class="section-card">
+        <p role="alert">
+          Impossible de charger les annonces. Vérifie ta connexion et ton accès administrateur.
+        </p>
+        <button class="btn ghost" (click)="load()">Réessayer</button>
+      </section>
+    }
+  </section>
+</div>
+<dialog
+  #confirmation
+  aria-labelledby="moderation-title"
+  (cancel)="busy() ? $event.preventDefault() : close()"
+>
+  <form #moderation="ngForm" class="form" (ngSubmit)="confirm(moderation)">
+    <h2 id="moderation-title">
+      {{
+        action === 'delete'
+          ? 'Supprimer cette annonce ?'
+          : action === 'hide'
+            ? 'Masquer cette annonce ?'
+            : 'Réactiver cette annonce ?'
+      }}
+    </h2>
+    <p>{{ row()?.title }}</p>
+    <p class="side-note">
+      {{
+        action === 'delete'
+          ? 'La suppression est définitive. Les photos et favoris seront retirés ; l’historique sera conservé.'
+          : action === 'hide'
+            ? 'L’annonce disparaîtra du catalogue, de la carte et des favoris. Elle restera consultable par son auteur et les administrateurs.'
+            : 'Le masquage sera levé. Un brouillon restera un brouillon et une annonce expirée restera expirée.'
+      }}
+    </p>
+    <label class="field"
+      >Motif obligatoire<textarea
+        name="reason"
+        [(ngModel)]="reason"
+        required
+        maxlength="1000"
+        rows="3"
+        autofocus
+      ></textarea>
+    </label>
+    <div class="row wrap">
+      <button type="button" class="btn ghost" (click)="close()" [disabled]="busy()">Annuler</button
+      ><button
+        class="btn"
+        [class.danger]="action === 'delete'"
+        [disabled]="busy() || moderation.invalid || !reason.trim()"
+      >
+        {{ busy() ? 'Traitement…' : 'Confirmer l’action' }}
+      </button>
+    </div>
+  </form>
+</dialog>

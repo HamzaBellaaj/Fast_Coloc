@@ -1,0 +1,108 @@
+{
+  "localDate": "2026-11-17",
+  "generatedAtUtc": "2026-11-16T23:06:24.125266+00:00",
+  "backend": {
+    "tests": 57,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "angularUnit": {
+    "tests": 14,
+    "failures": 0,
+    "log": "frontend/sprint2-unit.log"
+  },
+  "playwrightFullSuite": {
+    "tests": 7,
+    "failures": 0,
+    "log": "frontend/sprint2-all-e2e.log"
+  },
+  "playwrightAfterMapExtension": {
+    "tests": 1,
+    "failures": 0,
+    "log": "frontend/sprint2-map-e2e.log"
+  },
+  "androidJvm": {
+    "tests": 10,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "androidInstrumented": {
+    "sprint1": 5,
+    "sprint2": 1,
+    "failures": 0,
+    "device": "emulator-5554"
+  },
+  "androidLint": {
+    "errors": 0,
+    "warnings": 125
+  },
+  "crossPlatform": {
+    "webCreatesListingAndPhoto": true,
+    "androidFavoriteVisibleOnWeb": true,
+    "androidUnfavoriteVisibleOnWeb": true,
+    "androidCreationVisibleOnWeb": true,
+    "androidPhotoVisibleOnWeb": true,
+    "webUpdatesNativeListing": true,
+    "androidUpdateVisibleOnWeb": true,
+    "androidDeletionShared": true,
+    "fixturesCleaned": 2
+  },
+  "postman": {
+    "requests": 17,
+    "assertions": 20,
+    "failures": 0
+  },
+  "migration": {
+    "project": "nklsbubnyznlfpxpxsrp",
+    "localFile": "backend/supabase/migrations/20261116215125_sprint2_listings.sql",
+    "remoteVersion": "20261116220816",
+    "sha256": "496c283df287377962be888f44d4a7a19e1f1eab90b8a47a097e5caf910f5505",
+    "explicitUserApproval": true,
+    "sprint1TablesWithUnchangedFingerprintAtApplication": 14,
+    "oldMigrationsReplayed": 0,
+    "clientSqlGrants": 0,
+    "newTablesRlsEnabled": true
+  },
+  "finalSharedDatabase": {
+    "profiles": 4,
+    "listings": 0,
+    "listingPhotos": 0,
+    "listingFavorites": 0
+  },
+  "swagger": {
+    "listingOperations": 15,
+    "public": 2,
+    "bearerProtected": 13
+  },
+  "secretScan": {
+    "androidEntries": 1233,
+    "angularEntries": 90,
+    "configuredSecretsFound": false
+  },
+  "apk": {
+    "path": "mobile\\app\\build\\outputs\\apk\\debug\\app-debug.apk",
+    "bytes": 14343632,
+    "sha256": "b023fb3aa3e30ea669450e242a89e0f1b5f51aa88a5ce1fa779802fbf7780376",
+    "samsungSmF946bInstallSucceeded": true,
+    "installPreservedAppData": true
+  },
+  "mapReferrerFix": {
+    "date": "2026-11-17",
+    "targetedPlaywrightTests": 1,
+    "failures": 0,
+    "typecheckPassed": true,
+    "productionBuildPassed": true,
+    "originOnly": true,
+    "globalAuthPolicy": "no-referrer",
+    "tileResponses": 30,
+    "statuses": [
+      200
+    ],
+    "selectedPosition": {
+      "latitude": 34.1209,
+      "longitude": 9.602051
+    }
+  }
+}

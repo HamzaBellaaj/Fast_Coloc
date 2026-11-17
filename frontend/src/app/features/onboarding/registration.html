@@ -1,0 +1,343 @@
+<app-auth-layout [registration]="true">
+  <h1 class="form-title">{{ titles[step - 1] }}</h1>
+  <p class="muted">Étape {{ step }} / 5 · {{ labels[step - 1] }}</p>
+  <div class="progress-caption">
+    <strong>Mon profil FastColoc</strong><span>Étape {{ step }} sur 5</span>
+  </div>
+  <div
+    class="stepper"
+    role="progressbar"
+    aria-label="Progression de l’inscription"
+    [attr.aria-valuenow]="step"
+    aria-valuemin="1"
+    aria-valuemax="5"
+  >
+    @for (n of [1, 2, 3, 4, 5]; track n) {
+      <span [class.current]="step === n" [class.past]="step > n"></span>
+    }
+  </div>
+  @if (loading) {
+    <p role="status" class="loading">Chargement de ton inscription…</p>
+  } @else if (failed) {
+    <button class="btn" (click)="load()">Réessayer le chargement</button>
+  } @else {
+    @if (step === 1) {
+      <form class="form" [formGroup]="draft.identity" (ngSubmit)="save()" novalidate>
+        <div class="grid2">
+          <app-field
+            fieldId="firstName"
+            label="Prénom"
+            [control]="draft.identity.controls.firstName"
+            ><input
+              id="firstName"
+              autocomplete="given-name"
+              formControlName="firstName"
+              maxlength="100"
+              aria-describedby="firstName-error" /></app-field
+          ><app-field fieldId="lastName" label="Nom" [control]="draft.identity.controls.lastName"
+            ><input
+              id="lastName"
+              autocomplete="family-name"
+              formControlName="lastName"
+              maxlength="100"
+              aria-describedby="lastName-error"
+          /></app-field>
+        </div>
+        <div class="grid2">
+          <app-field fieldId="gender" label="Genre (facultatif)"
+            ><select id="gender" formControlName="gender">
+              <option value="">Je préfère ne pas répondre</option>
+              <option>Femme</option>
+              <option>Homme</option>
+              <option>Autre</option>
+            </select></app-field
+          ><app-field fieldId="age" label="Âge" [control]="draft.identity.controls.age"
+            ><input
+              id="age"
+              type="number"
+              min="0"
+              max="130"
+              step="1"
+              formControlName="age"
+              aria-describedby="age-error"
+          /></app-field>
+        </div>
+        @if (!auth.session()) {
+          <div [formGroup]="account" class="form account-fields">
+            <app-field
+              fieldId="register-email"
+              label="Adresse e-mail"
+              [control]="account.controls.email"
+              ><input
+                id="register-email"
+                type="email"
+                autocomplete="email"
+                formControlName="email"
+                aria-describedby="register-email-error"
+            /></app-field>
+            <app-field
+              fieldId="register-password"
+              label="Mot de passe"
+              [control]="account.controls.password"
+              ><div class="password-input">
+                <input
+                  id="register-password"
+                  [type]="showPassword ? 'text' : 'password'"
+                  autocomplete="new-password"
+                  formControlName="password"
+                  aria-describedby="register-password-error"
+                /><button
+                  type="button"
+                  (click)="showPassword = !showPassword"
+                  [attr.aria-label]="
+                    showPassword ? 'Masquer le mot de passe' : 'Afficher le mot de passe'
+                  "
+                >
+                  {{ showPassword ? 'Masquer' : 'Afficher' }}
+                </button>
+              </div></app-field
+            >
+            <app-field
+              fieldId="register-confirm"
+              label="Confirmer le mot de passe"
+              [control]="account.controls.confirm"
+              ><input
+                id="register-confirm"
+                [type]="showPassword ? 'text' : 'password'"
+                autocomplete="new-password"
+                formControlName="confirm"
+            /></app-field>
+            <p class="help">12 à 72 caractères, 72 octets UTF-8 maximum.</p>
+            @if (account.hasError('passwordMismatch') && account.controls.confirm.touched) {
+              <p class="field-error" role="alert">Les mots de passe ne correspondent pas.</p>
+            }
+            <p class="side-note">
+              Confirme ton e-mail pour accéder aux étapes suivantes. Aucun mot de passe ne sera
+              conservé dans ton navigateur.
+            </p>
+          </div>
+        }
+        <button class="btn" [disabled]="busy">
+          {{
+            busy
+              ? 'Enregistrement…'
+              : auth.session()
+                ? 'Enregistrer et continuer →'
+                : 'Créer mon compte et confirmer mon e-mail →'
+          }}
+        </button>
+        @if (!auth.session()) {
+          <div class="or">ou sans mot de passe local</div>
+          <button class="btn ghost" type="button" (click)="google()" [disabled]="busy">
+            Continuer avec Google
+          </button>
+          <p class="help">Déjà inscrit ? <a routerLink="/login">Se connecter</a></p>
+        }
+      </form>
+    }
+    @if (step === 2) {
+      <form class="form" [formGroup]="draft.address" (ngSubmit)="save()" novalidate>
+        <app-field fieldId="country" label="Pays" [control]="draft.address.controls.countryCode"
+          ><select id="country" formControlName="countryCode" (change)="countryChanged()">
+            @for (c of countries; track c.code) {
+              <option [value]="c.code">{{ c.name }}</option>
+            }
+          </select></app-field
+        >
+        <app-field
+          fieldId="governorate"
+          label="Gouvernorat"
+          [control]="draft.address.controls.governorateId"
+          ><select id="governorate" formControlName="governorateId" (change)="governorateChanged()">
+            <option [ngValue]="null">Choisir un gouvernorat</option>
+            @for (p of governorates; track p.id) {
+              <option [ngValue]="p.id">{{ p.name }}</option>
+            }
+          </select></app-field
+        >
+        @if (!governorates.length) {
+          <p class="side-note">
+            Le référentiel de localités disponible couvre actuellement la Tunisie. Choisis un pays
+            couvert pour enregistrer ton adresse.
+          </p>
+        }
+        <app-field
+          fieldId="locality"
+          label="Ville / localité"
+          [control]="draft.address.controls.localityId"
+          ><select id="locality" formControlName="localityId">
+            <option [ngValue]="null">Choisir une localité</option>
+            @for (p of localities; track p.id) {
+              <option [ngValue]="p.id">{{ p.name }}</option>
+            }
+          </select></app-field
+        >
+        <app-field fieldId="street" label="Rue" [control]="draft.address.controls.street"
+          ><input
+            id="street"
+            autocomplete="street-address"
+            formControlName="street"
+            maxlength="250" /></app-field
+        ><app-field
+          fieldId="postal"
+          label="Code postal"
+          [control]="draft.address.controls.postalCode"
+          ><input
+            id="postal"
+            autocomplete="postal-code"
+            formControlName="postalCode"
+            maxlength="20"
+        /></app-field>
+        <p class="tiny muted">Données géographiques : GeoNames, CC BY 4.0.</p>
+        <button class="btn" [disabled]="busy">
+          {{ busy ? 'Enregistrement…' : 'Enregistrer et continuer →' }}
+        </button>
+      </form>
+    }
+    @if (step === 3) {
+      <form class="form" [formGroup]="draft.personal" (ngSubmit)="save()" novalidate>
+        <p class="help">
+          Ces informations sont facultatives. Sépare les activités, centres d’intérêt et langues par
+          des virgules.
+        </p>
+        <app-field
+          fieldId="activities"
+          label="Activités"
+          [control]="draft.personal.controls.mainActivities"
+          ><input id="activities" formControlName="mainActivities" placeholder="Études, travail…"
+        /></app-field>
+        <app-field
+          fieldId="hobbies"
+          label="Centres d’intérêt"
+          [control]="draft.personal.controls.hobbies"
+          ><input id="hobbies" formControlName="hobbies" placeholder="Musique, sport, lecture…"
+        /></app-field>
+        <app-field fieldId="nationality" label="Nationalité (facultative)"
+          ><select id="nationality" formControlName="nationalityCode">
+            <option value="">Non renseignée</option>
+            @for (c of countries; track c.code) {
+              <option [value]="c.code">{{ c.name }}</option>
+            }
+          </select></app-field
+        >
+        <app-field
+          fieldId="languages"
+          label="Langues parlées"
+          [control]="draft.personal.controls.spokenLanguages"
+          ><input id="languages" formControlName="spokenLanguages" placeholder="Arabe, français…"
+        /></app-field>
+        <app-field
+          fieldId="religion"
+          label="Religion (facultative)"
+          [control]="draft.personal.controls.religion"
+          ><input id="religion" formControlName="religion" maxlength="120"
+        /></app-field>
+        <div class="grid2">
+          <app-field fieldId="smoking" label="Tabac"
+            ><select id="smoking" formControlName="smoking">
+              <option value="">Je préfère ne pas répondre</option>
+              <option value="false">Non-fumeur</option>
+              <option value="true">Fumeur</option>
+            </select></app-field
+          ><app-field fieldId="cleanliness" label="Propreté"
+            ><select id="cleanliness" formControlName="cleanliness">
+              <option value="">Je préfère ne pas répondre</option>
+              <option>Plutôt décontracté</option>
+              <option>Organisé</option>
+              <option>Très organisé</option>
+            </select></app-field
+          >
+        </div>
+        <app-field
+          fieldId="biography"
+          label="Décris-toi en quelques mots"
+          [control]="draft.personal.controls.biography"
+        >
+          <textarea
+            id="biography"
+            formControlName="biography"
+            maxlength="2000"
+            rows="4"
+          ></textarea></app-field
+        ><button class="btn" [disabled]="busy">
+          {{ busy ? 'Enregistrement…' : 'Enregistrer et continuer →' }}
+        </button>
+      </form>
+    }
+    @if (step === 4) {
+      <form class="form" [formGroup]="draft.contacts" (ngSubmit)="save()" novalidate>
+        <app-field
+          fieldId="mobile"
+          label="Téléphone mobile (facultatif)"
+          [control]="draft.contacts.controls.mobilePhone"
+          ><input
+            id="mobile"
+            type="tel"
+            autocomplete="tel"
+            formControlName="mobilePhone"
+            maxlength="30"
+        /></app-field>
+        <app-field
+          fieldId="residential"
+          label="Téléphone fixe (facultatif)"
+          [control]="draft.contacts.controls.residentialPhone"
+          ><input id="residential" type="tel" formControlName="residentialPhone" maxlength="30"
+        /></app-field>
+        <app-field
+          fieldId="availability"
+          label="Disponibilités de contact (facultatif)"
+          [control]="draft.contacts.controls.callAvailability"
+          ><input
+            id="availability"
+            formControlName="callAvailability"
+            maxlength="250"
+            placeholder="En soirée, le week-end…"
+        /></app-field>
+        <details>
+          <summary>Autres contacts facultatifs</summary>
+          <div class="form">
+            <app-field fieldId="msn" label="Contact MSN (ancien service)"
+              ><input id="msn" formControlName="msnContact" maxlength="250" /></app-field
+            ><app-field fieldId="skype" label="Contact Skype"
+              ><input id="skype" formControlName="skypeContact" maxlength="250" /></app-field
+            ><app-field
+              fieldId="website"
+              label="Site Web"
+              [control]="draft.contacts.controls.websiteUrl"
+              ><input
+                id="website"
+                type="url"
+                formControlName="websiteUrl"
+                maxlength="500"
+                placeholder="https://"
+            /></app-field>
+          </div>
+        </details>
+        <p class="side-note">
+          🔒 Tes coordonnées restent privées et ne sont pas affichées publiquement.
+        </p>
+        <button class="btn" [disabled]="busy">
+          {{ busy ? 'Enregistrement…' : 'Enregistrer et continuer →' }}
+        </button>
+      </form>
+    }
+    @if (step === 5) {
+      <div class="form">
+        <app-photos [photos]="details?.photos ?? []" (changed)="photosChanged()" />
+        <p class="side-note">
+          Ton e-mail est confirmé. La finalisation vérifie les cinq étapes enregistrées et la
+          présence d’au moins une photo privée.
+        </p>
+        <button class="btn" (click)="save()" [disabled]="busy">
+          {{ busy ? 'Vérification…' : 'Finaliser mon inscription →' }}
+        </button>
+      </div>
+    }
+    @if (step > 1) {
+      <a class="link back-link" [routerLink]="'/register/' + (step - 1)">← Précédent</a>
+    }
+    @if (auth.session()) {
+      <a class="help back-link" routerLink="/profile">Reprendre plus tard dans mon profil</a>
+    }
+  }
+</app-auth-layout>

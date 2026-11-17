@@ -1,0 +1,18 @@
+{
+  "retrieved": "2026-11-12",
+  "license": "CC BY 4.0",
+  "attribution": "GeoNames — https://www.geonames.org/",
+  "countries": 252,
+  "governorates": 24,
+  "localities": 284,
+  "sources": [
+    "https://download.geonames.org/export/dump/countryInfo.txt",
+    "https://download.geonames.org/export/dump/admin1CodesASCII.txt",
+    "https://download.geonames.org/export/dump/TN.zip"
+  ],
+  "sha256": {
+    "countryInfo.txt": "79f8f59ea01cbb40438bf1856dd6c2ff201f03f8fc72d0530b2646aaf603ef04",
+    "admin1CodesASCII.txt": "2e4867f5397acb056ea26377601b57af37cb4c81399770225018e9e439e91ad3",
+    "TN.zip": "4918668515bd68a02141a76eca83fc596504efb87f6809c62c8418fcf65852e2"
+  }
+}

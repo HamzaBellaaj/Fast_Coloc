@@ -1,0 +1,229 @@
+<div class="content-head">
+  <div>
+    <span class="tag">TON PROCHAIN CHEZ-TOI</span>
+    <h2>
+      {{
+        mode === 'mine' ? 'Mes annonces' : mode === 'favorites' ? 'Mes favoris' : 'Trouve ta coloc.'
+      }}
+    </h2>
+    <p class="muted">Des offres et des demandes, partout en Tunisie.</p>
+  </div>
+  <a class="btn coral" routerLink="/annonces/nouvelle">Publier une annonce ↗</a>
+</div>
+<form
+  class="section-card listing-filters"
+  (ngSubmit)="search()"
+  aria-label="Recherche multicritère"
+>
+  <label
+    >Recherche<input
+      name="q"
+      [(ngModel)]="filters['q']"
+      maxlength="160"
+      placeholder="Ville, quartier, mots-clés…"
+  /></label>
+  <label
+    >Annonce<select name="kind" [(ngModel)]="filters['kind']">
+      <option value="">Offres et demandes</option>
+      <option value="OFFER">Offres</option>
+      <option value="REQUEST">Demandes</option>
+    </select></label
+  >
+  <label
+    >Région<select
+      name="region"
+      [(ngModel)]="filters['governorateId']"
+      (ngModelChange)="filters['localityId'] = ''"
+    >
+      <option value="">Toute la Tunisie</option>
+      @for (r of regions; track r.id) {
+        <option [value]="r.id">{{ r.name }}</option>
+      }
+    </select></label
+  >
+  <label
+    >Ville / localité<select name="town" [(ngModel)]="filters['localityId']">
+      <option value="">Toutes les villes</option>
+      @for (t of towns; track t.id) {
+        <option [value]="t.id">{{ t.locality }}</option>
+      }
+    </select></label
+  >
+  <label
+    >Loyer min. (TND)<input
+      name="minRent"
+      type="number"
+      min="0"
+      step="0.001"
+      [(ngModel)]="filters['minRent']"
+  /></label>
+  <label
+    >Loyer max. (TND)<input
+      name="maxRent"
+      type="number"
+      min="0"
+      step="0.001"
+      [(ngModel)]="filters['maxRent']"
+  /></label>
+  <details class="filter-more">
+    <summary>Plus de critères</summary>
+    <div class="grid2">
+      <label
+        >Capacité minimum<input
+          name="capacity"
+          type="number"
+          min="1"
+          max="50"
+          [(ngModel)]="filters['minCapacity']"
+      /></label>
+      <label
+        >Type de logement<input
+          name="property"
+          maxlength="80"
+          [(ngModel)]="filters['propertyType']"
+          placeholder="Ex. Appartement"
+      /></label>
+      <label
+        >Type de colocataire<input
+          name="roommate"
+          maxlength="80"
+          [(ngModel)]="filters['roommateType']"
+          placeholder="Ex. Étudiant"
+      /></label>
+      <label
+        >Équipements<input
+          name="equipment"
+          [(ngModel)]="filters['equipment']"
+          placeholder="Ex. WiFi, Cuisine"
+      /></label>
+      <label
+        >Disponible le<input name="available" type="date" [(ngModel)]="filters['availableOn']"
+      /></label>
+    </div>
+  </details>
+  <label
+    >Tri<select name="sort" [(ngModel)]="filters['sort']">
+      <option value="NEWEST">Plus récentes</option>
+      <option value="RENT_ASC">Loyer croissant</option>
+      <option value="RENT_DESC">Loyer décroissant</option>
+    </select></label
+  >
+  <div class="row wrap">
+    <button class="btn" [disabled]="busy()">Rechercher</button
+    ><button type="button" class="btn ghost" (click)="clear()">Réinitialiser</button>
+  </div>
+</form>
+@if (busy()) {
+  <p role="status" class="notice">Recherche des annonces…</p>
+} @else if (failed()) {
+  <div class="notice error" role="alert">
+    Les annonces sont indisponibles.<button class="btn small" (click)="load()">Réessayer</button>
+  </div>
+} @else {
+  <p class="muted result-count" role="status">{{ total() }} résultat(s)</p>
+  @if (!items().length) {
+    <section class="section-card empty-listings">
+      <span class="display">⌂</span>
+      <h3>
+        {{
+          mode === 'mine'
+            ? 'Ta première annonce commence ici.'
+            : mode === 'favorites'
+              ? 'Garde tes coups de cœur.'
+              : 'Pas encore de coloc dans ces critères.'
+        }}
+      </h3>
+      <p class="muted">
+        {{
+          mode === 'favorites'
+            ? 'Ajoute des annonces aux favoris depuis leur fiche.'
+            : 'Modifie tes critères ou publie ta propre annonce.'
+        }}
+      </p>
+    </section>
+  }
+  <div class="cards listing-cards">
+    @for (row of items(); track row.id) {
+      <article class="card listing-card">
+        <a [routerLink]="['/annonces', row.id]" class="listing-picture">
+          @if (row.photos[0]) {
+            <img
+              [src]="row.photos[0].url"
+              [alt]="row.photos[0].caption || row.title"
+              loading="lazy"
+            />
+          } @else {
+            <span aria-label="Sans photo">⌂</span>
+          }
+          <span class="pill">{{ row.kind === 'OFFER' ? 'Offre' : 'Demande' }}</span></a
+        >
+        <div class="card-body">
+          <p class="tiny muted">{{ row.governorate }} · {{ row.locality }}</p>
+          <a [routerLink]="['/annonces', row.id]"
+            ><h3>{{ row.title }}</h3></a
+          >
+          <p class="rent">{{ row.rent | number: '1.0-3' }} <small>TND / mois</small></p>
+          <p class="muted">{{ row.capacity }} personne(s) · {{ row.property_type }}</p>
+          @if (mode === 'mine') {
+            <p class="pill">
+              {{
+                row.is_hidden
+                  ? 'Masquée par l’administration'
+                  : row.status === 'DRAFT'
+                    ? 'Brouillon'
+                    : 'Publiée'
+              }}
+              @if (row.expires_at) {
+                · jusqu’au {{ row.expires_at | date: 'dd/MM/yyyy' }}
+              }
+            </p>
+            <div class="row wrap">
+              <a class="btn small ghost" [routerLink]="['/annonces', row.id, 'modifier']"
+                >Modifier</a
+              ><button class="btn small" (click)="publish(row)" [disabled]="row.is_hidden">
+                {{ row.status === 'DRAFT' ? 'Publier' : 'Renouveler' }}</button
+              ><button class="btn small ghost" (click)="remove(row)">Supprimer</button>
+            </div>
+          } @else {
+            <button
+              type="button"
+              class="btn small ghost"
+              [attr.aria-pressed]="row.favorite"
+              (click)="favorite(row)"
+            >
+              {{ row.favorite ? '♥ Retirer des favoris' : '♡ Ajouter aux favoris' }}
+            </button>
+          }
+        </div>
+      </article>
+    }
+  </div>
+  @if (total() > 12) {
+    <div class="row pagination">
+      <button class="btn ghost" [disabled]="page === 0" (click)="search(page - 1)">
+        ← Précédent</button
+      ><span>Page {{ page + 1 }}</span
+      ><button class="btn ghost" [disabled]="(page + 1) * 12 >= total()" (click)="search(page + 1)">
+        Suivant →
+      </button>
+    </div>
+  }
+  @if (!mode && auth.session()) {
+    <section class="section-card map-section">
+      <h3>Ta coloc sur la carte</h3>
+      <p class="muted">
+        Toutes les offres correspondant aux filtres · sélectionne une zone pour affiner la
+        recherche.
+      </p>
+      @if (mapBusy()) {
+        <p role="status">Chargement des positions…</p>
+      } @else if (mapFailed()) {
+        <p role="alert">Carte indisponible. Affine les critères ou réessaie.</p>
+        <button class="btn small ghost" (click)="load()">Réessayer</button>
+      } @else {
+        <p class="tiny muted">{{ markers().length }} offre(s) sur la carte.</p>
+        <fc-listing-map [items]="markers()" (zone)="zone($event)" />
+      }
+    </section>
+  }
+}

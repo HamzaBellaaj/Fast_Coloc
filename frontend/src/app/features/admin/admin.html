@@ -1,0 +1,230 @@
+<div class="panel-layout">
+  <fc-admin-nav />
+  <section>
+    <span class="tag">ADMINISTRATION · WEB UNIQUEMENT</span>
+    <h1 class="page-title">Tableau de bord 👋</h1>
+    <p class="muted">Gère les comptes et protège la communauté FastColoc.</p>
+    <div class="stats">
+      <div class="stat">
+        Résultats du filtre<strong>{{ total }}</strong
+        ><span class="help">Comptes correspondants</span>
+      </div>
+      <div class="stat">
+        Page courante<strong>{{ users.length }}</strong
+        ><span class="help">20 comptes maximum</span>
+      </div>
+      <div class="stat">
+        Accès<strong>ADMIN</strong><span class="help">Vérifié par le backend</span>
+      </div>
+    </div>
+    <section id="users" class="section-card">
+      <h2 class="card-heading">Gestion des utilisateurs</h2>
+      <form class="admin-search" (ngSubmit)="load(true)">
+        <div class="field">
+          <label for="search-users">Rechercher par nom</label
+          ><input id="search-users" name="search" [(ngModel)]="search" maxlength="100" />
+        </div>
+        <div class="field">
+          <label for="status-filter">Statut</label
+          ><select id="status-filter" name="status" [(ngModel)]="status">
+            <option value="">Tous</option>
+            <option value="ACTIVE">Actifs</option>
+            <option value="BLOCKED">Bloqués</option>
+          </select>
+        </div>
+        <button class="btn small" [disabled]="loading">Rechercher</button>
+      </form>
+      @if (loading) {
+        <p role="status" class="loading">Chargement des comptes…</p>
+      } @else if (failed) {
+        <button class="btn ghost" (click)="load()">Réessayer</button>
+      } @else {
+        <div class="table-scroll">
+          <table class="table">
+            <caption class="sr-only">
+              Liste réelle des utilisateurs FastColoc
+            </caption>
+            <thead>
+              <tr>
+                <th scope="col">Utilisateur</th>
+                <th scope="col">Rôle</th>
+                <th scope="col">Statut</th>
+                <th scope="col">Inscription</th>
+                <th scope="col">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (user of users; track user.id) {
+                <tr>
+                  <td>
+                    <strong
+                      >{{ user.first_name || 'Prénom non renseigné' }} {{ user.last_name }}</strong
+                    ><span class="tiny user-id">{{ user.id }}</span>
+                  </td>
+                  <td>{{ user.app_role }}</td>
+                  <td>
+                    <span class="status" [class.blocked]="user.status === 'BLOCKED'">{{
+                      user.status === 'ACTIVE' ? 'Actif' : 'Bloqué'
+                    }}</span>
+                  </td>
+                  <td>
+                    {{ user.completed_at ? 'Complète' : 'En cours' }}<br /><span class="tiny">{{
+                      user.created_at | date: 'dd/MM/yyyy'
+                    }}</span>
+                  </td>
+                  <td>
+                    <div class="admin-actions">
+                      <button class="btn small ghost" (click)="open(user, 'contacts')">
+                        Corriger les contacts</button
+                      ><button
+                        class="btn small ghost"
+                        (click)="open(user, 'status')"
+                        [disabled]="user.id === auth.profile()?.id"
+                      >
+                        {{ user.status === 'ACTIVE' ? 'Bloquer' : 'Débloquer' }}</button
+                      ><button
+                        class="btn small danger"
+                        (click)="open(user, 'delete')"
+                        [disabled]="user.id === auth.profile()?.id"
+                      >
+                        Supprimer
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              } @empty {
+                <tr>
+                  <td colspan="5">Aucun utilisateur ne correspond à ces critères.</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+        <div class="row between wrap spaced">
+          <button class="btn small ghost" [disabled]="offset === 0" (click)="page(-20)">
+            ← Précédent</button
+          ><span class="help"
+            >{{ total ? offset + 1 : 0 }}–{{ offset + users.length }} / {{ total }}</span
+          ><button
+            class="btn small ghost"
+            [disabled]="offset + users.length >= total"
+            (click)="page(20)"
+          >
+            Suivant →
+          </button>
+        </div>
+      }
+    </section>
+  </section>
+</div>
+<dialog
+  #confirmation
+  class="admin-dialog"
+  aria-labelledby="confirmation-title"
+  aria-describedby="confirmation-user"
+  (cancel)="busy ? $event.preventDefault() : close()"
+>
+  <form class="form admin-dialog-form" [formGroup]="form" (ngSubmit)="confirm()" novalidate>
+    <header class="admin-dialog-header">
+      <div>
+        <h2 id="confirmation-title">
+          {{
+            action === 'delete'
+              ? 'Supprimer ce compte ?'
+              : action === 'contacts'
+                ? 'Corriger les contacts'
+                : target?.status === 'ACTIVE'
+                  ? 'Bloquer ce compte ?'
+                  : 'Débloquer ce compte ?'
+          }}
+        </h2>
+        <p id="confirmation-user">{{ target?.first_name }} {{ target?.last_name }}</p>
+      </div>
+      <button
+        type="button"
+        class="dialog-close"
+        aria-label="Fermer la fenêtre"
+        (click)="close()"
+        [disabled]="busy"
+      >
+        ×
+      </button>
+    </header>
+    <div class="admin-dialog-body" [attr.aria-busy]="contactsLoading">
+      @if (action === 'delete') {
+        <p class="side-note">
+          Cette action supprime le compte et ses données. En cas d’échec du nettoyage, le compte
+          reste bloqué pour reprise administrative.
+        </p>
+      }
+      @if (action === 'contacts' && contactsLoading) {
+        <p class="notice" role="status">Chargement des contacts actuels…</p>
+      }
+      @if (action === 'contacts' && contactsFailed) {
+        <div class="notice contacts-error">
+          <p role="alert">Impossible de charger les contacts. Réessaie avant de les modifier.</p>
+          <button type="button" class="btn small ghost" (click)="loadContacts()">Réessayer</button>
+        </div>
+      }
+      <fieldset [disabled]="busy || (action === 'contacts' && !contactsReady)">
+        @if (action === 'contacts' && contactsReady) {
+          <p class="side-note">
+            Les contacts actuels sont préremplis. Modifie les informations à corriger, puis indique
+            le motif de la modification.
+          </p>
+          <div class="contact-fields">
+            <app-field fieldId="admin-mobile" label="Mobile" [control]="form.controls.mobilePhone"
+              ><input
+                id="admin-mobile"
+                formControlName="mobilePhone"
+                type="tel"
+                maxlength="30"
+                autocomplete="off"
+            /></app-field>
+            <app-field fieldId="admin-fixed" label="Fixe" [control]="form.controls.residentialPhone"
+              ><input
+                id="admin-fixed"
+                formControlName="residentialPhone"
+                type="tel"
+                maxlength="30"
+                autocomplete="off"
+            /></app-field>
+            <app-field fieldId="admin-availability" label="Disponibilités"
+              ><input id="admin-availability" formControlName="callAvailability" maxlength="250"
+            /></app-field>
+            <app-field fieldId="admin-msn" label="MSN"
+              ><input id="admin-msn" formControlName="msnContact" maxlength="250"
+            /></app-field>
+            <app-field fieldId="admin-skype" label="Skype"
+              ><input id="admin-skype" formControlName="skypeContact" maxlength="250"
+            /></app-field>
+            <app-field fieldId="admin-website" label="Site Web" [control]="form.controls.websiteUrl"
+              ><input id="admin-website" formControlName="websiteUrl" type="url" maxlength="500"
+            /></app-field>
+          </div>
+        }
+        @if (action !== 'contacts' || contactsReady) {
+          <app-field fieldId="reason" label="Motif obligatoire" [control]="form.controls.reason">
+            <textarea id="reason" formControlName="reason" maxlength="1000" rows="2"></textarea>
+          </app-field>
+        }
+      </fieldset>
+    </div>
+    <footer class="admin-dialog-footer">
+      <button type="button" class="btn ghost" (click)="close()" [disabled]="busy">Annuler</button>
+      <button
+        class="btn"
+        [class.danger]="action === 'delete'"
+        [disabled]="busy || form.invalid || (action === 'contacts' && !contactsReady)"
+      >
+        {{
+          busy
+            ? 'Traitement…'
+            : action === 'contacts'
+              ? 'Enregistrer les contacts'
+              : 'Confirmer l’action'
+        }}
+      </button>
+    </footer>
+  </form>
+</dialog>

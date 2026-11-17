@@ -1,0 +1,628 @@
+.coral-text {
+  color: var(--coral);
+}
+.pink-text {
+  color: var(--pink);
+}
+.wrap {
+  flex-wrap: wrap;
+}
+.center {
+  text-align: center;
+}
+.hero h1 {
+  margin-top: 24px;
+}
+.hero-link {
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 5px;
+}
+.hero p {
+  max-width: 520px;
+}
+.hero > div:first-child {
+  max-width: 67%;
+}
+.hero-art {
+  pointer-events: none;
+}
+.hero .tag {
+  background: #ffc3df;
+  color: #51208d;
+}
+.feature-emoji {
+  position: absolute;
+  z-index: 1;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font-size: 76px;
+  filter: drop-shadow(0 7px 8px #25153215);
+}
+.card-image:after {
+  opacity: 0.18;
+}
+.card h3 {
+  margin: 16px 0 8px;
+}
+.home-benefits {
+  margin-top: 45px;
+}
+.section-card p + .pill,
+.section-card p + .link {
+  display: inline-block;
+  margin-top: 16px;
+}
+.side-copy {
+  margin-top: 100px;
+}
+.side-art {
+  font-size: 100px;
+  z-index: 1;
+  margin-top: 35px;
+}
+.form-title {
+  font-size: clamp(29px, 3vw, 42px);
+  letter-spacing: -0.6px;
+  margin: 18px 0 12px;
+  line-height: 1.12;
+  font-weight: 800;
+}
+.page-title {
+  font-size: clamp(30px, 4vw, 46px);
+  margin: 14px 0 10px;
+}
+.card-heading {
+  font-size: 26px;
+  margin-bottom: 18px;
+}
+.form {
+  gap: 19px;
+}
+.field {
+  min-width: 0;
+}
+.grid2 > * {
+  min-width: 0;
+}
+.field input:focus,
+.field select:focus,
+.field textarea:focus {
+  border-color: var(--violet);
+  background: #fff;
+}
+.field input.ng-invalid.ng-touched,
+.field select.ng-invalid.ng-touched,
+.field textarea.ng-invalid.ng-touched {
+  border-color: #b0293d;
+}
+.field-error {
+  color: #a12336;
+  font-size: 13px;
+  margin-top: 6px;
+}
+.password-input {
+  position: relative;
+}
+.password-input input {
+  padding-right: 90px;
+}
+.password-input button {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: 0;
+  color: var(--violet);
+  font-weight: 700;
+  font-size: 12px;
+  padding: 8px;
+}
+.notice {
+  position: sticky;
+  top: 12px;
+  z-index: 20;
+  display: flex;
+  gap: 15px;
+  align-items: center;
+  justify-content: space-between;
+  border: 1px solid #b8dccb;
+  background: #edf9f2;
+  color: #1c654a;
+  border-radius: 16px;
+  padding: 15px 20px;
+  margin-bottom: 20px;
+  box-shadow: 0 8px 30px #25153210;
+}
+.notice.error {
+  border-color: #edb0ba;
+  background: #fff0f2;
+  color: #9c2638;
+}
+.notice button {
+  background: none;
+  border: 0;
+  color: inherit;
+  font-size: 25px;
+  padding: 0 6px;
+}
+.btn:disabled,
+button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+.menu-button {
+  display: none;
+}
+.skip-link {
+  position: fixed;
+  left: 16px;
+  top: -100px;
+  z-index: 100;
+  padding: 12px;
+  background: var(--plum);
+  color: white;
+  border-radius: 10px;
+}
+.skip-link:focus {
+  top: 12px;
+}
+main:focus {
+  outline: none;
+}
+.progress-caption {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 12px;
+  margin-top: 26px;
+}
+.stepper {
+  margin-top: 12px;
+}
+.back-link {
+  display: block;
+  margin-top: 20px;
+}
+.account-fields {
+  margin: 0;
+}
+.success-box p {
+  margin: 16px 0;
+}
+.success-box > .btn {
+  margin-top: 12px;
+}
+.loading {
+  padding: 40px;
+  text-align: center;
+  animation: pulse 1.6s ease-in-out infinite;
+}
+.upload {
+  padding: 28px 20px;
+}
+.upload-icon {
+  font-size: 60px;
+  margin-bottom: 12px;
+}
+.file-label {
+  margin: 18px 0 8px;
+}
+.upload input[type='file'] {
+  display: block;
+  max-width: 100%;
+  margin: 6px auto;
+  font-size: 12px;
+}
+.photo-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 180px), 1fr));
+  gap: 18px;
+  margin-top: 20px;
+}
+.photo-item {
+  border: 1px solid var(--line);
+  padding: 12px;
+  border-radius: 20px;
+  min-width: 0;
+}
+.photo-item img,
+.photo-preview img {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+  border-radius: 14px;
+  background: var(--cream);
+  margin-bottom: 12px;
+}
+.photo-preview {
+  margin-top: 16px;
+}
+.photo-preview img {
+  object-fit: contain;
+  height: 240px;
+}
+.photo-item label,
+.photo-preview label {
+  display: block;
+  font-size: 12px;
+  font-weight: 700;
+  margin: 6px 0;
+}
+.photo-loading {
+  height: 200px;
+  display: grid;
+  place-items: center;
+  font-size: 12px;
+}
+.text-input {
+  width: 100%;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 10px;
+  margin-bottom: 12px;
+}
+.spaced {
+  margin-top: 28px;
+}
+.profile-grid {
+  gap: 20px;
+}
+.hero-profile h2 {
+  font-size: 30px;
+  margin-bottom: 10px;
+}
+.hero-profile .btn {
+  margin-top: 18px;
+}
+.hero-profile .tiny {
+  margin-top: 18px;
+}
+.step-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 20px;
+}
+.step-links .pill {
+  color: var(--violet2);
+}
+dl {
+  margin: 15px 0 22px;
+  display: grid;
+  grid-template-columns: minmax(80px, 1fr) 1.7fr;
+  gap: 10px 16px;
+  font-size: 14px;
+}
+dt {
+  color: var(--muted);
+}
+dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+.admin-search {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 12px;
+  margin: 20px 0;
+}
+.admin-search .field:first-child {
+  flex: 1;
+}
+.admin-search .field input,
+.admin-search .field select {
+  min-height: 44px;
+  padding: 10px;
+}
+.table-scroll {
+  overflow-x: auto;
+  max-width: 100%;
+}
+.panel-layout > section {
+  min-width: 0;
+}
+.panel-layout .section-card {
+  padding: 22px;
+}
+.table th,
+.table td {
+  padding: 12px;
+}
+.admin-actions {
+  display: flex;
+  gap: 7px;
+  flex-direction: column;
+  align-items: stretch;
+}
+.user-id {
+  display: block;
+  max-width: 170px;
+  overflow-wrap: anywhere;
+  color: var(--muted);
+  margin-top: 8px;
+}
+.danger {
+  background: #a52640;
+  color: white;
+}
+.sidebar p.help {
+  color: #eddaff;
+}
+.sidebar .brand {
+  font-size: 30px;
+}
+html:has(dialog.admin-dialog[open]) {
+  overflow: hidden;
+}
+dialog {
+  border: 1px solid var(--line);
+  border-radius: 24px;
+  padding: 30px;
+  width: min(620px, calc(100% - 28px));
+  max-height: 90dvh;
+  overflow: auto;
+  color: var(--plum);
+  box-shadow: 0 25px 90px #25153240;
+}
+dialog::backdrop {
+  background: #25153290;
+  backdrop-filter: blur(4px);
+}
+dialog .form {
+  margin: 0;
+}
+dialog h2 {
+  font-size: 30px;
+}
+summary {
+  cursor: pointer;
+  color: var(--violet);
+  font-weight: 700;
+}
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+}
+.split-main {
+  min-width: 0;
+}
+.split {
+  align-items: stretch;
+}
+.split-side {
+  height: 100%;
+  min-height: 680px;
+}
+.section-card a.link:hover {
+  text-decoration: underline;
+}
+.hero-art {
+  animation: float 5s ease-in-out infinite;
+}
+.card {
+  transition: transform 0.2s;
+}
+.card:hover {
+  transform: translateY(-4px);
+}
+@keyframes float {
+  50% {
+    transform: translateY(-9px) rotate(-6deg);
+  }
+}
+@keyframes pulse {
+  50% {
+    opacity: 0.55;
+  }
+}
+@media (max-width: 1050px) {
+  .panel-layout {
+    grid-template-columns: 200px minmax(0, 1fr);
+  }
+  .navlinks {
+    gap: 16px;
+  }
+  .split-main {
+    padding: 36px;
+  }
+  .split-side {
+    padding: 32px;
+  }
+  .split-side h2 {
+    font-size: 48px;
+  }
+}
+@media (max-width: 850px) {
+  .nav {
+    position: relative;
+    flex-wrap: wrap;
+  }
+  .menu-button {
+    display: inline-flex;
+  }
+  .navlinks {
+    display: none;
+    width: 100%;
+    flex-direction: column;
+    align-items: stretch;
+    padding: 16px;
+    border: 1px solid var(--line);
+    background: white;
+    border-radius: 18px;
+  }
+  .navlinks.open {
+    display: flex;
+  }
+  .navlinks > a {
+    padding: 8px;
+  }
+  .split-side {
+    min-height: 230px;
+    padding: 28px;
+    display: block;
+  }
+  .side-copy {
+    margin-top: 22px;
+  }
+  .split-side h2 {
+    font-size: 34px;
+    max-width: 520px;
+  }
+  .split-side p {
+    margin-top: 12px;
+    font-size: 15px;
+  }
+  .side-art {
+    display: none;
+  }
+  .split-main {
+    padding: 30px;
+  }
+  .panel-layout {
+    grid-template-columns: 1fr;
+  }
+  .sidebar {
+    min-height: initial;
+    padding: 22px;
+  }
+  .sidebar .disclaimer {
+    margin-top: 12px;
+  }
+  .sidebar a {
+    display: inline-block;
+  }
+  .hero > div:first-child {
+    max-width: 100%;
+  }
+  .hero-art {
+    right: -80px;
+    opacity: 0.16;
+  }
+  .hero h1 {
+    max-width: 100%;
+  }
+  .hero p {
+    position: relative;
+  }
+  .stats {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 10px;
+  }
+  .stat {
+    padding: 16px;
+  }
+  .stat strong {
+    font-size: 28px;
+  }
+  .stat .help {
+    font-size: 11px;
+  }
+  .grid2 {
+    gap: 18px;
+  }
+  .card-image {
+    height: 170px;
+  }
+  .home-benefits {
+    margin-top: 26px;
+  }
+}
+@media (max-width: 450px) {
+  .shell {
+    padding-left: 14px;
+    padding-right: 14px;
+  }
+  .brand {
+    font-size: 29px;
+  }
+  .brand-icon {
+    width: 33px;
+    height: 33px;
+  }
+  .hero {
+    padding: 32px 24px;
+    border-radius: 26px;
+  }
+  .hero h1 {
+    font-size: 48px;
+  }
+  .hero p {
+    font-size: 16px;
+  }
+  .hero .tag {
+    font-size: 10px;
+  }
+  .hero .btn {
+    width: 100%;
+  }
+  .hero-link {
+    font-size: 13px;
+  }
+  .split {
+    border-radius: 24px;
+  }
+  .split-main {
+    padding: 24px 20px;
+  }
+  .split-side {
+    padding: 24px;
+  }
+  .split-side h2 {
+    font-size: 31px;
+  }
+  .split-side p {
+    font-size: 14px;
+  }
+  .form-title {
+    font-size: 30px;
+  }
+  .stats {
+    grid-template-columns: 1fr;
+  }
+  .stat strong {
+    font-size: 30px;
+  }
+  .section-card {
+    padding: 22px;
+  }
+  .success-box {
+    padding: 26px;
+  }
+  .progress-caption {
+    font-size: 11px;
+  }
+  .hero-profile {
+    padding: 24px;
+  }
+  .topbar {
+    gap: 12px;
+  }
+  .avatar {
+    flex-shrink: 0;
+    width: 46px;
+    height: 46px;
+  }
+  .form .grid2 {
+    gap: 18px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *:before,
+  *:after {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
+}

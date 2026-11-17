@@ -1,0 +1,145 @@
+{
+  "date": "2026-11-12",
+  "timezone": "Africa/Lagos",
+  "project": "nklsbubnyznlfpxpxsrp",
+  "local": {
+    "command": "mvn.cmd -B -ntp verify",
+    "tests": 46,
+    "suites": [
+      {
+        "suite": "tn.fastcoloc.BackendIntegrationTest",
+        "tests": 28,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "suite": "tn.fastcoloc.ConfigurationContractTest",
+        "tests": 1,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "suite": "tn.fastcoloc.RuntimeDatabaseGuardTest",
+        "tests": 3,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "suite": "tn.fastcoloc.Sprint1IntegrationTest",
+        "tests": 10,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "suite": "tn.fastcoloc.SupabaseAuthIdentityVerifierTest",
+        "tests": 4,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      }
+    ],
+    "packagedDatasourceBindingsVerified": true
+  },
+  "supabase": {
+    "success": true,
+    "checks": 53,
+    "checkedAt": "2026-11-12T05:39:00.796090100Z",
+    "cases": [
+      "health_http_200",
+      "missing_token_http_401",
+      "auth_configuration_http_200",
+      "email_confirmation_required",
+      "disposable_auth_users_created",
+      "email_password_login_http_200",
+      "second_login_http_200",
+      "pending_profile_denied_http_403",
+      "profile_sync_http_200",
+      "profile_sync_idempotent_http_200",
+      "second_sync_http_200",
+      "jdbc_no_context_denied",
+      "jdbc_own_context_only",
+      "jdbc_role_escalation_denied",
+      "step1_http_200",
+      "geography_governorates_http_200",
+      "geography_populated",
+      "locality_found",
+      "step2_http_200",
+      "step3_http_200",
+      "step4_http_200",
+      "incomplete_completion_denied_http_409",
+      "private_photo_upload",
+      "other_photo_denied_http_404",
+      "private_signed_url_http_200",
+      "signed_photo_download",
+      "unsigned_public_photo_denied",
+      "step5_http_200",
+      "onboarding_completion_http_200",
+      "completed_at_persisted",
+      "preferences_http_200",
+      "invalid_budget_http_400",
+      "user_admin_route_denied_http_403",
+      "operator_bootstrap_temporary_admin",
+      "admin_list_http_200",
+      "admin_block_http_200",
+      "blocked_read_denied_http_403",
+      "blocked_sync_denied_http_403",
+      "blocked_sql_reads_denied",
+      "admin_contacts_http_200",
+      "admin_unblock_http_200",
+      "unblocked_read_http_200",
+      "admin_delete_http_204",
+      "refresh_session_http_200",
+      "recovery_link_generated_for_fixture",
+      "recovery_token_verified_http_200",
+      "password_reset_http_204",
+      "old_password_rejected",
+      "new_password_login_http_200",
+      "logout_http_204",
+      "refresh_revoked_after_logout",
+      "login_for_final_cleanup_http_200",
+      "photo_delete_after_relogin_http_204"
+    ],
+    "temporaryUsersCleaned": 2
+  },
+  "postman": {
+    "runner": "Newman 6.2.1",
+    "folder": "Smoke",
+    "requests": 10,
+    "assertions": 11,
+    "failed": 0,
+    "checkedAt": "2026-11-12T06:00:44.512Z"
+  },
+  "realEmail": {
+    "signupAccepted": true,
+    "confirmationClickedByUser": true,
+    "loginSucceeded": true,
+    "profileSynchronized": true,
+    "adminBootstrapExplicitlyApproved": true,
+    "recoveryRequestAccepted": true,
+    "recoveryEmailReceiptVerified": false
+  },
+  "remoteChanges": {
+    "newMigration": "20261112052450_sprint1_backend_capabilities",
+    "initialMigrationsReplayed": false,
+    "privateBucket": "profile-photos",
+    "tables": 14
+  },
+  "externalPending": {
+    "googleProviderEnabled": true,
+    "googleBrowserLoginVerified": false,
+    "managementTokenAvailable": false,
+    "googleAuthorizeHttp": 302,
+    "googleRedirectHost": "accounts.google.com",
+    "customTemplatesInstalledByAgent": false
+  },
+  "runtime": {
+    "health": "UP",
+    "url": "http://localhost:8001",
+    "swagger": "http://localhost:8001/swagger-ui/index.html",
+    "privateEndpointsDeclareBearer": true
+  }
+}

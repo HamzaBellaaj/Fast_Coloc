@@ -1,0 +1,123 @@
+[
+  {
+    "file": "reference\\chap5V2026.pdf",
+    "pages": 33,
+    "bytes": 1192914,
+    "sha256": "4840f2755d8cb060488e1a48ad6517129f9202514f4cd4e6125af349729e498c",
+    "lowTextPages": [
+      3,
+      6,
+      8,
+      9,
+      15,
+      17,
+      21
+    ]
+  },
+  {
+    "file": "reference\\chap6V2026-Room.pdf",
+    "pages": 42,
+    "bytes": 1007568,
+    "sha256": "a771188e1fd6963b91dc00af8b33c6d2c5a477a8364e48ac26c04f48a9f26d6a",
+    "lowTextPages": [
+      2,
+      4,
+      9,
+      19,
+      27,
+      31,
+      36,
+      41
+    ]
+  },
+  {
+    "file": "reference\\chap7-Retrofit.pdf",
+    "pages": 30,
+    "bytes": 852872,
+    "sha256": "fe19a0ca7547f3f05a90456e4ab1959e48432ad0d34f358d14d0734d95a181da",
+    "lowTextPages": [
+      3,
+      11,
+      19,
+      20,
+      26,
+      30
+    ]
+  },
+  {
+    "file": "reference\\chapitre 1_2026 (2).pdf",
+    "pages": 64,
+    "bytes": 1926566,
+    "sha256": "de4ea04dee9a07392ea5cafd23710ff93a44b6e2754a812de169cbe159651d17",
+    "lowTextPages": [
+      11,
+      15,
+      46,
+      54,
+      58,
+      62
+    ]
+  },
+  {
+    "file": "reference\\chapitre 3 (1).pdf",
+    "pages": 51,
+    "bytes": 1185955,
+    "sha256": "df6f1de224421a7c43170404a71e3ca84ced8d5b9712cfd81a03f496f5ed2837",
+    "lowTextPages": [
+      3,
+      10,
+      19,
+      23,
+      25,
+      27,
+      47,
+      51
+    ]
+  },
+  {
+    "file": "reference\\chapitre 4_2026 (2).pdf",
+    "pages": 42,
+    "bytes": 2283232,
+    "sha256": "e2eb29d6e2590f6935ee2e09b9ffc07df670a48f32dc504ec5d84aa76c9b9202",
+    "lowTextPages": [
+      3,
+      10,
+      15,
+      24,
+      27,
+      31,
+      36,
+      42
+    ]
+  },
+  {
+    "file": "reference\\chapitre2 (2).pdf",
+    "pages": 57,
+    "bytes": 2175247,
+    "sha256": "9700d56923d654173d547524393c75e0dc96b2e1086f9b7a59ebdff89eb77c40",
+    "lowTextPages": [
+      2,
+      3,
+      12,
+      20,
+      32,
+      42,
+      49,
+      57
+    ]
+  },
+  {
+    "file": "reference\\TP6-SQLite-Room2026.pdf",
+    "pages": 9,
+    "bytes": 5479280,
+    "sha256": "c80540fc5f826992ecc6fd7eb46f2513551a2a4c333f5adc89cb9dd07c014d4e",
+    "lowTextPages": []
+  },
+  {
+    "file": "reference\\TP7 - Retrofit.pdf",
+    "pages": 6,
+    "bytes": 791160,
+    "sha256": "4c2d633987a38cf96cddc68ef89c942ad2e52a00cc33c03169333cadaeec14ef",
+    "lowTextPages": []
+  }
+]
