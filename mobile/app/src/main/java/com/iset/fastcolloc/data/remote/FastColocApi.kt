@@ -5,6 +5,10 @@ import okhttp3.RequestBody
 import retrofit2.http.*
 
 interface FastColocApi {
+    @POST("recommendations/ai") suspend fun aiRecommendations(): RecommendationsDto
+    @Multipart @POST("ai/rent-estimate")
+    suspend fun estimateRent(@Part("logement") logement: RequestBody, @Part photos: List<MultipartBody.Part>): RentEstimateDto
+
     @GET("listings") suspend fun listings(@QueryMap query: Map<String,String>): ListingPageDto
     @GET("listings/mine") suspend fun myListings(@QueryMap query: Map<String,String>): ListingPageDto
     @GET("listings/favorites") suspend fun favoriteListings(@QueryMap query: Map<String,String>): ListingPageDto

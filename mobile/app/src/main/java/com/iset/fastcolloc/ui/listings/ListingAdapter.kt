@@ -1,6 +1,7 @@
 package com.iset.fastcolloc.ui.listings
 
 import android.view.*
+import androidx.core.view.isVisible
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
@@ -14,6 +15,7 @@ import com.iset.fastcolloc.databinding.ItemListingBinding
 class ListingAdapter(
     private val open: (ListingDto) -> Unit,
     private val favorite: (ListingDto) -> Unit,
+    private val recommendation: (ListingDto) -> Pair<Int,String>? = { null },
 ) :
     ListAdapter<ListingDto, ListingAdapter.Holder>(
         object : DiffUtil.ItemCallback<ListingDto>() {
@@ -26,6 +28,13 @@ class ListingAdapter(
 
     inner class Holder(private val b: ItemListingBinding) : RecyclerView.ViewHolder(b.root) {
         fun bind(row: ListingDto) {
+            val match = recommendation(row)
+            b.recommendationMatch.isVisible = match != null
+            b.tvRecommendationReason.isVisible = match != null
+            b.btnRecommendationDetails.isVisible = match != null
+            b.tvRecommendationScore.text = match?.let { b.root.context.getString(R.string.recommendations_score, it.first) }
+            b.tvRecommendationReason.text = match?.second
+            b.btnRecommendationDetails.setOnClickListener { open(row) }
             b.tvTitle.text = row.title
             b.tvPlace.text = "${row.governorate} · ${row.locality}"
             b.tvRent.text = b.root.context.getString(R.string.s2_price, row.rent)

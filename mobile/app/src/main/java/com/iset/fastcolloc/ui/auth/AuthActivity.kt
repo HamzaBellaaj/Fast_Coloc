@@ -47,7 +47,7 @@ class AuthActivity : AppCompatActivity() {
         }
         androidx.core.view.ViewCompat.requestApplyInsets(binding.root)
         val nav = (supportFragmentManager.findFragmentById(R.id.authNavHost) as NavHostFragment).navController
-        val mainDestinations = setOf(R.id.homeFragment, R.id.listingCatalogFragment, R.id.favoritesFragment, R.id.mineListingsFragment, R.id.profileFragment)
+        val mainDestinations = setOf(R.id.homeFragment, R.id.recommendationsFragment, R.id.listingCatalogFragment, R.id.favoritesFragment, R.id.mineListingsFragment, R.id.profileFragment)
         val appBar = AppBarConfiguration(mainDestinations, binding.drawerLayout)
         binding.toolbar.setupWithNavController(nav, appBar)
         binding.toolbar.setNavigationOnClickListener { if (!nav.navigateUp(appBar)) onBackPressedDispatcher.onBackPressed() }
@@ -86,7 +86,7 @@ class AuthActivity : AppCompatActivity() {
             binding.toolbar.setTitleTextAppearance(this, R.style.TextAppearance_FastColoc_Section)
             title = if (home) "FastColoc" else destination.label
             binding.toolbar.isVisible = destination.id != R.id.loginFragment
-            binding.bottomNav.isVisible = destination.id in setOf(R.id.homeFragment, R.id.listingCatalogFragment, R.id.favoritesFragment, R.id.profileFragment, R.id.mineListingsFragment)
+            binding.bottomNav.isVisible = destination.id in setOf(R.id.homeFragment, R.id.recommendationsFragment, R.id.listingCatalogFragment, R.id.favoritesFragment, R.id.profileFragment, R.id.mineListingsFragment)
             binding.bottomNav.menu.findItem(destination.id)?.isChecked = true
             binding.navigationView.menu.findItem(destination.id)?.let { binding.navigationView.setCheckedItem(it) }
         }

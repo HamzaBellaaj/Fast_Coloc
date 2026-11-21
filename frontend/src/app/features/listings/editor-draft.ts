@@ -5,6 +5,7 @@ export interface EditorDraft {
   step: number;
   version: number | null;
   caption: string;
+  photos?: File[];
 }
 /** Unsaved fields stay in memory, isolated by account and announcement. */
 @Injectable({ providedIn: 'root' })

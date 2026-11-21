@@ -137,3 +137,45 @@ Les tests live sont conditionnés à `fastcolocLive=true` pour empêcher une mut
 distante lors d’une exécution de tests ordinaires.
 
 Rapport détaillé et matrice pédagogique : `../docs/14-SPRINT1-ANDROID-INTEGRATION.md`.
+
+## US25 — Estimation du loyer
+
+Le formulaire XML de création/modification d’une offre propose « ✨ Estimer mon
+loyer avec l’IA » aux étapes loyer et équipements/photos. Le sélecteur permet
+d’ajouter plusieurs photos à la fois, jusqu’à 10 au total, même avant
+l’enregistrement. Les aperçus en attente peuvent être supprimés. Le ViewModel lit les URI `content://` via
+`ContentResolver`, puis Retrofit envoie toutes les photos et les caractéristiques
+à `POST ai/rent-estimate` sur Spring Boot, avec l’authentification existante.
+Les photos en attente sont ajoutées successivement au prochain enregistrement.
+Pour une annonce déjà enregistrée, l’ajout multiple déclenche leur téléversement.
+Après chaque réussite, la photo quitte la file : une reprise après erreur ne la
+duplique pas. L’estimation inclut les photos déjà enregistrées et celles en attente.
+Spring réunit toutes les vues dans une planche numérotée, car le workflow existant
+analyse `file0`. Aucune image sélectionnée n’est silencieusement ignorée.
+« Utiliser ce prix » remplit le loyer ; « Ignorer » conserve le montant actuel.
+
+Vérifications US25 : `gradlew.bat :app:assembleDebug :app:lintDebug` réussies.
+Le parcours US25 n’a pas été exécuté sur téléphone/émulateur pendant cette recette.
+L’appel réel Spring → n8n a réussi avec plusieurs vues en environ 37 secondes.
+Le test JVM `RentEstimateMultipartTest` vérifie l’envoi de trois photos en une
+seule requête Retrofit. Aucun résultat fictif n’est utilisé dans l’application.
+Pour le téléphone USB avec tunnel déjà présent :
+`gradlew.bat :app:assembleDebug -PfastcolocApiUrl=http://127.0.0.1:8001/api/v1/`.
+
+## US26 — Pour toi ✨
+
+L’entrée Pour toi est disponible dans la barre inférieure et le menu latéral.
+`RecommendationsFragment` utilise `RecommendationViewModel`, le Repository et
+Retrofit vers Spring Boot. Le classement reste en mémoire pendant la visite :
+rotation et retour des détails ne relancent pas l’IA. Actualiser déclenche un
+nouveau calcul ; les clics multiples sont bloqués. Aucun polling ni tâche de fond.
+
+`ListingAdapter` et son layout sont réutilisés, avec score/raison visibles sur
+cet écran, consultation et favoris. Les favoris modifiés dans les détails sont
+répercutés au retour. Un profil incomplet reçoit la sélection possible et un lien
+discret vers le profil. Chargement, erreur avec reprise et liste vide sont prévus.
+
+Compilation US26 réussie avec `gradlew.bat :app:assembleDebug
+-PfastcolocApiUrl=http://127.0.0.1:8001/api/v1/`. Le parcours n’a pas été exécuté
+sur appareil pendant cette recette. L’appel réel de l’endpoint Spring vers n8n
+a réussi (voir le rapport dans `../backend/target/recommendations-live-report.json`).

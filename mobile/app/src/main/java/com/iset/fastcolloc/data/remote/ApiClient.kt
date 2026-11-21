@@ -12,7 +12,7 @@ object ApiClient {
         require(BuildConfig.DEBUG || baseUrl.startsWith("https://")) { "HTTPS obligatoire" }
         val client = OkHttpClient.Builder()
             .connectTimeout(10, TimeUnit.SECONDS).readTimeout(45, TimeUnit.SECONDS)
-            .writeTimeout(45, TimeUnit.SECONDS).callTimeout(60, TimeUnit.SECONDS)
+            .writeTimeout(45, TimeUnit.SECONDS).callTimeout(220, TimeUnit.SECONDS)
             .followRedirects(false).followSslRedirects(false)
             .addInterceptor { chain ->
                 val request = chain.request()
@@ -21,7 +21,9 @@ object ApiClient {
                 val token = sessions.session()?.accessToken
                 val outgoing = if (private && token != null) request.newBuilder().header("Authorization", "Bearer $token").build() else request
                 // No payload/header logging: credentials and signed URLs stay private.
-                chain.proceed(outgoing)
+                if (path == "ai/rent-estimate" || path == "recommendations/ai") {
+                    chain.withReadTimeout(200, TimeUnit.SECONDS).withWriteTimeout(45, TimeUnit.SECONDS).proceed(outgoing)
+                } else chain.proceed(outgoing)
             }.build()
         return Retrofit.Builder().baseUrl(baseUrl).client(client)
             .addConverterFactory(GsonConverterFactory.create()).build().create(FastColocApi::class.java)

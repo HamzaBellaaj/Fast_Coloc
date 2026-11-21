@@ -54,7 +54,11 @@ class ListingRepository(private val auth: AuthRepository, private val cache: Lis
         cache.pruneDetails(oldest)
     }
 
+    suspend fun estimate(logement: RequestBody, photos: List<MultipartBody.Part>) =
+        auth.authorized { estimateRent(logement, photos) }
+
     suspend fun areas() = auth.authorized { listingAreas() }
+    suspend fun recommendations() = auth.authorized { aiRecommendations() }
 
     suspend fun detail(id: String): Pair<ListingDto, Boolean> {
         val owner = owner()
@@ -70,7 +74,6 @@ class ListingRepository(private val auth: AuthRepository, private val cache: Lis
             if (e is SessionExpired || e is AccountBlocked) throw e
             val row = cache.detail(owner, id) ?: throw e
             if (System.currentTimeMillis() - row.savedAt > 24 * 60 * 60 * 1000L) throw e
-            // A signed URL is not an offline photo; never claim an expired photo is available.
             val value = json.fromJson(row.body, ListingDto::class.java)
             return value.copy(photos = value.photos.map { it.copy(url = null) }) to true
         }

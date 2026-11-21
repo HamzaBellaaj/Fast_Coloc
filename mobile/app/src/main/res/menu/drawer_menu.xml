@@ -2,6 +2,7 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
 <group android:id="@+id/drawerMain" android:checkableBehavior="single">
 <item android:id="@id/homeFragment" android:title="Accueil" android:icon="@drawable/ic_fc_home" />
+<item android:id="@id/recommendationsFragment" android:title="@string/recommendations_title" android:icon="@drawable/ic_fc_spark" />
 <item android:id="@id/listingCatalogFragment" android:title="Explorer" android:icon="@drawable/ic_fc_search" />
 <item android:id="@+id/favoritesFragment" android:title="Mes favoris" android:icon="@drawable/ic_fc_heart" />
 <item android:id="@+id/mineListingsFragment" android:title="Mes annonces" android:icon="@drawable/ic_fc_list" />

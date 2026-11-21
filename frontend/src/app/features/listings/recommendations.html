@@ -1,0 +1,77 @@
+<section class="recommendations-page">
+  <header class="recommendations-hero">
+    <div>
+      <span class="tag">LE PETIT COUP DE POUCE IA</span>
+      <h1>Pour toi <span aria-hidden="true">✨</span></h1>
+      <p>Des logements à découvrir, classés selon tes envies.</p>
+    </div>
+    <button
+      class="btn coral"
+      type="button"
+      [disabled]="busy() || pending().size > 0"
+      (click)="refresh()"
+    >
+      Actualiser les recommandations
+    </button>
+    <span class="hero-spark" aria-hidden="true">✦</span>
+  </header>
+  @if (incomplete() && !busy()) {
+    <p class="recommendations-note">
+      Un budget et tes localités préférées nous aideront à affiner la sélection.
+      <a class="link" routerLink="/profile">Compléter mon profil ↗</a>
+    </p>
+  }
+  @if (busy()) {
+    <div class="recommendations-loading" role="status" aria-live="polite">
+      <span class="recommendations-spinner" aria-hidden="true"></span>
+      <h2>On cherche les bonnes affinités…</h2>
+      <p>Ton profil rencontre les annonces disponibles. Le calcul peut prendre un petit moment.</p>
+      <div class="loading-cards" aria-hidden="true"><span></span><span></span><span></span></div>
+    </div>
+  }
+  @if (error()) {
+    <div class="section-card recommendations-error" role="alert">
+      <h2>La sélection se fait attendre.</h2>
+      <p>{{ error() }}</p>
+      <button type="button" class="btn ghost" [disabled]="busy()" (click)="refresh()">
+        Réessayer
+      </button>
+    </div>
+  }
+  @if (!busy() && !error() && !items().length) {
+    <div class="section-card recommendations-empty">
+      <span aria-hidden="true">⌂</span>
+      <h2>La prochaine coloc arrive peut-être demain.</h2>
+      <p>Aucune recommandation disponible parmi les offres actuelles.</p>
+      <a class="btn ghost" routerLink="/annonces">Explorer les annonces</a>
+    </div>
+  }
+  @if (!busy() && items().length) {
+    <div class="recommendations-heading">
+      <h2>Ta sélection du moment</h2>
+      <p>{{ items().length }} piste(s) à explorer · Classement personnalisé par l’IA</p>
+    </div>
+    <div class="recommendations-grid">
+      @for (item of items(); track item.listing.id) {
+        <fc-listing-card
+          [row]="item.listing"
+          from="/pour-toi"
+          [pending]="pending().has(item.listing.id)"
+          (toggleFavorite)="favorite(item)"
+        >
+          <div class="recommendation-match">
+            <strong>{{ item.score }}<small>/100</small></strong
+            ><span>Compatibilité avec ton profil</span>
+          </div>
+          <p class="recommendation-reason">{{ item.raison }}</p>
+          <a
+            class="btn small ghost"
+            [routerLink]="['/annonces', item.listing.id]"
+            [queryParams]="{ from: '/pour-toi' }"
+            >Découvrir cette annonce ↗</a
+          >
+        </fc-listing-card>
+      }
+    </div>
+  }
+</section>

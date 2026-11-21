@@ -64,6 +64,8 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET,"/swagger-ui.html","/swagger-ui/**","/v3/api-docs","/v3/api-docs/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/v1/users/sync").hasAnyRole("PENDING", "USER", "ADMIN")
                         .requestMatchers("/api/v1/users/me","/api/v1/users/me/**","/api/v1/onboarding/**","/api/v1/profile-photos","/api/v1/profile-photos/**","/api/v1/geography/**").hasAnyRole("USER", "ADMIN")
+                        .requestMatchers(HttpMethod.POST,"/api/v1/ai/rent-estimate").hasAnyRole("USER","ADMIN")
+                        .requestMatchers(HttpMethod.POST,"/api/v1/recommendations/ai").hasAnyRole("USER","ADMIN")
                         .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
                         .anyRequest().denyAll())
                 .exceptionHandling(e -> e

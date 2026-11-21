@@ -219,3 +219,70 @@ Un SMTP dédié et la protection contre les mots de passe compromis restent à
 configurer dans le dashboard selon le plan et les besoins de production.
 
 Rapport complet : ../docs/12-SPRINT1-OPERATIONNEL.md.
+
+## US25 — Estimation du loyer
+
+`POST /api/v1/ai/rent-estimate` réutilise le Bearer et les rôles USER/ADMIN existants.
+Envoyer un multipart avec `logement` (partie `application/json` : `localisation`,
+`type`, `street`, `description`, `capacity`, `equipment`) et 1 à 10 parties `photo`
+(JPEG, PNG ou WebP, 5 MiB maximum chacune). Le loyer actuel ne fait pas partie du DTO.
+La description réutilise les caractéristiques saisies, notamment superficie et
+mobilier lorsqu’ils sont renseignés dans le texte du formulaire existant.
+
+Spring transmet `message` et `photo` au workflow existant, puis valide la réponse.
+Pour plusieurs images, `RentEstimatePhotos` compose une planche numérotée incluant
+toutes les vues, sans recadrage. Le workflow lit toujours seulement `file0` : cette
+planche lui donne toutes les photos en une seule analyse, sans changer n8n ni
+multiplier les appels IA/Tavily. Les fichiers originaux restent ceux de l’annonce.
+La requête entrante accepte 51 MiB au total ; chaque photo reste limitée à 5 MiB.
+Aucune estimation n’est enregistrée en base.
+`FASTCOLOC_RENT_WEBHOOK_URL` configure l’URL ; la valeur par défaut utilise
+`http://localhost:32768/webhook/49bec6bd-ad64-4cee-ae90-d0567511a05d`, port Windows
+confirmé accessible (conteneur n8n : `32768 -> 5678`).
+`FASTCOLOC_RENT_TIMEOUT_SECONDS` vaut 180 par défaut ; les clients attendent
+200 secondes. Un dépassement retourne `504 ESTIMATE_TIMEOUT`, sans prix de secours.
+
+Vérification ciblée : `mvn.cmd -B -ntp -Dtest=RentEstimateTest package`.
+Un appel réel, facultatif et unique : ajouter `-Drent.live=true`.
+Vérification du 21 novembre 2026 : appel réel réussi en environ 26 secondes,
+réponse conservée dans `target/rent-estimate-live.json`. Deux corrections côté
+Spring étaient nécessaires : HTTP/1.1 explicite (pas d’upgrade h2c) et partie
+`message` sans Content-Type. Sinon n8n interprétait le texte comme `file0` et
+la photo comme `file1`, puis échouait dans Analyze image. La photo est désormais
+le seul fichier binaire (`file0`) et le champ HTTP reste `photo`.
+Aucun conteneur ni workflow n’a été modifié. Le scénario multiphoto a également
+réussi sur le workflow réel (environ 37 secondes). Le test du contrat vérifie que
+deux vues de couleurs différentes figurent toutes deux dans l’image transmise.
+
+## US26 — Pour toi ✨
+
+`POST /api/v1/recommendations/ai`, Bearer USER/ADMIN, sans identifiant utilisateur
+fourni par le client. Le JWT détermine le compte. `RecommendationData` prépare un
+instantané dans une transaction courte, puis `RecommendationGateway` appelle n8n
+en HTTP/1.1 hors transaction. Aucune table ni politique RLS n’a été ajoutée.
+
+Préférences réelles utilisées : budgets min/max, date d’emménagement et localités
+préférées. Les annonces favorites parmi les candidates sont signalées à l’IA.
+Aucun swipe n’existe dans l’implémentation actuelle. Aucun mobilier ou équipement
+préféré n’est inventé. Le payload exclut contacts, biographie, adresse privée,
+photos de profil, informations démographiques et jetons. Les contacts éventuels
+dans les titres/équipements d’annonces sont masqués avant l’envoi.
+
+Au maximum 30 offres publiées, non masquées, non expirées et appartenant à un autre
+auteur sont candidates. Les IDs reçus sont validés et dédupliqués ; le serveur
+conserve l’ordre reçu, limite à 10 et recharge les données réelles via le service
+d’annonces. Une annonce devenue inaccessible pendant le calcul est écartée.
+Sans candidate : liste vide immédiate, aucun appel n8n. En cas d’erreur IA : erreur
+HTTP avec message et nouvelle tentative explicite, sans classement de secours.
+
+Configuration : `FASTCOLOC_RECOMMENDATIONS_WEBHOOK_URL` (défaut :
+`http://localhost:32768/webhook/fastcoloc-recommendations`) et
+`FASTCOLOC_RECOMMENDATIONS_TIMEOUT_SECONDS` (180). Les clients attendent 200 s.
+Réponse : `{success, profileIncomplete, recommendations:[{listing,score,raison}]}`.
+
+Vérifications : `mvn.cmd -B -ntp -Dtest=RecommendationServiceTest package` et
+`node tools/test-recommendations.cjs` (un seul appel IA réel, compte temporaire
+supprimé en fin de recette). Le 21 novembre 2026 : 15 candidates réelles,
+3 recommandations valides en 45 secondes, ordre reçu conservé, accès anonyme 401.
+Preuves sans identifiants de connexion : `target/recommendations-live-report.json`
+et `target/recommendations-n8n-evidence.json` (exécution n8n 520).

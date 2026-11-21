@@ -64,6 +64,10 @@ public class ListingService {
  }
  @Transactional(readOnly=true) public List<Map<String,Object>> areas(){return data.rows("select l.id,l.name as locality,g.id as governorate_id,g.name as governorate from fastcoloc.localities l join fastcoloc.governorates g on g.id=l.governorate_id where g.country_code='TN' order by g.name,l.name");}
  @Transactional public Map<String,Object> detail(UUID actor,UUID id){bind(actor);var rows=data.rows(SELECT+"where l.id=?",id);if(rows.isEmpty())throw missing();var row=rows.getFirst();row.put("photos",photos(id));row.put("favorite",actor!=null&&Boolean.TRUE.equals(jdbc.queryForObject("select exists(select 1 from fastcoloc.listing_favorites where user_id=? and listing_id=?)",Boolean.class,actor,id)));return row;}
+ @Transactional public List<Map<String,Object>> recommendationCandidates(UUID actor){
+  bind(actor);
+  return data.rows("select l.id,l.title,l.rent,l.property_type,l.capacity,l.equipment,l.available_from,p.name as locality,g.name as governorate,exists(select 1 from fastcoloc.listing_favorites f where f.listing_id=l.id and f.user_id=?) as favorite from fastcoloc.listings l join fastcoloc.localities p on p.id=l.locality_id join fastcoloc.governorates g on g.id=p.governorate_id where l.kind='OFFER' and l.status='PUBLISHED' and not l.is_hidden and l.expires_at>statement_timestamp() and l.author_id<>? order by l.published_at desc,l.id limit 30",actor,actor);
+ }
  @Transactional public Map<String,Object> search(UUID actor,ListingQuery q,String mode){
   q.validate();bind(actor);var args=new ArrayList<Object>();var where=new StringBuilder(" where 1=1 ");
   if("mine".equals(mode)){where.append("and l.author_id=? ");args.add(actor);}

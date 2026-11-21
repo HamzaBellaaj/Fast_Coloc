@@ -23,9 +23,9 @@ class ListingEditorFragment :
     private var version: String? = null
     private var locality: Long = 0
     private val picker =
-        registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
-            if (uri != null && view != null)
-                listings.upload(uri, binding.etPhotoCaption.text.toString())
+        registerForActivityResult(ActivityResultContracts.GetMultipleContents()) { uris ->
+            if (uris.isNotEmpty() && view != null)
+                listings.selectPhotos(uris, binding.etPhotoCaption.text.toString())
         }
 
     private fun fields(): Map<String, EditText> =
@@ -45,6 +45,14 @@ class ListingEditorFragment :
             "publicationDays" to binding.etPublicationDays,
         )
 
+    private fun fillFields(values: Map<String, String?>) {
+        fields().forEach { (key, field) ->
+            val value = values[key].orEmpty()
+            if (field is android.widget.AutoCompleteTextView) field.setText(value, false)
+            else field.setText(value)
+        }
+    }
+
     override fun onViewCreated(view: View, state: Bundle?) {
         observeMessages()
         calendarField(binding.etAvailableFrom, "Disponible à partir du", maximum = { binding.etAvailableUntil.text.toString().ifBlank { null } })
@@ -61,14 +69,17 @@ class ListingEditorFragment :
             AlertDialog.Builder(requireContext())
                 .setMessage("Supprimer cette photo ?")
                 .setNegativeButton("Annuler", null)
-                .setPositiveButton("Supprimer") { _, _ -> listings.deletePhoto(photo) }
+                .setPositiveButton("Supprimer") { _, _ ->
+                    if (photo.startsWith("pending:")) listings.removePendingPhoto(android.net.Uri.parse(photo.removePrefix("pending:")))
+                    else listings.deletePhoto(photo)
+                }
                 .show()
         }
         binding.rvPhotos.layoutManager = GridLayoutManager(requireContext(), 2)
         binding.rvPhotos.adapter = photos
         val draft = listings.draft
         if (draft.isNotEmpty()) {
-            fields().forEach { (key, field) -> field.setText(draft[key].orEmpty()) }
+            fillFields(draft)
             step = draft["flowStep"]?.toIntOrNull() ?: if (id == null) 0 else 1
             binding.spKind.setSelection(if (draft["kind"] == "REQUEST") 1 else 0)
             locality = draft["localityId"]?.toLongOrNull() ?: 0
@@ -124,7 +135,7 @@ class ListingEditorFragment :
                                 "availableUntil" to row.availableUntil.orEmpty(),
                                 "publicationDays" to row.publicationDays.toString(),
                             )
-                        fields().forEach { (key, field) -> field.setText(values[key]) }
+                        fillFields(values)
                         binding.spKind.setSelection(if (row.kind == "REQUEST") 1 else 0)
                         locality = row.localityId ?: 0
                     }
@@ -135,13 +146,35 @@ class ListingEditorFragment :
                 if (arguments == null) arguments = Bundle()
                 requireArguments().putString("listingId", row.id)
                 version = listings.draft["version"] ?: version
-                photos.submitList(row.photos)
+                renderPhotos()
                 render()
             }
         }
         listings.owner.observe(viewLifecycleOwner) { render() }
         listings.busy.observe(viewLifecycleOwner) { render() }
         listings.offline.observe(viewLifecycleOwner) { render() }
+        listings.estimating.observe(viewLifecycleOwner) { renderEstimate() }
+        listings.estimate.observe(viewLifecycleOwner) { renderEstimate() }
+        listings.estimateError.observe(viewLifecycleOwner) { renderEstimate() }
+        listings.pendingPhotos.observe(viewLifecycleOwner) { renderPhotos() }
+        binding.btnEstimateRent.setOnClickListener {
+            snapshotDraft()
+            val place = listings.areas.value.orEmpty().find { it.id == locality }
+            listings.estimateRent(com.iset.fastcolloc.data.remote.RentEstimateRequestDto(
+                localisation = place?.toString().orEmpty(), type = binding.etPropertyType.text.toString(),
+                street = binding.etStreet.text.toString(), description = binding.etListingDescription.text.toString(),
+                capacity = binding.etCapacity.text.toString().toIntOrNull(),
+                equipment = binding.etEquipment.text.toString().split(',').map { it.trim() }.filter { it.isNotBlank() },
+            ))
+        }
+        binding.btnUseEstimate.setOnClickListener {
+            listings.estimate.value?.estimation?.loyer_conseille_tnd?.let {
+                binding.etRent.setText(kotlin.math.round(it).toLong().toString())
+                snapshotDraft()
+            }
+            listings.dismissEstimate()
+        }
+        binding.btnIgnoreEstimate.setOnClickListener { listings.dismissEstimate() }
         binding.btnOffer.setOnClickListener { binding.spKind.setSelection(0); render() }
         binding.btnRequest.setOnClickListener { binding.spKind.setSelection(1); render() }
         binding.btnBackStep.setOnClickListener { snapshotDraft(); step = (step - 1).coerceAtLeast(0); render() }
@@ -184,6 +217,43 @@ class ListingEditorFragment :
         if ((step == 2 && !isRequest || step == 3 && isRequest) && (f["availableFrom"].isNullOrBlank() || !f["availableUntil"].isNullOrBlank() && f["availableUntil"].orEmpty() < f["availableFrom"].orEmpty())) return fail("Choisis une date de début et vérifie la date de fin.")
         return true
     }
+    private fun renderPhotos() {
+        val pending = listings.pendingPhotos.value.orEmpty()
+        val saved = listings.selected.value?.photos.orEmpty()
+        photos.submitList(saved + pending.mapIndexed { index, uri ->
+            com.iset.fastcolloc.data.remote.ListingPhotoDto("pending:$uri",
+                if (index == 0) "À enregistrer · Photo 1" else "À enregistrer · Photo ${index + 1}", uri.toString())
+        })
+        val count = saved.size + pending.size
+        binding.tvPhotoHint.text = if (pending.isEmpty()) "$count / 10 photos · Sélectionne plusieurs photos en une fois." else
+            "$count / 10 photos · ${pending.size} en attente d’enregistrement. Toutes les photos sont utilisées par l’IA."
+        val own = listings.selected.value?.let { it.authorId == listings.owner.value } ?: true
+        binding.btnAddListingPhoto.isEnabled = listings.busy.value != true && listings.offline.value != true && own && count < 10
+    }
+
+    private fun renderEstimate() {
+        val running = listings.estimating.value == true
+        val result = listings.estimate.value
+        val estimate = result?.estimation
+        binding.sectionEstimate.isVisible = !isRequest && (step == 2 || step == 3)
+        binding.btnEstimateRent.isEnabled = !running && listings.busy.value != true
+        binding.estimateProgress.isVisible = running
+        binding.tvEstimateStatus.text = if (running) "Analyse des photos et des références immobilières…" else listings.estimateError.value.orEmpty()
+        binding.estimateCard.isVisible = !isRequest && estimate != null && !running
+        fun money(value: Double?) = value?.let { String.format(java.util.Locale.FRANCE, "%,.0f", it) }.orEmpty()
+        if (estimate != null) {
+            binding.tvEstimatePrice.text = "Loyer conseillé : ${money(estimate.loyer_conseille_tnd)} TND / mois"
+            binding.tvEstimateDetails.text = buildString {
+                appendLine("Fourchette estimée : ${money(estimate.loyer_min_tnd)} – ${money(estimate.loyer_max_tnd)} TND")
+                appendLine("Fiabilité : ${estimate.fiabilite.orEmpty()}")
+                appendLine(estimate.explication.orEmpty())
+                result.analyse_visuelle?.let { visual ->
+                    appendLine(listOfNotNull(visual.etat_apparent, visual.luminosite).joinToString(" · "))
+                    append(visual.equipements_visibles.orEmpty().joinToString(", "))
+                }
+            }
+        }
+    }
     private fun render() {
         val busy = listings.busy.value == true
         val offline = listings.offline.value == true
@@ -212,7 +282,7 @@ class ListingEditorFragment :
         binding.sectionConditions.isVisible = if (isRequest) step == 3 else step == 2
         binding.sectionPreferences.isVisible = step == 3
         binding.sectionPublication.isVisible = step == 4 || !isRequest && step == 2
-        binding.sectionPhotos.isVisible = !isRequest && step == 3
+        binding.sectionPhotos.isVisible = !isRequest && (step == 2 || step == 3)
         binding.sectionReview.isVisible = step == 4
         binding.labelListingDescription.text = if (isRequest) "Présente ta recherche" else "Décris ton logement"
         binding.labelPropertyType.text = if (isRequest) "Type de logement recherché" else "Type de logement"
@@ -231,12 +301,14 @@ class ListingEditorFragment :
         binding.btnPublishListing.isEnabled = !busy && !offline && own
         binding.btnSaveListing.text = if (row?.status == "PUBLISHED") "Enregistrer les modifications" else "Garder en brouillon"
         binding.btnPublishListing.text = if (row?.status == "PUBLISHED") "Enregistrer et renouveler" else "Publier mon annonce"
-        binding.btnSaveForPhotos.isVisible = row == null
+        binding.btnSaveForPhotos.isVisible = false
         binding.btnSaveForPhotos.isEnabled = !busy && !offline
-        binding.btnAddListingPhoto.isVisible = row != null
-        binding.btnAddListingPhoto.isEnabled = !busy && !offline && own && row?.photos.orEmpty().size < 10
+        binding.btnAddListingPhoto.isVisible = true
+        binding.btnAddListingPhoto.isEnabled = !busy && !offline && own && row?.photos.orEmpty().size + listings.pendingPhotos.value.orEmpty().size < 10
         binding.etPhotoCaption.isVisible = row != null
-        binding.tvPhotoHint.isVisible = row == null
+        binding.tvPhotoHint.isVisible = true
+        renderEstimate()
+        renderPhotos()
         photos.enabled = !busy && !offline
         if (step == 4) {
             snapshotDraft()
@@ -252,7 +324,7 @@ class ListingEditorFragment :
                 appendLine("Date : ${f["availableFrom"]}" + if(f["availableUntil"].isNullOrBlank()) "" else " → ${f["availableUntil"]}")
                 appendLine("Équipements : ${f["equipment"].orEmpty().ifBlank { "Non renseignés" }}")
                 appendLine("Colocataire : ${f["roommateType"].orEmpty().ifBlank { "Aucune préférence" }}")
-                if (!isRequest) appendLine("${row?.photos.orEmpty().size} photo(s) du logement")
+                if (!isRequest) appendLine("${row?.photos.orEmpty().size + listings.pendingPhotos.value.orEmpty().size} photo(s) du logement")
             }
         }
     }

@@ -104,3 +104,36 @@ Aucun hébergement public n’a été demandé ou effectué.
 
 Les styles, compositions et logo proviennent de `../maquette/FastColoc_Maquettes_Sprint1/`.
 Baloo 2 et DM Sans sont servis depuis les assets locaux, sans appel Google Fonts au runtime.
+
+## US25 — Estimation du loyer
+
+Dans la création et la modification d’une offre, le bouton « ✨ Estimer mon loyer
+avec l’IA » apparaît près du loyer et à l’étape équipements/photos. Il réutilise
+les champs de l’annonce et toutes les photos sélectionnées ou existantes.
+Le sélecteur autorise plusieurs images à la fois (10 au total), avec aperçu et
+suppression. Les nouvelles photos peuvent être sélectionnées avant tout
+enregistrement ; elles sont ajoutées successivement à l’annonce au prochain
+enregistrement. Les photos déjà envoyées quittent la file pour éviter les doublons
+après une erreur. La sélection en attente reste dans le brouillon en mémoire.
+« Utiliser ce prix » remplit le loyer, qui reste
+modifiable ; « Ignorer » ferme la carte. L’API appelée est uniquement Spring Boot.
+
+Vérifications ciblées : `npm test -- src/app/features/listings/listing-editor.spec.ts`,
+`npm run build`, `npx playwright test e2e/rent-estimate.spec.ts`.
+Le test navigateur vérifie la sélection multiple, la suppression et l’envoi de
+toutes les photos conservées. Il utilise une réponse simulée et ne déclenche pas
+Ollama/Tavily. Spring réunit les images dans une planche numérotée pour que le
+workflow existant les voie toutes via son entrée `file0`.
+
+## US26 — Pour toi ✨
+
+La route authentifiée `/pour-toi` est disponible dans la navigation. Elle déclenche
+un calcul à l’ouverture, puis uniquement sur Actualiser/Réessayer. Les clics
+simultanés sont bloqués. Les cartes d’annonces existantes affichent le score,
+la raison et un lien vers les détails ; leurs favoris restent utilisables sans
+recalcul IA. Les états chargement, vide, profil incomplet et erreur sont prévus.
+
+Vérifications : `npm run build`, `npm run typecheck` et
+`npx playwright test e2e/recommendations.spec.ts`. Le test navigateur couvre
+l’ordre, le chargement, les favoris, l’actualisation, l’erreur et la reprise,
+avec rendu responsive à 390 et 1440 px, sans appels supplémentaires à Ollama.

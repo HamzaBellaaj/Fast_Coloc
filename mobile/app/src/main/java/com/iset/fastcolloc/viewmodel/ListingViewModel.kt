@@ -50,6 +50,126 @@ class ListingViewModel(
     var editorId: String? = null
         private set
 
+    private val _estimating = MutableLiveData(false)
+    val estimating: LiveData<Boolean> = _estimating
+    private val _estimate = MutableLiveData<RentEstimateDto?>()
+    val estimate: LiveData<RentEstimateDto?> = _estimate
+    private val _estimateError = MutableLiveData<String?>()
+    val estimateError: LiveData<String?> = _estimateError
+    private val _pendingPhotos = MutableLiveData<List<Uri>>(emptyList())
+    val pendingPhotos: LiveData<List<Uri>> = _pendingPhotos
+    private var estimateJob: Job? = null
+    fun dismissEstimate() { _estimate.value = null }
+
+    fun selectPhotos(uris: List<Uri>, caption: String) {
+        if (uris.isEmpty() || _busy.value == true) return
+        val pending = _pendingPhotos.value.orEmpty()
+        val additions = uris.distinct().filterNot { it in pending }
+        if (_selected.value?.photos.orEmpty().size + pending.size + additions.size > 10) {
+            formError("10 photos maximum par annonce. Sélectionne moins de photos.")
+            return
+        }
+        _pendingPhotos.value = pending + additions
+        dismissEstimate()
+        val row = _selected.value ?: return
+        work { uploadPendingPhotos(row, caption) }
+    }
+
+    fun removePendingPhoto(uri: Uri) {
+        if (_busy.value == true) return
+        _pendingPhotos.value = _pendingPhotos.value.orEmpty() - uri
+        dismissEstimate()
+    }
+
+    // Each successful upload leaves the queue immediately, so retries never duplicate it.
+    private suspend fun uploadPendingPhotos(initial: ListingDto, caption: String): ListingDto {
+        var row = initial
+        val queue = withContext(Dispatchers.Main) { _pendingPhotos.value.orEmpty().toList() }
+        for (uri in queue) {
+            val (bytes, mime) = photoBytes(uri)
+            val photo = MultipartBody.Part.createFormData("file", "logement", bytes.toRequestBody(mime.toMediaType()))
+            row = repository.upload(row.id, photo, caption.toRequestBody("text/plain".toMediaType()))
+            withContext(Dispatchers.Main) {
+                _pendingPhotos.value = _pendingPhotos.value.orEmpty() - uri
+                _selected.value = row
+                draft["version"] = row.version.toString()
+            }
+        }
+        return row
+    }
+
+    private fun readPhoto(input: java.io.InputStream): ByteArray {
+        val out = java.io.ByteArrayOutputStream()
+        val buffer = ByteArray(8192)
+        while (true) {
+            val count = input.read(buffer)
+            if (count < 0) break
+            require(out.size() + count <= 5242880) { "Photo supérieure à 5 MiB." }
+            out.write(buffer, 0, count)
+        }
+        return out.toByteArray()
+    }
+
+    private fun photoBytes(uri: Uri): Pair<ByteArray, String> {
+        val resolver = application.contentResolver
+        val bytes = resolver.openInputStream(uri)?.use { readPhoto(it) }
+            ?: throw IllegalArgumentException("Image illisible. Sélectionne une photo à nouveau.")
+        require(bytes.size in 1..5242880) { "Photo vide ou supérieure à 5 MiB." }
+        val mime = resolver.getType(uri) ?: "application/octet-stream"
+        require(mime in listOf("image/jpeg", "image/png", "image/webp")) { "Utilise une photo JPEG, PNG ou WebP." }
+        return bytes to mime
+    }
+
+    fun estimateRent(body: RentEstimateRequestDto) {
+        if (estimateJob?.isActive == true) return
+        _estimateError.value = null
+        _estimate.value = null
+        if (body.localisation.isBlank() || body.type.isBlank()) {
+            _estimateError.value = "Précise la localité et le type du logement."
+            return
+        }
+        val uris = _pendingPhotos.value.orEmpty().toList()
+        val existing = _selected.value?.photos.orEmpty().toList()
+        if (uris.isEmpty() && existing.isEmpty()) {
+            _estimateError.value = "Ajoute au moins une photo du logement pour lancer l’analyse."
+            return
+        }
+        _estimating.value = true
+        estimateJob = viewModelScope.launch {
+            try {
+                val result = withContext(Dispatchers.IO) {
+                    require(existing.size + uris.size <= 10) { "10 photos maximum par estimation." }
+                    val photos = mutableListOf<MultipartBody.Part>()
+                    for ((index, saved) in existing.withIndex()) {
+                        val url = saved.url ?: throw IllegalArgumentException("Photo indisponible. Actualise l’annonce avant de réessayer.")
+                        val connection = java.net.URI(url).toURL().openConnection().apply {
+                            connectTimeout = 10000; readTimeout = 15000
+                        }
+                        val bytes = connection.getInputStream().use { readPhoto(it) }
+                        val mime = connection.contentType?.substringBefore(';') ?: "image/jpeg"
+                        photos += MultipartBody.Part.createFormData("photo", "logement-$index", bytes.toRequestBody(mime.toMediaType()))
+                    }
+                    for ((index, uri) in uris.withIndex()) {
+                        val (bytes, mime) = photoBytes(uri)
+                        photos += MultipartBody.Part.createFormData("photo", "selection-$index", bytes.toRequestBody(mime.toMediaType()))
+                    }
+                    repository.estimate(com.google.gson.Gson().toJson(body).toRequestBody("application/json".toMediaType()), photos)
+                }
+                val value = result.estimation
+                require(result.success && value?.disponible == true && value.loyer_conseille_tnd?.isFinite() == true) {
+                    "Estimation indisponible. Réessaie."
+                }
+                _estimate.value = result
+            } catch (e: CancellationException) { throw e
+            } catch (e: Exception) {
+                _estimateError.value = if (e is retrofit2.HttpException) {
+                    runCatching { com.google.gson.JsonParser.parseString(e.response()?.errorBody()?.string()).asJsonObject.get("message").asString }.getOrNull()
+                        ?: "Le service d’estimation est indisponible. Réessaie."
+                } else AuthRepository.message(e)
+            } finally { _estimating.value = false }
+        }
+    }
+
     var draft = mutableMapOf<String, String>()
     private var loadJob: Job? = null
     private var workJob: Job? = null
@@ -115,6 +235,10 @@ class ListingViewModel(
     fun openEditor(id: String?) {
         if (editorId != id) {
             draft.clear()
+            estimateJob?.cancel()
+            _pendingPhotos.value = emptyList()
+            _estimate.value = null
+            _estimateError.value = null
             _selected.value = null
         }
         editorId = id
@@ -123,6 +247,10 @@ class ListingViewModel(
     }
 
     fun beginEditor(id: String?) {
+        estimateJob?.cancel()
+        _pendingPhotos.value = emptyList()
+        _estimate.value = null
+        _estimateError.value = null
         draft.clear()
         editorId = id
         _selected.value = null
@@ -145,7 +273,11 @@ class ListingViewModel(
 
     fun save(body: ListingWriteDto, publishAfter: Boolean = false) {
         work {
-            val row = repository.save(editorId, body)
+            var row = repository.save(editorId, body)
+            editorId = row.id
+            draft["version"] = row.version.toString()
+            _selected.postValue(row)
+            row = uploadPendingPhotos(row, draft["photoCaption"].orEmpty())
             editorId = row.id
             draft["version"] = row.version.toString()
             _selected.postValue(row)
@@ -189,33 +321,7 @@ class ListingViewModel(
         }
     }
 
-    fun upload(uri: Uri, caption: String) {
-        val row = _selected.value ?: return
-        work {
-            val bytes =
-                application.contentResolver.openInputStream(uri)?.use { input ->
-                    val out = java.io.ByteArrayOutputStream()
-                    val buffer = ByteArray(8192)
-                    var count: Int
-                    while (input.read(buffer).also { count = it } != -1) {
-                        require(out.size() + count <= 5242880) { "Photo supérieure à 5 MiB." }
-                        out.write(buffer, 0, count)
-                    }
-                    out.toByteArray()
-                } ?: throw IllegalArgumentException("Image illisible.")
-            require(bytes.size in 1..5242880) { "Photo vide ou supérieure à 5 MiB." }
-            val mime = application.contentResolver.getType(uri) ?: "application/octet-stream"
-            val part =
-                MultipartBody.Part.createFormData(
-                    "file",
-                    "photo",
-                    bytes.toRequestBody(mime.toMediaType()),
-                )
-            _selected.postValue(
-                repository.upload(row.id, part, caption.toRequestBody("text/plain".toMediaType()))
-            )
-        }
-    }
+    fun upload(uri: Uri, caption: String) = selectPhotos(listOf(uri), caption)
 
     fun deletePhoto(photo: String) {
         val row = _selected.value ?: return

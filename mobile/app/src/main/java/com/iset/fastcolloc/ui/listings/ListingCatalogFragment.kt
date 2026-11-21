@@ -202,7 +202,11 @@ class ListingCatalogFragment :
                 "equipment" to b.etEquipmentFilter,
                 "availableOn" to b.etAvailableFilter,
             )
-        fields.forEach { (key, field) -> field.setText(listings.query[key].orEmpty()) }
+        fields.forEach { (key, field) ->
+            val value = listings.query[key].orEmpty()
+            if (field is android.widget.AutoCompleteTextView) field.setText(value, false)
+            else field.setText(value)
+        }
         calendarField(b.etAvailableFilter, "Disponible le", optional = true)
         options(b.spSort, listOf("Plus récentes", "Loyer croissant", "Loyer décroissant"))
         b.spSort.setSelection(
@@ -224,6 +228,8 @@ class ListingCatalogFragment :
             dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
                 val query = listings.query.toMutableMap()
                 fields.forEach { (key, field) -> query[key] = field.text.toString().trim() }
+                if (query["propertyType"] == getString(R.string.listing_property_filter_all)) query["propertyType"] = ""
+                if (query["roommateType"] == getString(R.string.listing_roommate_filter_all)) query["roommateType"] = ""
                 query["kind"] = listOf("", "OFFER", "REQUEST")[b.spKind.selectedItemPosition]
                 query["sort"] =
                     listOf("NEWEST", "RENT_ASC", "RENT_DESC")[b.spSort.selectedItemPosition]

@@ -127,7 +127,7 @@ export class ListingDetail implements OnInit {
   get backLink() {
     const from = this.route.snapshot.queryParamMap.get('from') || '/annonces';
     return this.router.parseUrl(
-      /^\/(annonces|favoris|mes-annonces)(\?|$)/.test(from) ? from : '/annonces',
+      /^\/(annonces|favoris|mes-annonces|pour-toi)(\?|$)/.test(from) ? from : '/annonces',
     );
   }
   ngOnInit() {

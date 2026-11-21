@@ -2,6 +2,13 @@ import { Routes } from '@angular/router';
 import { adminGuard, registrationGuard, sessionGuard } from './core/guards';
 export const routes: Routes = [
   {
+    path: 'pour-toi',
+    title: 'Pour toi ✨ · FastColoc',
+    canActivate: [sessionGuard],
+    loadComponent: () =>
+      import('./features/listings/recommendations').then((m) => m.Recommendations),
+  },
+  {
     path: 'annonces',
     loadComponent: () => import('./features/listings/catalog').then((m) => m.Catalog),
   },

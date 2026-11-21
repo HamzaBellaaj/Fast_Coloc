@@ -18,9 +18,9 @@ import {
 @Injectable({ providedIn: 'root' })
 export class Api {
   private http = inject(HttpClient);
-  request<T>(method: string, path: string, body?: unknown): Promise<T> {
+  request<T>(method: string, path: string, body?: unknown, timeout = 45000): Promise<T> {
     return firstValueFrom(
-      this.http.request<T>(method, environment.apiUrl + path, { body, timeout: 45000 }),
+      this.http.request<T>(method, environment.apiUrl + path, { body, timeout }),
     );
   }
   sync = () => this.request<Profile>('POST', '/users/sync', {});

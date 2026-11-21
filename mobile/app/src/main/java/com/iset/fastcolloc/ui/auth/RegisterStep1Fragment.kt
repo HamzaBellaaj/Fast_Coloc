@@ -12,7 +12,7 @@ class RegisterStep1Fragment : BoundFragment<FragmentRegisterStep1Binding>(Fragme
         val profile = vm.details.value?.profile
         if (state == null) {
             binding.etFirstName.setText(profile?.firstName); binding.etLastName.setText(profile?.lastName)
-            binding.etAge.setText(profile?.age?.toString()); binding.etGender.setText(profile?.gender)
+            binding.etAge.setText(profile?.age?.toString()); binding.etGender.setText(profile?.gender.orEmpty(), false)
         }
         val signedIn = profile != null
         listOf(binding.etEmail, binding.etPassword, binding.etConfirmPassword).forEach { field ->
@@ -24,7 +24,7 @@ class RegisterStep1Fragment : BoundFragment<FragmentRegisterStep1Binding>(Fragme
             }
         }
         binding.btnNext.setOnClickListener { form {
-            val identity = IdentityDto(binding.etFirstName.text.toString().trim(), binding.etLastName.text.toString().trim(), binding.etGender.text.toString().ifBlank { null }, binding.etAge.text.toString().toIntOrNull() ?: throw IllegalArgumentException("Saisis un âge valide."))
+            val identity = IdentityDto(binding.etFirstName.text.toString().trim(), binding.etLastName.text.toString().trim(), binding.etGender.text.toString().takeUnless { it.isBlank() || it == getString(com.iset.fastcolloc.R.string.profile_no_answer) }, binding.etAge.text.toString().toIntOrNull() ?: throw IllegalArgumentException("Saisis un âge valide."))
             if (signedIn) vm.saveIdentity(identity) else {
                 vm.signup(binding.etEmail.text.toString(), binding.etPassword.text.toString(), binding.etConfirmPassword.text.toString(), identity)
                 binding.etPassword.text?.clear(); binding.etConfirmPassword.text?.clear()

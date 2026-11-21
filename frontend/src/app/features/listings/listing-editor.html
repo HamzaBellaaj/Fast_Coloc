@@ -507,6 +507,7 @@
                 step="0.001"
             /></label>
             @if (!isRequest) {
+              <ng-container *ngTemplateOutlet="rentAi" />
               <div class="grid2">
                 <label
                   >{{ isRequest ? 'Date d’emménagement souhaitée' : 'Disponible à partir du'
@@ -604,8 +605,9 @@
                     [(ngModel)]="caption"
                     maxlength="500" /></label
                 ><label class="btn ghost"
-                  >Ajouter une photo réelle<input
+                  >Ajouter plusieurs photos réelles<input
                     type="file"
+                    multiple
                     accept="image/jpeg,image/png,image/webp"
                     [disabled]="busy() || row.photos.length >= 10"
                     (change)="upload($event)"
@@ -626,6 +628,9 @@
                 </div>
               }
             }
+          }
+          @if (step === 3 && !isRequest) {
+            <ng-container *ngTemplateOutlet="rentAi" />
           }
           @if (step === 4) {
             <h2>Un dernier regard avant de publier.</h2>
@@ -670,7 +675,7 @@
                 </dd>
                 @if (!isRequest) {
                   <dt>Photos du logement</dt>
-                  <dd>{{ saved()?.photos?.length || 0 }} photo(s)</dd>
+                  <dd>{{ (saved()?.photos?.length || 0) + pendingPhotos.length }} photo(s)</dd>
                 }
               </dl>
             </div>
@@ -746,3 +751,82 @@
     </datalist>
   </section>
 }
+
+<ng-template #rentAi>
+  <section class="rent-ai" aria-label="Estimation du loyer par IA" [attr.aria-busy]="estimating()">
+    <label class="btn ghost"
+      >Ajouter plusieurs photos pour l’annonce
+      <input
+        type="file"
+        multiple
+        accept="image/jpeg,image/png,image/webp"
+        [disabled]="estimating() || pendingPhotos.length + (saved()?.photos?.length || 0) >= 10"
+        (change)="selectEstimatePhotos($event)"
+      />
+    </label>
+    @if (pendingPhotos.length) {
+      <div class="listing-gallery ai-pending-gallery">
+        @for (file of pendingPhotos; track file) {
+          <figure>
+            <img [src]="photoPreviews.get(file)" [alt]="file.name" />
+            <figcaption>{{ file.name }}</figcaption>
+            <button
+              type="button"
+              class="btn small ghost"
+              [disabled]="estimating()"
+              (click)="removePendingPhoto(file)"
+            >
+              Retirer cette photo
+            </button>
+          </figure>
+        }
+      </div>
+      <p class="help">
+        {{ pendingPhotos.length }} photo(s) seront ajoutées à l’annonce à l’enregistrement.
+      </p>
+    }
+    <p class="help">
+      {{ pendingPhotos.length + (saved()?.photos?.length || 0) }} / 10 photos · Toutes les photos
+      sont utilisées pour l’estimation.
+    </p>
+    <button type="button" class="btn coral" [disabled]="estimating()" (click)="estimateRent()">
+      ✨ Estimer mon loyer avec l’IA
+    </button>
+    @if (estimating()) {
+      <p role="status">
+        <span class="ai-spinner"></span> Analyse des photos et des références immobilières…
+      </p>
+    }
+    @if (estimateError) {
+      <p class="field-error" role="alert">
+        {{ estimateError }} Clique à nouveau sur Estimer pour réessayer.
+      </p>
+    }
+    @if (estimate(); as result) {
+      <div class="rent-ai-result" aria-live="polite">
+        <span class="tag">UN COUP DE POUCE POUR TON LOYER</span>
+        <h3>
+          Loyer conseillé : {{ result.estimation.loyer_conseille_tnd | number: '1.0-0' }} TND / mois
+        </h3>
+        <p>
+          Fourchette estimée : {{ result.estimation.loyer_min_tnd | number: '1.0-0' }} –
+          {{ result.estimation.loyer_max_tnd | number: '1.0-0' }} TND
+        </p>
+        <p>Fiabilité : {{ result.estimation.fiabilite }}</p>
+        <p>{{ result.estimation.explication }}</p>
+        @if (result.analyse_visuelle; as visual) {
+          <p class="help">
+            {{ visual.etat_apparent }} – {{ visual.luminosite }}
+            {{ visual.equipements_visibles?.join(', ') }}
+          </p>
+        }
+        <div class="flow-actions">
+          <button type="button" class="btn coral" (click)="applyEstimate()">
+            Utiliser ce prix
+          </button>
+          <button type="button" class="btn ghost" (click)="estimate.set(null)">Ignorer</button>
+        </div>
+      </div>
+    }
+  </section>
+</ng-template>

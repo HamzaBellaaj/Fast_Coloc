@@ -51,6 +51,7 @@
     <fragment android:id="@+id/forgotFragment" android:name="com.iset.fastcolloc.ui.auth.EmailFragment" android:label="Récupération" />
     <fragment android:id="@+id/resetFragment" android:name="com.iset.fastcolloc.ui.auth.ResetFragment" android:label="Nouveau mot de passe" />
     <fragment android:id="@+id/homeFragment" android:name="com.iset.fastcolloc.ui.auth.HomeFragment" android:label="Accueil" />
+    <fragment android:id="@+id/recommendationsFragment" android:name="com.iset.fastcolloc.ui.listings.RecommendationsFragment" android:label="@string/recommendations_title" />
     <fragment android:id="@+id/profileFragment" android:name="com.iset.fastcolloc.ui.auth.ProfileFragment" android:label="Mon profil" />
     <fragment android:id="@+id/listingCatalogFragment" android:name="com.iset.fastcolloc.ui.listings.ListingCatalogFragment" android:label="Annonces" />
     <fragment android:id="@+id/listingDetailFragment" android:name="com.iset.fastcolloc.ui.listings.ListingDetailFragment" android:label="La coloc en détail">

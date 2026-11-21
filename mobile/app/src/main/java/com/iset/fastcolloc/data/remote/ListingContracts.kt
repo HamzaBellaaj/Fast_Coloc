@@ -66,3 +66,18 @@ data class ListingWriteDto(
     val publicationDays: Int,
     val version: Long? = null,
 )
+
+// US25: only actual workflow values, no fallback prices.
+data class RentEstimateDto(val success: Boolean, val estimation: RentValuesDto?,
+    val analyse_visuelle: RentVisualDto?)
+data class RentValuesDto(val disponible: Boolean, val loyer_min_tnd: Double?,
+    val loyer_max_tnd: Double?, val loyer_conseille_tnd: Double?,
+    val fiabilite: String?, val explication: String?)
+data class RentVisualDto(val etat_apparent: String?, val luminosite: String?,
+    val equipements_visibles: List<String>?)
+data class RentEstimateRequestDto(val localisation: String, val type: String,
+    val street: String, val description: String, val capacity: Int?, val equipment: List<String>)
+
+data class RecommendationDto(val listing: ListingDto, val score: Int, val raison: String)
+data class RecommendationsDto(val success: Boolean, val profileIncomplete: Boolean,
+    val recommendations: List<RecommendationDto>)

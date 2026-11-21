@@ -1,4 +1,57 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">FastColoc</string>
+    <string name="listing_property_type_prompt">Choisir un type de logement</string>
+    <string-array name="listing_property_types">
+        <item>Appartement</item>
+        <item>Chambre</item>
+        <item>Maison</item>
+        <item>Studio</item>
+    </string-array>
+    <string name="listing_roommate_type_prompt">Choisir un type de colocataire</string>
+    <string name="listing_property_filter_all">Tous les types de logement</string>
+    <string name="listing_roommate_filter_all">Tous les profils</string>
+    <string name="profile_no_answer">Je préfère ne pas répondre</string>
+    <string name="profile_nationality_unspecified">Non renseignée</string>
+    <string-array name="listing_roommate_types">
+        <item>Sans préférence</item>
+        <item>Étudiant</item>
+        <item>Jeune actif</item>
+    </string-array>
+    <string-array name="listing_property_filter_types">
+        <item>@string/listing_property_filter_all</item>
+        <item>Appartement</item>
+        <item>Chambre</item>
+        <item>Maison</item>
+        <item>Studio</item>
+    </string-array>
+    <string-array name="listing_roommate_filter_types">
+        <item>@string/listing_roommate_filter_all</item>
+        <item>Étudiant</item>
+        <item>Jeune actif</item>
+        <item>Sans préférence</item>
+    </string-array>
+    <string-array name="profile_gender_choices">
+        <item>@string/profile_no_answer</item>
+        <item>Femme</item>
+        <item>Homme</item>
+        <item>Autre</item>
+    </string-array>
+    <string-array name="profile_cleanliness_choices">
+        <item>@string/profile_no_answer</item>
+        <item>Plutôt décontracté</item>
+        <item>Organisé</item>
+        <item>Très organisé</item>
+    </string-array>
+    <string name="recommendations_title">Pour toi ✨</string>
+    <string name="recommendations_intro">Des logements à découvrir, classés selon tes envies.</string>
+    <string name="recommendations_loading">On cherche les bonnes affinités… Le calcul IA peut prendre un petit moment.</string>
+    <string name="recommendations_empty">Aucune recommandation disponible parmi les offres actuelles.</string>
+    <string name="recommendations_count">%1$d piste(s) à explorer · Classement personnalisé par l’IA</string>
+    <string name="recommendations_refresh">Actualiser les recommandations</string>
+    <string name="recommendations_profile_hint">Un budget et tes localités préférées nous aideront à affiner la sélection.</string>
+    <string name="recommendations_complete_profile">Compléter mon profil ↗</string>
+    <string name="recommendations_score">%1$d / 100</string>
+    <string name="recommendations_match_label">Compatibilité avec ton profil</string>
+    <string name="recommendations_details">Découvrir cette annonce ↗</string>
 </resources>

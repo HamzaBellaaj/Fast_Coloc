@@ -105,7 +105,7 @@ export class Auth {
   rememberDestination(url: string | null) {
     if (
       url &&
-      /^\/(?:annonces(?:[/?]|$)|mes-annonces(?:[?]|$)|favoris(?:[?]|$)|profile$|admin(?:[/?]|$)|$)/.test(
+      /^\/(?:annonces(?:[/?]|$)|pour-toi(?:[?]|$)|mes-annonces(?:[?]|$)|favoris(?:[?]|$)|profile$|admin(?:[/?]|$)|$)/.test(
         url,
       ) &&
       !url.includes('\\')
@@ -116,7 +116,7 @@ export class Auth {
     const url = sessionStorage.getItem('fastcoloc.returnTo');
     sessionStorage.removeItem('fastcoloc.returnTo');
     return url &&
-      /^\/(?:annonces(?:[/?]|$)|mes-annonces(?:[?]|$)|favoris(?:[?]|$)|profile$|admin(?:[/?]|$)|$)/.test(
+      /^\/(?:annonces(?:[/?]|$)|pour-toi(?:[?]|$)|mes-annonces(?:[?]|$)|favoris(?:[?]|$)|profile$|admin(?:[/?]|$)|$)/.test(
         url,
       ) &&
       !url.includes('\\')

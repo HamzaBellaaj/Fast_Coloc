@@ -126,6 +126,10 @@ class Sprint1ViewModel(application: Application) : AndroidViewModel(application)
     fun savePersonal(value: PersonalDto) = action { _details.value = repository.authorized { personal(value) }; next(3) }
     fun saveContacts(value: ContactsDto) = action { _details.value = repository.authorized { contacts(value) }; next(4) }
     private fun next(step: Int) { emit(if (editing) "profile" else "step${step + 1}") }
+    fun loadCountries() {
+        if (_countries.value.orEmpty().isNotEmpty()) return
+        action { _countries.value = repository.authorized { countries() } }
+    }
     fun geography() = action { loadGeography() }
     private suspend fun loadGeography() {
         _countries.value = repository.authorized { countries() }

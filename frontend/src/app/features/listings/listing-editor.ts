@@ -1,4 +1,4 @@
-import { DatePipe } from '@angular/common';
+import { DatePipe, DecimalPipe, NgTemplateOutlet } from '@angular/common';
 import { EditorDrafts } from './editor-draft';
 import { Calendar } from '../../shared/calendar';
 import { Component, inject, OnInit, OnDestroy, signal } from '@angular/core';
@@ -11,7 +11,16 @@ import { Area, Listing } from './models';
 import { LocationPicker } from './location-picker';
 import { AdminNav } from '../admin/admin-nav';
 @Component({
-  imports: [DatePipe, Calendar, FormsModule, RouterLink, LocationPicker, AdminNav],
+  imports: [
+    DatePipe,
+    DecimalPipe,
+    NgTemplateOutlet,
+    Calendar,
+    FormsModule,
+    RouterLink,
+    LocationPicker,
+    AdminNav,
+  ],
   templateUrl: './listing-editor.html',
   styleUrl: './listing-editor.css',
 })
@@ -59,6 +68,147 @@ export class ListingEditor implements OnInit, OnDestroy {
   back() {
     this.flowError = '';
     this.step = Math.max(0, this.step - 1);
+  }
+  estimating = signal(false);
+  estimateError = '';
+  estimate = signal<RentEstimate | null>(null);
+  pendingPhotos: File[] = [];
+  photoPreviews = new Map<File, string>();
+  private setPendingPhotos(files: File[]) {
+    for (const [file, url] of this.photoPreviews) {
+      if (!files.includes(file)) {
+        URL.revokeObjectURL(url);
+        this.photoPreviews.delete(file);
+      }
+    }
+    for (const file of files) {
+      if (!this.photoPreviews.has(file)) this.photoPreviews.set(file, URL.createObjectURL(file));
+    }
+    this.pendingPhotos = files;
+    this.estimate.set(null);
+  }
+  removePendingPhoto(file: File) {
+    this.setPendingPhotos(this.pendingPhotos.filter((photo) => photo !== file));
+  }
+  selectEstimatePhotos(event: Event): boolean {
+    const input = event.target as HTMLInputElement;
+    const files = Array.from(input.files || []);
+    input.value = '';
+    if (!files.length) return false;
+    if (
+      files.some(
+        (file) =>
+          file.size === 0 ||
+          file.size > 5242880 ||
+          !['image/jpeg', 'image/png', 'image/webp'].includes(file.type),
+      )
+    ) {
+      this.estimateError = 'Chaque photo doit être en JPEG, PNG ou WebP et peser au maximum 5 MiB.';
+      return false;
+    }
+    const key = (file: File) => `${file.name}:${file.size}:${file.lastModified}`;
+    const combined = [
+      ...new Map([...this.pendingPhotos, ...files].map((file) => [key(file), file])).values(),
+    ];
+    if (combined.length + (this.saved()?.photos?.length || 0) > 10) {
+      this.estimateError = '10 photos maximum par annonce. Sélectionne moins de photos.';
+      return false;
+    }
+    this.setPendingPhotos(combined);
+    this.estimateError = '';
+    return true;
+  }
+  private async uploadPendingPhotos(id: string) {
+    while (this.pendingPhotos.length) {
+      const file = this.pendingPhotos[0];
+      const photo = new FormData();
+      photo.append('file', file);
+      photo.append('caption', this.caption);
+      this.saved.set(await this.api.request<Listing>('POST', '/listings/' + id + '/photos', photo));
+      this.removePendingPhoto(file);
+    }
+    this.caption = '';
+  }
+  async estimateRent() {
+    if (this.estimating() || this.isRequest) return;
+    this.estimateError = '';
+    this.estimate.set(null);
+    if (!this.areaName || !this.form.propertyType.trim()) {
+      this.estimateError = 'Précise la localité et le type du logement.';
+      return;
+    }
+    if (!this.pendingPhotos.length && !this.saved()?.photos?.length) {
+      this.estimateError = 'Ajoute au moins une photo du logement pour lancer l’analyse.';
+      return;
+    }
+    this.estimating.set(true);
+    try {
+      const body = new FormData();
+      for (const photo of this.saved()?.photos || []) {
+        if (!photo.url)
+          throw new Error('Photo indisponible. Actualise l’annonce avant de réessayer.');
+        const response = await fetch(photo.url, { signal: AbortSignal.timeout(15000) });
+        if (!response.ok)
+          throw new Error('Photo indisponible. Actualise l’annonce avant de réessayer.');
+        body.append('photo', await response.blob(), 'logement-' + photo.id);
+      }
+      for (const file of this.pendingPhotos) body.append('photo', file, file.name);
+      body.append(
+        'logement',
+        new Blob(
+          [
+            JSON.stringify({
+              localisation: this.areaName,
+              type: this.form.propertyType,
+              street: this.form.street,
+              description: this.form.description,
+              capacity: this.form.capacity,
+              equipment: this.form.equipment
+                .split(',')
+                .map((v) => v.trim())
+                .filter(Boolean),
+            }),
+          ],
+          { type: 'application/json' },
+        ),
+      );
+      const result = await this.api.request<RentEstimate>(
+        'POST',
+        '/ai/rent-estimate',
+        body,
+        200000,
+      );
+      if (
+        !result.success ||
+        !result.estimation?.disponible ||
+        !Number.isFinite(result.estimation.loyer_conseille_tnd)
+      )
+        throw new Error('Estimation indisponible. Réessaie dans un instant.');
+      if (!this.destroyed) this.estimate.set(result);
+    } catch (e: unknown) {
+      const failure = e as {
+        error?: { message?: string };
+        status?: number;
+        name?: string;
+        message?: string;
+      };
+      this.estimateError =
+        failure?.error?.message ||
+        (failure?.status === 0
+          ? 'Connexion impossible. Vérifie le réseau et réessaie.'
+          : failure?.name === 'TimeoutError'
+            ? 'L’analyse prend trop de temps. Réessaie.'
+            : failure?.status != null
+              ? 'Le service d’estimation est indisponible. Réessaie.'
+              : failure?.message || 'Le service d’estimation est injoignable. Réessaie.');
+    } finally {
+      this.estimating.set(false);
+    }
+  }
+  applyEstimate() {
+    const value = this.estimate()?.estimation.loyer_conseille_tnd;
+    if (value != null) this.form.rent = Math.round(value);
+    this.estimate.set(null);
   }
   caption = '';
   private drafts = inject(EditorDrafts);
@@ -122,6 +272,7 @@ export class ListingEditor implements OnInit, OnDestroy {
         this.form = { ...pending.form };
         this.step = pending.step;
         this.caption = pending.caption;
+        this.setPendingPhotos(pending.photos || []);
       }
       this.regionId =
         this.areas().find((a) => a.id === this.form.localityId)?.governorate_id ?? null;
@@ -130,17 +281,19 @@ export class ListingEditor implements OnInit, OnDestroy {
   }
   ngOnDestroy() {
     this.destroyed = true;
+    for (const url of this.photoPreviews.values()) URL.revokeObjectURL(url);
     if (
       !this.adminMode &&
       this.allowed() &&
       this.baseline &&
-      JSON.stringify(this.form) !== this.baseline
+      (JSON.stringify(this.form) !== this.baseline || this.pendingPhotos.length > 0)
     )
       this.drafts.set(this.draftKey, {
         form: { ...this.form },
         step: this.step,
         version: this.saved()?.version ?? null,
         caption: this.caption,
+        photos: [...this.pendingPhotos],
       });
     else this.drafts.remove(this.draftKey);
   }
@@ -271,6 +424,7 @@ export class ListingEditor implements OnInit, OnDestroy {
         this.adminMode ? { listing: body, reason: this.reason.trim() } : body,
       );
       this.accept(r);
+      if (!this.isRequest) await this.uploadPendingPhotos(r.id);
       this.baseline = JSON.stringify(this.form);
       this.drafts.remove(this.draftKey);
       this.feedback.show(
@@ -322,29 +476,16 @@ export class ListingEditor implements OnInit, OnDestroy {
     }
   }
   async upload(event: Event) {
-    const input = event.target as HTMLInputElement;
-    const file = input.files?.[0];
-    const r = this.saved();
-    if (!file || !r) return;
-    if (file.size > 5242880) {
-      this.feedback.show('Chaque photo doit peser au maximum 5 MiB.', true);
-      input.value = '';
-      return;
-    }
+    if (!this.selectEstimatePhotos(event)) return;
+    const row = this.saved();
+    if (!row) return;
     this.busy.set(true);
     try {
-      const body = new FormData();
-      body.append('file', file);
-      body.append('caption', this.caption);
-      this.saved.set(
-        await this.api.request<Listing>('POST', '/listings/' + r.id + '/photos', body),
-      );
-      this.caption = '';
-    } catch (e) {
-      this.feedback.error(e);
+      await this.uploadPendingPhotos(row.id);
+    } catch (error) {
+      this.feedback.error(error);
     } finally {
       this.busy.set(false);
-      input.value = '';
     }
   }
   async removePhoto(photo: string) {
@@ -360,4 +501,21 @@ export class ListingEditor implements OnInit, OnDestroy {
       this.busy.set(false);
     }
   }
+}
+
+export interface RentEstimate {
+  success: boolean;
+  estimation: {
+    disponible: boolean;
+    loyer_min_tnd: number;
+    loyer_max_tnd: number;
+    loyer_conseille_tnd: number;
+    fiabilite: string;
+    explication: string;
+  };
+  analyse_visuelle?: {
+    etat_apparent?: string;
+    luminosite?: string;
+    equipements_visibles?: string[];
+  };
 }
