@@ -28,7 +28,7 @@ class MessagesFragment:BoundFragment<FragmentMessagesBinding>(FragmentMessagesBi
   messaging.event.observe(viewLifecycleOwner){it.consume()?.let{findNavController().navigate(R.id.loginFragment)}}
   messaging.state.observe(viewLifecycleOwner){result->
    binding.threadTitle.text=if(thread)result.selected?.let{it.participantName+" · "+it.listingTitle}?:result.listingTitle else getString(R.string.messages_title)
-   binding.messageState.text=result.error?:if(result.loading)"Chargement…" else if(thread&&result.selected!=null&&!result.selected.listingAvailable)getString(R.string.messages_unavailable) else if(thread&&result.messages.isEmpty())getString(R.string.messages_first) else if(!thread&&result.conversations.isEmpty())getString(R.string.messages_empty) else ""
+   binding.messageState.text=result.error?:if(result.sending)getString(R.string.messages_sending) else if(result.loading)"Chargement…" else if(thread&&result.selected!=null&&!result.selected.listingAvailable)getString(R.string.messages_unavailable) else if(thread&&result.messages.isEmpty())getString(R.string.messages_first) else if(!thread&&result.conversations.isEmpty())getString(R.string.messages_empty) else ""
    binding.viewListing.isVisible=thread&&result.selected?.listingAvailable==true&&result.selected.listingId!=null
    binding.loadMore.isVisible=if(thread)result.hasMore else result.moreInbox
    binding.loadMore.setText(if(thread)R.string.messages_older else R.string.messages_more)
@@ -36,6 +36,7 @@ class MessagesFragment:BoundFragment<FragmentMessagesBinding>(FragmentMessagesBi
    binding.messageDraft.isEnabled=!result.sending
    if(binding.messageDraft.text.toString()!=result.draft)binding.messageDraft.setText(result.draft)
    binding.sendMessage.isEnabled=result.draft.isNotBlank()&&!result.sending&&!result.loading
+   binding.sendMessage.setText(if(result.sending)R.string.messages_sending else R.string.messages_send)
    val manager=binding.messageRows.layoutManager as LinearLayoutManager
    val previousSize=adapter.itemCount
    val previousLastId=adapter.lastId
@@ -44,7 +45,7 @@ class MessagesFragment:BoundFragment<FragmentMessagesBinding>(FragmentMessagesBi
    if(thread&&follow&&adapter.itemCount>0&&(previousSize==0||previousLastId!=result.messages.lastOrNull()?.id?.toString())){val recycler=binding.messageRows;val owner=viewLifecycleOwner;recycler.post{if(owner.lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED))recycler.scrollToPosition(adapter.itemCount-1)}}
   }
   messaging.open(arguments?.getString("conversationId")?.takeIf{it.isNotBlank()},arguments?.getString("listingId")?.takeIf{it.isNotBlank()},arguments?.getString("listingTitle").orEmpty())
-  viewLifecycleOwner.lifecycleScope.launch{viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.RESUMED){while(isActive){delay(5000);messaging.refresh()}}}
+  viewLifecycleOwner.lifecycleScope.launch{viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.RESUMED){while(isActive){delay(5000);messaging.refresh(background=true)}}}
  }
  override fun onDestroyView(){binding.messageRows.adapter=null;super.onDestroyView()}
  private data class Row(val id:String,val title:String,val detail:String,val mine:Boolean)

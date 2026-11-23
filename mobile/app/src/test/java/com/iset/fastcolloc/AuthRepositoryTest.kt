@@ -63,6 +63,17 @@ class AuthRepositoryTest {
         try { repo.authorized { details() }; fail("Expected block") } catch (_: AccountBlocked) { }
         assertNull(store.session()); assertTrue(cache.cleared)
     }
+    @Test fun unavailableMessageRecipientPreservesSessionAndErrorBody() = runBlocking {
+        store.save(Session("access", "refresh", 3600))
+        val body="""{"code":"MESSAGE_RECIPIENT_UNAVAILABLE"}"""
+        server.enqueue(response(403,body))
+        try { repo.authorized { conversations() }; fail("Expected rejection") }
+        catch (e: retrofit2.HttpException) {
+            assertEquals("Ce destinataire ne peut pas recevoir de messages actuellement.",AuthRepository.message(e))
+            assertEquals(body,e.response()!!.errorBody()!!.string())
+        }
+        assertNotNull(store.session()); assertFalse(cache.cleared)
+    }
     @Test fun passwordLimitCountsUtf8Bytes() {
         AuthRepository.validatePassword("a".repeat(12))
         for(value in listOf("short", "é".repeat(37))) {

@@ -117,7 +117,7 @@ class Sprint1DeviceTest {
             click(R.id.btnLogout);waitFor(R.id.loginFragment)
             assertNull(container.sessions.session())
             text(R.id.etLoginEmail,fixture.get("webEmail").asString);text(R.id.etLoginPassword,password);click(R.id.btnLogin)
-            waitFor(R.id.homeFragment);click(R.id.btnProfile);waitFor(R.id.profileFragment)
+            waitFor(R.id.homeFragment);click(R.id.profileFragment);waitFor(R.id.profileFragment)
             click(R.id.btnLogout);waitFor(R.id.loginFragment)
             // Actual signup from Android; the harness confirms only this owned fixture.
             click(R.id.btnOpenRegister);waitFor(R.id.registerStep1Fragment)

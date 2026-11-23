@@ -1,3 +1,4 @@
 <resources>
+<string name="messages_sending">Envoi en cours…</string>
 <string name="messages_title">Messages</string><string name="messages_contact">Contacter</string><string name="messages_send">Envoyer</string><string name="messages_hint">Ton message…</string><string name="messages_refresh">Actualiser</string><string name="messages_older">Messages précédents</string><string name="messages_more">Autres conversations</string><string name="messages_view_listing">Voir l’annonce</string><string name="messages_empty">Aucune discussion. Contacte l’auteur d’une annonce pour commencer.</string><string name="messages_first">Présente-toi et pose ta première question.</string><string name="messages_unavailable">Annonce indisponible · la discussion reste accessible.</string>
 </resources>

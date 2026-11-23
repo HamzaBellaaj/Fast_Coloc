@@ -174,7 +174,9 @@ class Sprint1IntegrationTest {
   UUID stranger=UUID.randomUUID();sql("insert into auth.users values('"+stranger+"','stranger@example.invalid')");sync(stranger);sql("update fastcoloc.profiles set completed_at=now()");
   assertThat(request(HttpMethod.POST,"/api/v1/conversations",body,stranger).getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
   sql("update fastcoloc.account_access set status='BLOCKED',blocked_at=now(),blocked_reason='messaging test' where user_id='"+USER+"'");
-  assertThat(request(HttpMethod.POST,"/api/v1/conversations/"+id+"/messages",Map.of("content","Bonjour","clientId",UUID.randomUUID()),OTHER).getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
+  var unavailable=request(HttpMethod.POST,"/api/v1/conversations/"+id+"/messages",Map.of("content","Bonjour","clientId",UUID.randomUUID()),OTHER);
+  assertThat(unavailable.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
+  assertThat(JSON.readTree(unavailable.getBody()).path("code").asText()).isEqualTo("MESSAGE_RECIPIENT_UNAVAILABLE");
   assertThat(request(HttpMethod.GET,"/api/v1/conversations",null,USER).getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
  }
  @Test void messagingLimitsFloodingAndRejectsReusedRequestIds() throws Exception {

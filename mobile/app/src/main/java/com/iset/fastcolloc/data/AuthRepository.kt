@@ -8,6 +8,7 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import retrofit2.HttpException
 import java.io.IOException
+import com.google.gson.JsonParser
 
 class SessionExpired : IOException("Ta session a expiré. Reconnecte-toi.")
 class AccountBlocked : IOException("Ce compte est bloqué. Contacte l’administration.")
@@ -44,7 +45,7 @@ class AuthRepository(val api: FastColocApi, val sessions: SessionStore, private 
         }
     }
     private suspend fun checkBlocked(e: HttpException) {
-        if (e.code() == 403 && e.response()?.errorBody()?.string()?.contains("ACCOUNT_BLOCKED") == true) {
+        if (e.code() == 403 && errorCode(e) == "ACCOUNT_BLOCKED") {
             clear(); throw AccountBlocked()
         }
     }
@@ -82,6 +83,11 @@ class AuthRepository(val api: FastColocApi, val sessions: SessionStore, private 
         return revoked
     }
     companion object {
+        private fun errorCode(error: HttpException): String? = runCatching {
+            error.response()?.errorBody()?.source()?.peek()?.readUtf8()?.let {
+                JsonParser.parseString(it).asJsonObject.get("code")?.asString
+            }
+        }.getOrNull()
         fun validatePassword(value: String) {
             require(value.length >= 12 && value.toByteArray(Charsets.UTF_8).size <= 72) { "Utilise au moins 12 caractères, au maximum 72 octets UTF-8." }
         }
@@ -90,7 +96,11 @@ class AuthRepository(val api: FastColocApi, val sessions: SessionStore, private 
             is HttpException -> when(error.code()) {
                 400 -> "Vérifie les champs et la confirmation de ton e-mail."
                 401 -> "Identifiants invalides ou e-mail non confirmé."
-                403 -> "Accès refusé."
+                403 -> when (errorCode(error)) {
+                    "MESSAGE_RECIPIENT_UNAVAILABLE" -> "Ce destinataire ne peut pas recevoir de messages actuellement."
+                    "MESSAGE_PROFILE_REQUIRED" -> "Complète ton profil avant d’envoyer un message."
+                    else -> "Accès refusé."
+                }
                 409 -> "Étapes incomplètes ou conflit. Recharge tes informations."
                 413 -> "Photo trop volumineuse : 5 MiB maximum."
                 429 -> "Trop de tentatives. Réessaie plus tard."
