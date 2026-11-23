@@ -5,6 +5,15 @@ import okhttp3.RequestBody
 import retrofit2.http.*
 
 interface FastColocApi {
+    @GET("notification-preferences") suspend fun notificationPreferences(): NotificationPreferencesDto
+    @PATCH("notification-preferences") suspend fun updateNotificationPreferences(@Body body:NotificationPreferencesPatch): NotificationPreferencesDto
+    @GET("conversations") suspend fun conversations(@Query("page") page:Int=0,@Query("listingId") listingId:String?=null): ConversationPageDto
+    @GET("conversations/{id}") suspend fun conversation(@Path("id") id:String): ConversationDto
+    @POST("conversations") suspend fun startConversation(@Body body:StartConversationDto): ConversationDto
+    @GET("conversations/{id}/messages") suspend fun privateMessages(@Path("id") id:String,@Query("before") before:Long?=null): MessagePageDto
+    @POST("conversations/{id}/messages") suspend fun sendPrivateMessage(@Path("id") id:String,@Body body:SendMessageDto): PrivateMessageDto
+    @PUT("conversations/{id}/read") suspend fun readConversation(@Path("id") id:String,@Body body:ReadConversationDto)
+
     @GET("listings/map") suspend fun listingMap(@QueryMap query: Map<String,String>): ListingMapPageDto
     @GET("geography/search") suspend fun searchAddress(@Query("q") query: String): List<GeoPlaceDto>
     @POST("geography/position") suspend fun validatePosition(@Body point: GeoCoordinatesDto): GeoPositionDto

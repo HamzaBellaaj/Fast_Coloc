@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" android:layout_width="match_parent" android:layout_height="match_parent" android:orientation="vertical" android:padding="16dp" android:background="@android:color/white">
+ <TextView android:id="@+id/threadTitle" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="@string/messages_title" android:textAppearance="@style/TextAppearance.FastColoc.Body" android:textSize="22sp" android:textStyle="bold"/>
+ <TextView android:id="@+id/messageState" android:layout_width="match_parent" android:layout_height="wrap_content" android:accessibilityLiveRegion="polite" android:paddingVertical="8dp"/>
+ <com.google.android.material.button.MaterialButton android:id="@+id/viewListing" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/messages_view_listing" style="@style/Widget.FastColoc.Button.Outlined"/>
+ <com.google.android.material.button.MaterialButton android:id="@+id/refreshMessages" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/messages_refresh" style="@style/Widget.FastColoc.Button.Outlined"/>
+ <androidx.recyclerview.widget.RecyclerView android:id="@+id/messageRows" android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="1"/>
+ <com.google.android.material.button.MaterialButton android:id="@+id/loadMore" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/messages_older" style="@style/Widget.FastColoc.Button.Outlined"/>
+ <LinearLayout android:id="@+id/composer" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical">
+  <EditText android:id="@+id/messageDraft" android:layout_width="match_parent" android:layout_height="wrap_content" android:hint="@string/messages_hint" android:inputType="textCapSentences|textMultiLine" android:maxLength="4000" android:minHeight="64dp" android:maxLines="5" android:gravity="top" android:importantForAutofill="no"/>
+  <com.google.android.material.button.MaterialButton android:id="@+id/sendMessage" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="@string/messages_send"/>
+ </LinearLayout>
+</LinearLayout>

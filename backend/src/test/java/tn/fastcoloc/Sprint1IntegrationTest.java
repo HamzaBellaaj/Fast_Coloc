@@ -25,7 +25,7 @@ import org.springframework.util.*;
 import static org.assertj.core.api.Assertions.*;
 
 /** Real HTTP and JWT/JWKS + non-owner PostgreSQL. Only external Auth/Storage are local simulators. */
-@SpringBootTest(webEnvironment=SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest(webEnvironment=SpringBootTest.WebEnvironment.RANDOM_PORT,properties="fastcoloc.notifications.enabled=false")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class Sprint1IntegrationTest {
  static final UUID USER=UUID.fromString("1f2d539d-acb1-4516-a440-7f2918e3f1c2");
@@ -47,6 +47,8 @@ class Sprint1IntegrationTest {
     s.execute(Files.readString(Path.of("supabase/migrations/20261117062435_listing_request_location.sql")));
     s.execute(Files.readString(Path.of("supabase/migrations/20261116233807_us29_listing_moderation.sql")));
     s.execute(Files.readString(Path.of("supabase/migrations/20261117000621_admin_contact_read.sql")));
+    s.execute(Files.readString(Path.of("supabase/migrations/20261123193000_private_messaging.sql")));
+    s.execute(Files.readString(Path.of("supabase/migrations/20261123202000_message_notifications.sql")));
     s.execute("insert into fastcoloc.countries values('TN','Tunisia');insert into fastcoloc.governorates(country_code,name) values('TN','Tunis');insert into fastcoloc.localities(governorate_id,name) values(1,'Tunis')");
    }
    KEY=new ECKeyGenerator(Curve.P_256).keyID("sprint1-test-key").generate();
@@ -65,6 +67,128 @@ class Sprint1IntegrationTest {
   org.mockito.Mockito.when(geography.landCover(org.mockito.ArgumentMatchers.anyDouble(),org.mockito.ArgumentMatchers.anyDouble())).thenReturn(JSON.readTree("{\"values\":[50]}"));
   org.mockito.Mockito.when(geography.reverse(org.mockito.ArgumentMatchers.anyDouble(),org.mockito.ArgumentMatchers.anyDouble())).thenReturn(JSON.readTree("{\"address\":{\"country_code\":\"tn\",\"road\":\"Rue fixture\",\"city\":\"Tunis\"}}"));
  }
+
+
+ @Autowired tn.fastcoloc.notifications.NotificationRepository notifications;
+ String notificationConversation()throws Exception{
+  listingAccounts();UUID listing=listing("REQUEST",400);publish(listing);
+  var response=request(HttpMethod.POST,"/api/v1/conversations",Map.of("listingId",listing,"content","Private fixture text must not leave messaging","clientId",UUID.randomUUID()),OTHER);
+  assertThat(response.getStatusCode()).as(response.getBody()).isEqualTo(HttpStatus.CREATED);return JSON.readTree(response.getBody()).path("id").asText();
+ }
+ long notificationCount(String condition)throws Exception{try(var c=PG.getPostgresDatabase().getConnection();var s=c.createStatement();var r=s.executeQuery("select count(*) from fastcoloc.notification_events where "+condition)){r.next();return r.getLong(1);}}
+ @Test void notificationsPreferencesArePrivateAndPersisted()throws Exception{
+  listingAccounts();assertThat(request(HttpMethod.GET,"/api/v1/notification-preferences",null,null).getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
+  assertThat(JSON.readTree(request(HttpMethod.GET,"/api/v1/notification-preferences",null,USER).getBody()).path("newMessageEmail").asBoolean()).isTrue();
+  assertThat(request(HttpMethod.PATCH,"/api/v1/notification-preferences",Map.of("newMessageEmail",false),USER).getStatusCode()).isEqualTo(HttpStatus.OK);
+  assertThat(JSON.readTree(request(HttpMethod.GET,"/api/v1/notification-preferences",null,USER).getBody()).path("newMessageEmail").asBoolean()).isFalse();
+  assertThat(JSON.readTree(request(HttpMethod.GET,"/api/v1/notification-preferences",null,OTHER).getBody()).path("newMessageEmail").asBoolean()).isTrue();
+  assertThat(request(HttpMethod.PATCH,"/api/v1/notification-preferences",Map.of("newMessageEmail",true,"userId",OTHER),USER).getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+  assertThat(request(HttpMethod.PATCH,"/api/v1/notification-preferences",Map.of(),USER).getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+ }
+ @Test void notificationsQueueOnlyNewInsertsAndGroupMessageBursts()throws Exception{
+  String id=notificationConversation();assertThat(notificationCount("true")).isEqualTo(1);
+  var payload=Map.of("content","A retry-safe message","clientId",UUID.randomUUID());
+  assertThat(request(HttpMethod.POST,"/api/v1/conversations/"+id+"/messages",payload,OTHER).getStatusCode()).isEqualTo(HttpStatus.OK);
+  long before=notificationCount("true");request(HttpMethod.POST,"/api/v1/conversations/"+id+"/messages",payload,OTHER);assertThat(notificationCount("true")).isEqualTo(before);
+  long burstBefore=notificationCount("dedup_key like '%:1234567'");
+  sql("insert into fastcoloc.messages(conversation_id,sender_id,client_id,content,created_at) values('"+id+"','"+OTHER+"',gen_random_uuid(),'Burst 1',to_timestamp(1234567*300)),('"+id+"','"+OTHER+"',gen_random_uuid(),'Burst 2',to_timestamp(1234567*300+1))");
+  assertThat(notificationCount("dedup_key like '%:1234567'")).isEqualTo(burstBefore+1);
+ }
+ @Test void notificationsReadMessagesAndOptOutSuppressDelivery()throws Exception{
+  String id=notificationConversation();var history=JSON.readTree(request(HttpMethod.GET,"/api/v1/conversations/"+id+"/messages",null,USER).getBody());long message=history.path("items").get(0).path("id").asLong();
+  request(HttpMethod.PUT,"/api/v1/conversations/"+id+"/read",Map.of("throughId",message),USER);sql("update fastcoloc.notification_events set next_attempt_at=now()-interval '1 second'");
+  assertThat(notifications.claim()).isEmpty();assertThat(notificationCount("status='SKIPPED'")).isEqualTo(1);
+  request(HttpMethod.PATCH,"/api/v1/notification-preferences",Map.of("newMessageEmail",false),USER);
+  UUID another=listing("REQUEST",450);publish(another);var body=Map.of("listingId",another,"content","No business email please","clientId",UUID.randomUUID());
+  assertThat(request(HttpMethod.POST,"/api/v1/conversations",body,OTHER).getStatusCode()).isEqualTo(HttpStatus.CREATED);assertThat(notificationCount("true")).isEqualTo(1);
+ }
+ @Test void notificationsLeasesRetriesAndStaleAcknowledgements()throws Exception{
+  notificationConversation();sql("update fastcoloc.notification_events set next_attempt_at=now()-interval '1 second'");
+  var first=notifications.claim();assertThat(first).hasSize(1);assertThat(first.getFirst().email()).isEqualTo("user@example.invalid");assertThat(notifications.claim()).isEmpty();
+  notifications.finish(first.getFirst(),"RETRY","WEBHOOK_UNAVAILABLE");assertThat(notificationCount("status='PENDING' and attempts=1 and next_attempt_at>now()")).isEqualTo(1);
+  sql("update fastcoloc.notification_events set next_attempt_at=now()-interval '1 second'");var retry=notifications.claim();assertThat(retry).hasSize(1);assertThat(retry.getFirst().lease()).isNotEqualTo(first.getFirst().lease());
+  notifications.finish(first.getFirst(),"SENT",null);assertThat(notificationCount("status='PROCESSING'")).isEqualTo(1);
+  notifications.finish(retry.getFirst(),"SENT",null);assertThat(notificationCount("status='SENT' and attempts=2")).isEqualTo(1);assertThat(notifications.claim()).isEmpty();
+ }
+ @Test void notificationsEmailFailureNeverRemovesMessages()throws Exception{
+  String id=notificationConversation();sql("update fastcoloc.notification_events set next_attempt_at=now()-interval '1 second'");
+  var gateway=org.mockito.Mockito.mock(tn.fastcoloc.notifications.NotificationGateway.class);org.mockito.Mockito.when(gateway.configured()).thenReturn(true);
+  org.mockito.Mockito.doThrow(new tn.fastcoloc.notifications.NotificationGateway.DeliveryFailure("TRANSPORT_FAILURE")).when(gateway).deliver(org.mockito.ArgumentMatchers.any());
+  new tn.fastcoloc.notifications.NotificationDispatcher(notifications,gateway).dispatch();
+  assertThat(notificationCount("status='PENDING' and last_error_code='TRANSPORT_FAILURE'")).isEqualTo(1);
+  assertThat(JSON.readTree(request(HttpMethod.GET,"/api/v1/conversations/"+id+"/messages",null,USER).getBody()).path("items").size()).isEqualTo(1);
+ }
+ @Test void notificationsBlockedRecipientsAndRevokedPreferencesCancelClaimedJobs()throws Exception{
+  notificationConversation();sql("update fastcoloc.notification_events set next_attempt_at=now()-interval '1 second'");var job=notifications.claim().getFirst();assertThat(notifications.ready(job)).isTrue();
+  request(HttpMethod.PATCH,"/api/v1/notification-preferences",Map.of("newMessageEmail",false),USER);assertThat(notifications.ready(job)).isFalse();notifications.finish(job,"SKIPPED","READ_OR_DISABLED");
+  request(HttpMethod.PATCH,"/api/v1/notification-preferences",Map.of("newMessageEmail",true),USER);sql("update fastcoloc.notification_events set status='PENDING',next_attempt_at=now()-interval '1 second';update fastcoloc.account_access set status='BLOCKED',blocked_at=now() where user_id='"+USER+"'");
+  assertThat(notifications.claim()).isEmpty();assertThat(notificationCount("status='SKIPPED'")).isEqualTo(1);
+  try(var c=java.sql.DriverManager.getConnection(PG.getJdbcUrl("fastcoloc_backend","postgres"));var q=c.createStatement()){assertThatThrownBy(()->q.executeQuery("select * from fastcoloc.notification_events")).isInstanceOf(java.sql.SQLException.class);}
+ }
+
+ @Test void messagingPrivateHistoryUnreadRetryAndDeletedListing() throws Exception {
+  listingAccounts();UUID listing=listing("OFFER",450);publish(listing);
+  UUID requestId=UUID.randomUUID();var body=Map.of("listingId",listing,"content","Bonjour, la chambre est disponible ?","clientId",requestId);
+  assertThat(request(HttpMethod.POST,"/api/v1/conversations",body,null).getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
+  assertThat(request(HttpMethod.POST,"/api/v1/conversations",body,USER).getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+  var opened=request(HttpMethod.POST,"/api/v1/conversations",body,OTHER);
+  assertThat(opened.getStatusCode()).as(opened.getBody()).isEqualTo(HttpStatus.CREATED);
+  String id=JSON.readTree(opened.getBody()).path("id").asText();String base="/api/v1/conversations/"+id;
+  var retry=request(HttpMethod.POST,"/api/v1/conversations",body,OTHER);
+  assertThat(JSON.readTree(retry.getBody()).path("id").asText()).isEqualTo(id);
+  var inbox=JSON.readTree(request(HttpMethod.GET,"/api/v1/conversations",null,USER).getBody());
+  assertThat(inbox.path("items").size()).isEqualTo(1);assertThat(inbox.path("items").get(0).path("unread_count").asInt()).isEqualTo(1);
+  var history=JSON.readTree(request(HttpMethod.GET,base+"/messages",null,USER).getBody());assertThat(history.path("items").size()).isEqualTo(1);
+  long first=history.path("items").get(0).path("id").asLong();
+  assertThat(request(HttpMethod.PUT,base+"/read",Map.of("throughId",first),USER).getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
+  inbox=JSON.readTree(request(HttpMethod.GET,"/api/v1/conversations",null,USER).getBody());assertThat(inbox.path("items").get(0).path("unread_count").asInt()).isZero();
+  var reply=Map.of("content","Oui, on peut organiser une visite.","clientId",UUID.randomUUID());
+  assertThat(request(HttpMethod.POST,base+"/messages",reply,USER).getStatusCode()).isEqualTo(HttpStatus.OK);
+  var page=JSON.readTree(request(HttpMethod.GET,base+"/messages?size=1",null,OTHER).getBody());assertThat(page.path("hasMore").asBoolean()).isTrue();
+  long cursor=page.path("nextBefore").asLong();var older=JSON.readTree(request(HttpMethod.GET,base+"/messages?before="+cursor+"&size=1",null,OTHER).getBody());assertThat(older.path("items").get(0).path("id").asLong()).isEqualTo(first);
+  assertThat(request(HttpMethod.POST,base+"/messages",Map.of("content"," ","clientId",UUID.randomUUID()),USER).getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+  assertThat(request(HttpMethod.POST,base+"/messages",Map.of("content","x".repeat(4001),"clientId",UUID.randomUUID()),USER).getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+  assertThat(request(HttpMethod.GET,base+"/messages?size=100",null,USER).getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+  assertThat(request(HttpMethod.PUT,base+"/read",Map.of("throughId",Long.MAX_VALUE),USER).getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+  UUID stranger=UUID.randomUUID();sql("insert into auth.users values('"+stranger+"','stranger@example.invalid')");sync(stranger);sql("update fastcoloc.profiles set completed_at=now();update fastcoloc.account_access set app_role='ADMIN' where user_id='"+stranger+"'");
+  assertThat(request(HttpMethod.GET,base,null,stranger).getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+  assertThat(request(HttpMethod.GET,base+"/messages",null,stranger).getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+  assertThat(request(HttpMethod.POST,base+"/messages",reply,stranger).getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+  assertThat(request(HttpMethod.PUT,base+"/read",Map.of("throughId",first),stranger).getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+  try(var c=java.sql.DriverManager.getConnection(PG.getJdbcUrl("fastcoloc_backend","postgres"));var q=c.createStatement()){
+   q.execute("begin;select set_config('fastcoloc.user_id','"+stranger+"',true)");
+   try(var r=q.executeQuery("select count(*) from fastcoloc.messages")){r.next();assertThat(r.getInt(1)).isZero();}
+   try(var r=q.executeQuery("select count(*) from fastcoloc.conversations")){r.next();assertThat(r.getInt(1)).isZero();}q.execute("rollback");
+  }
+  assertThat(request(HttpMethod.DELETE,"/api/v1/listings/"+listing,null,USER).getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
+  var archived=JSON.readTree(request(HttpMethod.GET,base,null,OTHER).getBody());assertThat(archived.path("listing_id").isNull()).isTrue();assertThat(archived.path("listing_title").asText()).isNotBlank();
+  assertThat(request(HttpMethod.POST,base+"/messages",Map.of("content","Merci !","clientId",UUID.randomUUID()),OTHER).getStatusCode()).isEqualTo(HttpStatus.OK);
+ }
+ @Test void messagingRejectsUnavailableListingsAndBlockedAccounts() throws Exception {
+  listingAccounts();UUID listing=listing("REQUEST",500);var body=Map.of("listingId",listing,"content","Je propose une chambre.","clientId",UUID.randomUUID());
+  assertThat(request(HttpMethod.POST,"/api/v1/conversations",body,OTHER).getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+  publish(listing);var opened=request(HttpMethod.POST,"/api/v1/conversations",body,OTHER);assertThat(opened.getStatusCode()).as(opened.getBody()).isEqualTo(HttpStatus.CREATED);
+  String id=JSON.readTree(opened.getBody()).path("id").asText();
+  sql("update fastcoloc.listings set published_at=now()-interval '2 days',expires_at=now()-interval '1 day' where id='"+listing+"'");
+  assertThat(request(HttpMethod.POST,"/api/v1/conversations/"+id+"/messages",Map.of("content","Toujours int?ress?.","clientId",UUID.randomUUID()),OTHER).getStatusCode()).isEqualTo(HttpStatus.OK);
+  UUID stranger=UUID.randomUUID();sql("insert into auth.users values('"+stranger+"','stranger@example.invalid')");sync(stranger);sql("update fastcoloc.profiles set completed_at=now()");
+  assertThat(request(HttpMethod.POST,"/api/v1/conversations",body,stranger).getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+  sql("update fastcoloc.account_access set status='BLOCKED',blocked_at=now(),blocked_reason='messaging test' where user_id='"+USER+"'");
+  assertThat(request(HttpMethod.POST,"/api/v1/conversations/"+id+"/messages",Map.of("content","Bonjour","clientId",UUID.randomUUID()),OTHER).getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
+  assertThat(request(HttpMethod.GET,"/api/v1/conversations",null,USER).getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
+ }
+ @Test void messagingLimitsFloodingAndRejectsReusedRequestIds() throws Exception {
+  listingAccounts();UUID listing=listing("OFFER",450);publish(listing);
+  var opened=request(HttpMethod.POST,"/api/v1/conversations",Map.of("listingId",listing,"content","Premier message","clientId",UUID.randomUUID()),OTHER);
+  assertThat(opened.getStatusCode()).as(opened.getBody()).isEqualTo(HttpStatus.CREATED);String base="/api/v1/conversations/"+JSON.readTree(opened.getBody()).path("id").asText()+"/messages";
+  UUID key=UUID.randomUUID();var body=Map.of("content","Une question","clientId",key);var first=request(HttpMethod.POST,base,body,OTHER);var repeated=request(HttpMethod.POST,base,body,OTHER);
+  assertThat(JSON.readTree(first.getBody()).path("id")).isEqualTo(JSON.readTree(repeated.getBody()).path("id"));
+  assertThat(request(HttpMethod.POST,base,Map.of("content","Un autre texte","clientId",key),OTHER).getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+  for(int i=0;i<28;i++)assertThat(request(HttpMethod.POST,base,Map.of("content","Message "+i,"clientId",UUID.randomUUID()),OTHER).getStatusCode()).isEqualTo(HttpStatus.OK);
+  assertThat(request(HttpMethod.POST,base,Map.of("content","Trop vite","clientId",UUID.randomUUID()),OTHER).getStatusCode()).isEqualTo(HttpStatus.TOO_MANY_REQUESTS);
+  assertThat(request(HttpMethod.POST,base,body,OTHER).getStatusCode()).isEqualTo(HttpStatus.OK);
+ }
+
  @Test void geographySaveRejectsWaterAndPersistsCreateAndEditCoordinates() throws Exception {
   listingAccounts();
   var create = listingBody("OFFER",350);

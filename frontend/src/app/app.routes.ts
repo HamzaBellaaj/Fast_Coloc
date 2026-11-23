@@ -1,6 +1,8 @@
 import { Routes } from '@angular/router';
 import { adminGuard, registrationGuard, sessionGuard } from './core/guards';
 export const routes: Routes = [
+  {path:'messages',title:'Messages ? FastColoc',canActivate:[sessionGuard],loadComponent:()=>import('./features/messages/messages').then(m=>m.Messages)},
+  {path:'messages/:id',title:'Discussion ? FastColoc',canActivate:[sessionGuard],loadComponent:()=>import('./features/messages/messages').then(m=>m.Messages)},
   {
     path: 'pour-toi',
     title: 'Pour toi ✨ · FastColoc',

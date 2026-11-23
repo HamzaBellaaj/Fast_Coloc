@@ -66,6 +66,8 @@ public class SecurityConfig {
                         .requestMatchers("/api/v1/users/me","/api/v1/users/me/**","/api/v1/onboarding/**","/api/v1/profile-photos","/api/v1/profile-photos/**","/api/v1/geography/**").hasAnyRole("USER", "ADMIN")
                         .requestMatchers(HttpMethod.POST,"/api/v1/ai/rent-estimate").hasAnyRole("USER","ADMIN")
                         .requestMatchers(HttpMethod.POST,"/api/v1/recommendations/ai").hasAnyRole("USER","ADMIN")
+                        .requestMatchers("/api/v1/notification-preferences").hasAnyRole("USER","ADMIN")
+                        .requestMatchers("/api/v1/conversations", "/api/v1/conversations/**").hasAnyRole("USER","ADMIN")
                         .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
                         .anyRequest().denyAll())
                 .exceptionHandling(e -> e

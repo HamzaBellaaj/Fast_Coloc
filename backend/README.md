@@ -286,3 +286,102 @@ supprimé en fin de recette). Le 21 novembre 2026 : 15 candidates réelles,
 3 recommandations valides en 45 secondes, ordre reçu conservé, accès anonyme 401.
 Preuves sans identifiants de connexion : `target/recommendations-live-report.json`
 et `target/recommendations-n8n-evidence.json` (exécution n8n 520).
+
+## Messagerie privée REST — Ayoub
+
+La migration additive `supabase/migrations/20261123193000_private_messaging.sql` a été appliquée une seule fois au projet configuré. Ne pas rejouer les migrations historiques. Conversations et messages ont RLS activée ; le rôle runtime lit seulement les discussions dont il est participant et écrit par des fonctions SQL à capacité limitée. Aucun accès général ADMIN aux discussions privées.
+
+- `GET /api/v1/conversations?page=0&size=20` : boîte de réception et compteurs non lus. Le filtre facultatif `listingId` retrouve la discussion du visiteur pour une annonce, indépendamment de la pagination.
+- `POST /api/v1/conversations` avec `{listingId, content, clientId}` : premier message et création/réutilisation atomique. Aucun brouillon vide.
+- `GET /api/v1/conversations/{id}` : contexte et participant.
+- `GET /api/v1/conversations/{id}/messages?before=ID&size=30` : historique par curseur ; réponses en ordre chronologique, `hasMore` et `nextBefore`.
+- `POST /api/v1/conversations/{id}/messages` avec `{content, clientId}` : texte de 1 à 4000 caractères, 30 nouveaux messages/minute par expéditeur.
+- `PUT /api/v1/conversations/{id}/read` avec `{throughId}` : curseur de lecture monotone, limité à un message de cette discussion.
+
+Le client génère un UUID `clientId` et le réutilise lors d'une reprise du même envoi : le serveur ne crée pas de doublon. Le même UUID ne peut pas porter un texte différent. Pas d'auto-contact ; comptes actifs et profils terminés requis pour envoyer. Une annonce doit être publiée, visible et non expirée pour un nouveau contact. Les discussions existantes restent accessibles après expiration/masquage/suppression de l'annonce ; leur contexte minimal est conservé. La suppression d'un compte supprime ses conversations par cascade. Les suspensions administratives sont contrôlées ; le blocage personnel sera intégré avec le futur module de blocage.
+
+Validation : PostgreSQL isolé avec rôle non propriétaire et vrais JWT/HTTP ; tests d'accès tiers/ADMIN, RLS, pagination, non-lus, reprise idempotente, débit et suppression d'annonce. Vérification distante effectuée sur trois comptes temporaires supprimés ensuite. Aucun message envoyé aux utilisateurs existants. Notifications, pièces jointes, WebSockets et accusés de lecture visibles par l'autre participant ne font pas partie de cette livraison.
+
+## Notifications métier — workflow local n8n
+
+Premier événement livré : **nouveau message privé non lu**, depuis Angular ou Android.
+La migration additive `supabase/migrations/20261123202000_message_notifications.sql` a été appliquée seule ; ne pas rejouer les migrations historiques.
+L'insertion du message crée un événement durable dans la même transaction. Le worker appelle n8n séparément : une panne SMTP/webhook ne supprime pas le message.
+
+### Environnement installé sur ce PC
+
+- n8n : http://localhost:32768 ; workflow **FastColoc — Business notifications (local inbox)**.
+- Boîte de test Mailpit : http://localhost:8025. Les e-mails sont capturés localement ; aucune livraison vers une messagerie externe n'est configurée.
+- Identifiants du propriétaire n8n : variables N8N_OWNER_EMAIL / N8N_OWNER_PASSWORD dans `infra/notifications/.env.local`, ignoré par Git.
+- Secrets de webhook, chiffrement et base n8n générés localement ; aucun secret Supabase n'est copié dans n8n.
+- Ce nouvel environnement contient le workflow de notification uniquement ; il n'installe pas les workflows IA d'estimation/recommandations.
+
+Pour reproduire le setup, avec Docker Desktop démarré, depuis la racine :
+
+~~~powershell
+node infra/notifications/setup.cjs
+node infra/notifications/connect-backend.cjs
+node infra/notifications/test-workflow.cjs
+~~~
+
+Le setup préserve les volumes et un workflow déjà installé afin de conserver les modifications faites dans l'éditeur n8n. Le script connect-backend refuse de remplacer un autre endpoint déjà configuré. Redémarrer le backend après connexion.
+Pour arrêter les services, sans supprimer leurs données :
+
+~~~powershell
+docker compose --env-file infra/notifications/.env.local -f infra/notifications/compose.yaml stop
+~~~
+
+### Comportement et contrat
+
+- GET/PATCH /api/v1/notification-preferences ; PATCH accepte {"newMessageEmail":false}. Identité dérivée du JWT, préférences protégées par RLS. Le profil Web et les paramètres Android partagent ces valeurs.
+- Rappel après environ deux minutes ; regroupement par conversation/destinataire/tranche de cinq minutes. Un message lu, une préférence désactivée ou un compte suspendu annule les événements encore en attente.
+- Le worker utilise des baux, un backoff exponentiel et six tentatives maximum. Un événement épuisé reste FAILED pour diagnostic. Pas de destinataire, contenu de message ou secret dans les logs de livraison.
+- POST vers /webhook/fastcoloc-notifications avec Authorization: Bearer (secret local) et Idempotency-Key. Corps limité à eventId, type=NEW_MESSAGE, to et conversationId. Le destinataire est relu côté serveur dans Auth ; le client ne fournit pas d'adresse e-mail.
+- Succès uniquement après réponse {"eventId":"...","status":"sent"} ou "duplicate". Le workflow répond après acceptation SMTP et enregistrement dans son ledger PostgreSQL. Une simple réponse "queued" n'est pas considérée comme une livraison.
+- Le ledger supprime les rejeux d'événements déjà terminés et sérialise les traitements simultanés. SMTP ne garantit pas une livraison exactement une fois si le serveur accepte le mail et que le processus meurt avant l'enregistrement du résultat ; une API fournisseur idempotente sera préférable pour ce cas en production.
+- Transport Java vers n8n en HTTP/1.1, comme les intégrations n8n existantes. Pas de redirection automatique du secret ; HTTPS requis hors loopback.
+
+Le profil indique explicitement le mode local. Pour tester à la main, envoyer un message à un autre compte puis laisser la discussion non lue environ deux minutes et consulter Mailpit. Pour passer à un vrai fournisseur, configurer une identité SMTP validée dans n8n, adapter l'adresse expéditrice et les liens, activer HTTPS et changer FASTCOLOC_NOTIFICATION_MODE en external. Ne jamais stocker les identifiants dans workflow.json.
+
+Les e-mails Auth existants sont inchangés. Alertes de nouvelles annonces, SMS et push ne sont pas activés par ce premier workflow. Références : [n8n Webhook](https://docs.n8n.io/integrations/builtin/core-nodes/n8n-nodes-base.webhook/), [n8n Send Email](https://docs.n8n.io/integrations/builtin/core-nodes/n8n-nodes-base.sendemail/), [Mailpit Docker](https://mailpit.axllent.org/docs/install/docker/).
+
+Test SMTP de rejet/reprise, réservé à la boîte locale : `node infra/notifications/test-workflow.cjs --smtp-retry`. Le test configure temporairement Mailpit pour rejeter SMTP puis restaure les paramètres dans un bloc finally. Les contrôles de chaos sont désactivés en pratique (probabilités 0) hors de ce test.
+
+### Migration vers n8n Cloud / Gmail (branche Ayoub)
+
+Le brouillon **FastColoc - Private message emails (Gmail Cloud)** utilise Gmail OAuth2 et un ledger distinct dans le schema `fastcoloc_notifications`. La migration additive `20261123215000_cloud_notification_ledger.sql` a ete appliquee seule. Le role `fastcoloc_mailer` peut uniquement lire/inserer/modifier ce ledger ; il ne peut pas lire les messages, profils ou utilisateurs Auth. Aucun mot de passe administrateur Supabase ne doit etre copie dans n8n.
+
+Fichiers de connexion ignores par Git :
+- `infra/notifications/.env.cloud.local` : URL MCP, jeton MCP, secret du webhook Cloud, mot de passe du role mailer et ID du workflow.
+- `infra/notifications/.env.cloud.credentials.json` : champs a copier dans les credentials n8n **FastColoc Cloud webhook authentication** (Header Auth) et **FastColoc Cloud notification ledger** (Postgres, SSL Require).
+- Creer separement **FastColoc Gmail** (Gmail OAuth2) avec **Sign in with Google** dans n8n Cloud. Ne pas partager les mots de passe ou jetons dans le chat.
+
+Depuis la racine du depot :
+~~~powershell
+node infra/notifications/setup-cloud.cjs status
+node infra/notifications/setup-cloud.cjs prepare
+node infra/notifications/setup-cloud.cjs provision-ledger
+node infra/notifications/setup-cloud.cjs bind
+~~~
+
+`prepare` valide le workflow avec le SDK n8n avant creation, sauvegarde un brouillon inactif dans le projet personnel et preserve un brouillon deja enregistre. `provision-ledger` exige Java 21, le pilote JDBC Maven deja installe et le mot de passe administrateur local ; il teste ensuite le login restreint et les refus d'acces aux donnees privees. `bind` associe uniquement des credentials reellement presents dans le projet. Aucun de ces scripts ne publie le workflow ou ne remplace la configuration du backend.
+
+Le template reproductible est `infra/notifications/workflow.cloud.json`. Il reste en texte simple en attendant le travail de design. Le noeud **Email configuration** contient l'URL de l'application ; sa valeur est issue de `FASTCOLOC_NOTIFICATION_APP_URL` lors de la creation. Une URL localhost convient aux tests sur ce PC ; les autres utilisateurs auront besoin d'une URL Web accessible publiquement.
+
+Contrat Cloud : POST `/webhook/fastcoloc-message-emails`, avec le secret Header Auth propre au Cloud. Le succes Gmail est enregistre avec l'ID du message fournisseur avant la reponse `sent`. Les reprises deja terminees donnent `duplicate`; les baux en cours et erreurs fournisseur donnent une erreur permettant la reprise. Gmail ne garantit pas l'exactement-une-fois si le processus s'interrompt entre l'acceptation par Google et l'enregistrement du ledger.
+
+**Etat de migration :** les trois credentials Cloud sont connectes et le workflow est publie. Un test reel a ete accepte par Gmail et enregistre SENT avec un ID fournisseur. Le webhook de production a passe les controles sans authentification, payload invalide et rejeu du meme evenement sans nouvel envoi. Le backend utilise maintenant ce webhook HTTPS avec `FASTCOLOC_NOTIFICATION_MODE=external` et a ete redemarre. Ne jamais utiliser l'URL MCP comme URL de livraison.
+
+Commandes de verification :
+~~~powershell
+# Aucun nouvel e-mail : rejoue le dernier test deja envoye.
+node infra/notifications/test-cloud.cjs
+# Un nouvel e-mail reel au destinataire configure explicitement dans .env.cloud.local.
+node infra/notifications/test-cloud.cjs --send-test
+# Connexion au Cloud uniquement apres un smoke test reussi.
+node infra/notifications/connect-backend.cjs --cloud
+~~~
+
+Le test technique utilise un UUID de discussion de test sans conversation dans l'application. Pour verifier un lien fonctionnel, envoyer un vrai message entre deux comptes de test FastColoc puis laisser le destinataire sans lire la discussion environ deux minutes. Gmail accepte les messages, mais le placement dans la boite de reception doit etre confirme dans le compte destinataire.
+
+References : [Gmail OAuth2 gere par n8n Cloud](https://docs.n8n.io/integrations/builtin/credentials/google/oauth-single-service/), [envoi Gmail](https://docs.n8n.io/integrations/builtin/app-nodes/n8n-nodes-base.gmail/message-operations/).

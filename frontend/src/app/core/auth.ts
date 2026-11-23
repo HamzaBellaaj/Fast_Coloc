@@ -105,7 +105,7 @@ export class Auth {
   rememberDestination(url: string | null) {
     if (
       url &&
-      /^\/(?:annonces(?:[/?]|$)|pour-toi(?:[?]|$)|mes-annonces(?:[?]|$)|favoris(?:[?]|$)|profile$|admin(?:[/?]|$)|$)/.test(
+      /^\/(?:annonces(?:[/?]|$)|pour-toi(?:[?]|$)|messages(?:[/?]|$)|mes-annonces(?:[?]|$)|favoris(?:[?]|$)|profile$|admin(?:[/?]|$)|$)/.test(
         url,
       ) &&
       !url.includes('\\')

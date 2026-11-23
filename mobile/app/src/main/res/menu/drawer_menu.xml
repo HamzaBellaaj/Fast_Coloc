@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
 <group android:id="@+id/drawerMain" android:checkableBehavior="single">
+<item android:id="@id/messagesFragment" android:title="@string/messages_title" android:icon="@drawable/ic_fc_list"/>
 <item android:id="@id/discoverFragment" android:title="@string/discover_title" android:icon="@drawable/ic_fc_heart" />
 <item android:id="@id/listingMapFragment" android:title="@string/geo_map_title" android:icon="@drawable/ic_fc_search" />
 <item android:id="@id/homeFragment" android:title="Accueil" android:icon="@drawable/ic_fc_home" />

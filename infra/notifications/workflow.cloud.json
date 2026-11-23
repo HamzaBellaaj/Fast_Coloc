@@ -1,0 +1,494 @@
+{
+  "name": "FastColoc - Private message emails (Gmail Cloud)",
+  "active": false,
+  "nodes": [
+    {
+      "id": "node-1",
+      "name": "New notification",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "fastcoloc-message-emails",
+        "authentication": "headerAuth",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "webhookId": "fastcoloc-cloud-message-emails",
+      "credentials": {
+        "httpHeaderAuth": {
+          "name": "FastColoc Cloud webhook authentication"
+        }
+      }
+    },
+    {
+      "id": "node-2",
+      "name": "Validate event",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        440,
+        0
+      ],
+      "parameters": {
+        "jsCode": "const p=$('New notification').first().json.body??{};\nconst uuid=/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;\nconst valid=typeof p.eventId==='string'&&uuid.test(p.eventId)&&p.type==='NEW_MESSAGE'&&typeof p.conversationId==='string'&&uuid.test(p.conversationId)&&typeof p.to==='string'&&/^[^\\s@,;<>]+@[^\\s@,;<>]+\\.[^\\s@,;<>]+$/.test(p.to)&&p.to.length<=254;\nif(!valid)return [{json:{valid:'no'}}];\nconst base=$('Email configuration').first().json.applicationUrl.replace(/\\/$/,'');\nreturn [{json:{valid:'yes',eventId:p.eventId,to:p.to,subject:'Un nouveau message sur FastColoc',text:[\"Un nouveau message t'attend sur FastColoc.\",'','Ouvrir la discussion : '+base+'/messages/'+p.conversationId,'','Gerer mes notifications : '+base+'/profile'].join('\\n')}}];"
+      }
+    },
+    {
+      "id": "node-3",
+      "name": "Valid event?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        660,
+        0
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "condition-2",
+              "leftValue": "={{ $json.valid }}",
+              "rightValue": "yes",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "node-4",
+      "name": "Invalid event",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        880,
+        240
+      ],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{\"error\":\"INVALID_NOTIFICATION\"}",
+        "options": {
+          "responseCode": 400
+        }
+      }
+    },
+    {
+      "id": "node-5",
+      "name": "Claim delivery",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        880,
+        -80
+      ],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "WITH claimed AS (\n INSERT INTO fastcoloc_notifications.notification_deliveries(event_id,status,lease_until)\n VALUES($1::uuid,'PROCESSING',now()+interval '5 minutes')\n ON CONFLICT(event_id) DO UPDATE SET status='PROCESSING',lease_token=gen_random_uuid(),lease_until=now()+interval '5 minutes',updated_at=now()\n WHERE notification_deliveries.status='FAILED' OR (notification_deliveries.status='PROCESSING' AND notification_deliveries.lease_until<now())\n RETURNING lease_token\n)\nSELECT CASE WHEN EXISTS(SELECT 1 FROM claimed) THEN 'send'\n WHEN (SELECT status FROM fastcoloc_notifications.notification_deliveries WHERE event_id=$1::uuid)='SENT' THEN 'duplicate' ELSE 'busy' END AS action,\n (SELECT lease_token::text FROM claimed) AS lease_token;",
+        "options": {
+          "queryReplacement": "={{ [ $('Validate event').first().json.eventId ] }}"
+        }
+      },
+      "credentials": {
+        "postgres": {
+          "name": "FastColoc Cloud notification ledger"
+        }
+      }
+    },
+    {
+      "id": "node-6",
+      "name": "Send this event?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1100,
+        -80
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "condition-5",
+              "leftValue": "={{ $json.action }}",
+              "rightValue": "send",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "node-7",
+      "name": "Already sent?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1320,
+        240
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "condition-6",
+              "leftValue": "={{ $json.action }}",
+              "rightValue": "duplicate",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "node-8",
+      "name": "Duplicate acknowledged",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        1540,
+        200
+      ],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ {eventId:$('Validate event').first().json.eventId,status:'duplicate'} }}",
+        "options": {
+          "responseCode": 200
+        }
+      }
+    },
+    {
+      "id": "node-9",
+      "name": "Delivery in progress",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        1540,
+        400
+      ],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{\"error\":\"DELIVERY_IN_PROGRESS\"}",
+        "options": {
+          "responseCode": 503
+        }
+      }
+    },
+    {
+      "id": "node-10",
+      "name": "Send Gmail email",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        1320,
+        -160
+      ],
+      "parameters": {
+        "resource": "message",
+        "operation": "send",
+        "authentication": "oAuth2",
+        "sendTo": "={{ $('Validate event').first().json.to }}",
+        "subject": "={{ $('Validate event').first().json.subject }}",
+        "emailType": "text",
+        "message": "={{ $('Validate event').first().json.text }}",
+        "options": {
+          "appendAttribution": false,
+          "senderName": "FastColoc"
+        }
+      },
+      "credentials": {
+        "gmailOAuth2": {
+          "name": "FastColoc Gmail"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "id": "node-11",
+      "name": "Record accepted email",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        1540,
+        -240
+      ],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE fastcoloc_notifications.notification_deliveries SET status='SENT',provider_message_id=$3,lease_until=NULL,updated_at=now() WHERE event_id=$1::uuid AND lease_token=$2::uuid AND status='PROCESSING' AND $3::text IS NOT NULL AND length($3::text)>0 RETURNING event_id;",
+        "options": {
+          "queryReplacement": "={{ [ $('Validate event').first().json.eventId, $('Claim delivery').first().json.lease_token, $('Send Gmail email').first().json.id ?? null ] }}"
+        }
+      },
+      "credentials": {
+        "postgres": {
+          "name": "FastColoc Cloud notification ledger"
+        }
+      }
+    },
+    {
+      "id": "node-12",
+      "name": "Email acknowledged",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        1760,
+        -240
+      ],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ {eventId:$('Validate event').first().json.eventId,status:'sent'} }}",
+        "options": {
+          "responseCode": 200
+        }
+      }
+    },
+    {
+      "id": "node-13",
+      "name": "Record Gmail failure",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        1540,
+        0
+      ],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE fastcoloc_notifications.notification_deliveries SET status='FAILED',lease_until=NULL,updated_at=now() WHERE event_id=$1::uuid AND lease_token=$2::uuid RETURNING event_id;",
+        "options": {
+          "queryReplacement": "={{ [ $('Validate event').first().json.eventId, $('Claim delivery').first().json.lease_token ] }}"
+        }
+      },
+      "credentials": {
+        "postgres": {
+          "name": "FastColoc Cloud notification ledger"
+        }
+      }
+    },
+    {
+      "id": "node-14",
+      "name": "Email failed",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        1760,
+        0
+      ],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{\"error\":\"EMAIL_UNAVAILABLE\"}",
+        "options": {
+          "responseCode": 503
+        }
+      }
+    },
+    {
+      "id": "email-configuration",
+      "name": "Email configuration",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        220,
+        0
+      ],
+      "parameters": {
+        "mode": "manual",
+        "assignments": {
+          "assignments": [
+            {
+              "id": "app-origin",
+              "name": "applicationUrl",
+              "type": "string",
+              "value": "http://localhost:4200"
+            }
+          ]
+        },
+        "includeOtherFields": false,
+        "options": {}
+      }
+    }
+  ],
+  "connections": {
+    "New notification": {
+      "main": [
+        [
+          {
+            "node": "Email configuration",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate event": {
+      "main": [
+        [
+          {
+            "node": "Valid event?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Valid event?": {
+      "main": [
+        [
+          {
+            "node": "Claim delivery",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Invalid event",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Claim delivery": {
+      "main": [
+        [
+          {
+            "node": "Send this event?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send this event?": {
+      "main": [
+        [
+          {
+            "node": "Send Gmail email",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Already sent?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Already sent?": {
+      "main": [
+        [
+          {
+            "node": "Duplicate acknowledged",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Delivery in progress",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Gmail email": {
+      "main": [
+        [
+          {
+            "node": "Record accepted email",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Record Gmail failure",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Record accepted email": {
+      "main": [
+        [
+          {
+            "node": "Email acknowledged",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Record Gmail failure": {
+      "main": [
+        [
+          {
+            "node": "Email failed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Email configuration": {
+      "main": [
+        [
+          {
+            "node": "Validate event",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "saveExecutionProgress": false,
+    "saveManualExecutions": false,
+    "saveDataErrorExecution": "none",
+    "saveDataSuccessExecution": "none",
+    "executionTimeout": 60
+  }
+}

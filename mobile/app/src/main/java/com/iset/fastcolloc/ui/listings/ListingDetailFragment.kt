@@ -27,6 +27,8 @@ class ListingDetailFragment :
                 else if (row == null) "Annonce indisponible." else "Informations du serveur"
             binding.btnRefreshListing.isEnabled = !busy
             val own = row != null && row.authorId == listings.owner.value
+            binding.btnContact.isVisible = row != null && !own && row.status == "PUBLISHED" && !offline
+            binding.btnContact.isEnabled = !busy && !offline
             binding.btnEditListing.isVisible = own
             binding.btnRenewListing.isVisible = own
             binding.btnDeleteListing.isVisible = own
@@ -60,6 +62,7 @@ class ListingDetailFragment :
         listings.busy.observe(viewLifecycleOwner) { render() }
         listings.offline.observe(viewLifecycleOwner) { render() }
         listings.owner.observe(viewLifecycleOwner) { render() }
+        binding.btnContact.setOnClickListener { listings.selected.value?.let { row -> findNavController().navigate(R.id.conversationFragment, Bundle().apply { putString("listingId",row.id);putString("listingTitle",row.title) }) } }
         binding.btnRefreshListing.setOnClickListener { listings.detail(id) }
         binding.btnFavorite.setOnClickListener { listings.selected.value?.let(listings::favorite) }
         binding.btnEditListing.setOnClickListener {

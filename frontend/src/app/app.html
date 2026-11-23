@@ -33,6 +33,7 @@
       >
       <a routerLink="/annonces" routerLinkActive="active" ariaCurrentWhenActive="page">Explorer</a>
       @if (auth.session()) {
+        <a routerLink="/messages" routerLinkActive="active" ariaCurrentWhenActive="page">Messages</a>
         <a routerLink="/pour-toi" routerLinkActive="active" ariaCurrentWhenActive="page">Pour toi ✨</a>
         <a class="btn small coral" routerLink="/annonces/nouvelle">Publier une annonce ↗</a>
         <details class="account-menu">

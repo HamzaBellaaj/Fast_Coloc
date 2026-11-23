@@ -1,4 +1,5 @@
 package com.iset.fastcolloc.ui.auth
+import androidx.navigation.fragment.findNavController
 
 import android.os.Bundle
 import androidx.core.view.isVisible
@@ -84,6 +85,7 @@ class ProfileFragment : BoundFragment<FragmentProfileBinding>(FragmentProfileBin
             require(date == null || runCatching { java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.ROOT).apply { isLenient = false }.parse(date) }.isSuccess && date.matches(Regex("\\d{4}-\\d{2}-\\d{2}"))) { "Date attendue : AAAA-MM-JJ." }
             vm.preferences(PreferencesDto(number(binding.etMinBudget.text.toString()), number(binding.etMaxBudget.text.toString()), date, localities.toList()))
         } }
+        binding.btnNotificationSettings.setOnClickListener { findNavController().navigate(com.iset.fastcolloc.R.id.notificationSettingsFragment) }
         binding.btnLogout.setOnClickListener { vm.logout() }
         vm.busy.observe(viewLifecycleOwner) { busy ->
             listOf(binding.btnRefresh,binding.btnContinue,binding.btnEdit1,binding.btnEdit2,binding.btnEdit3,binding.btnEdit4,binding.btnEdit5,binding.btnPreferences,binding.btnPlaces,binding.btnLogout).forEach { it.isEnabled = !busy }

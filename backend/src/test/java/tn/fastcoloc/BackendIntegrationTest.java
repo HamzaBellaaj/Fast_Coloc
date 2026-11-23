@@ -40,7 +40,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 /** Real local PostgreSQL, real non-owner JDBC role, real ES256 signatures and local JWKS HTTP. */
-@SpringBootTest(webEnvironment=SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest(webEnvironment=SpringBootTest.WebEnvironment.RANDOM_PORT,properties="fastcoloc.notifications.enabled=false")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class BackendIntegrationTest {
     static final UUID USER=UUID.fromString("d0f010cf-2f5f-4f6c-a029-f3aa5085e621");

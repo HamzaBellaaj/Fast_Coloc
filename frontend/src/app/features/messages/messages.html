@@ -1,0 +1,112 @@
+<div class="content-head">
+  <div>
+    <h1>Messages</h1>
+    <p class="muted">Une question, une visite, une future coloc.</p>
+  </div>
+  <button class="btn ghost small" (click)="retry()" [disabled]="loading()">Actualiser</button>
+</div>
+<div class="messaging-layout">
+  <aside class="inbox" aria-label="Conversations">
+    @if (inboxError()) {
+      <p class="notice error" role="status">{{ inboxError() }}</p>
+    }
+    @for (c of conversations(); track c.id) {
+      <a
+        class="conversation"
+        [class.selected]="selected()?.id === c.id"
+        [routerLink]="['/messages', c.id]"
+        [attr.aria-current]="selected()?.id === c.id ? 'page' : null"
+      >
+        <span class="avatar" aria-hidden="true">{{ c.participant_name.charAt(0) }}</span><span
+          class="preview"
+          ><strong>{{ c.participant_name }}</strong
+          ><span>{{ c.listing_title }}</span
+          ><small>{{ c.last_message }}</small></span
+        >
+        @if (c.unread_count) {
+          <span class="unread" [attr.aria-label]="c.unread_count + ' messages non lus'">{{
+            c.unread_count
+          }}</span>
+        }
+      </a>
+    } @empty {
+      <p class="empty">
+        Aucune discussion pour le moment. Ouvre une annonce et contacte son auteur.
+      </p>
+    }
+    @if (moreInbox()) {
+      <button class="btn ghost small" (click)="moreConversations()" [disabled]="loadingInboxPage()">
+        Autres conversations
+      </button>
+    }
+  </aside>
+  <section class="discussion" aria-label="Discussion" [attr.aria-busy]="loading()">
+    @if (loading()) {
+      <p role="status" class="empty">Ouverture de la messagerie…</p>
+    }
+    @if (error()) {
+      <p class="notice error" role="alert">{{ error() }}</p>
+    }
+    @if (selected() || listing()) {
+      <header class="thread-header">
+        <div>
+          <h2>{{ selected()?.participant_name || 'Contacter l’auteur' }}</h2>
+          <p>{{ title }}</p>
+          <small
+            >{{ selected()?.locality || listing()?.locality }} ·
+            {{ selected()?.rent ?? listing()?.rent | number: '1.0-3' }} TND / mois</small
+          >
+        </div>
+        @if (selected()?.listing_available && selected()?.listing_id) {
+          <a class="link" [routerLink]="['/annonces', selected()?.listing_id]">Voir l’annonce</a>
+        } @else if (listing()) {
+          <a class="link" [routerLink]="['/annonces', listing()?.id]">Voir l’annonce</a>
+        } @else {
+          <span class="tag">Annonce indisponible</span>
+        }
+      </header>
+      <div #history class="history" aria-label="Historique des messages">
+        @if (older()) {
+          <button class="btn ghost small" (click)="olderMessages()" [disabled]="loadingOlder()">
+            Messages précédents
+          </button>
+        }
+        @for (m of messages(); track m.id) {
+          <article class="message" [class.mine]="m.sender_id === auth.profile()?.id">
+            <p>{{ m.content }}</p>
+            <time [attr.datetime]="m.created_at">{{ m.created_at | date: 'dd/MM HH:mm' }}</time>
+          </article>
+        }
+        @if (!selected()) {
+          <p class="empty">
+            Présente-toi et pose ta première question. La discussion sera créée · l’envoi.
+          </p>
+        }
+      </div>
+      <form class="composer" (ngSubmit)="send()">
+        <label for="message-content">Ton message</label
+        ><textarea
+          id="message-content"
+          name="message"
+          [(ngModel)]="draft"
+          maxlength="4000"
+          rows="3"
+          [disabled]="sending() || loading()"
+          placeholder="Bonjour, ton annonce m’intéresse…"
+        ></textarea>
+        <div>
+          <small>{{ draft.length }} / 4000</small
+          ><button class="btn" [disabled]="sending() || loading() || !draft.trim()">
+            {{ sending() ? 'Envoi…' : 'Envoyer' }}
+          </button>
+        </div>
+      </form>
+    } @else if (!loading()) {
+      <div class="empty">
+        <h2>Parlons de ta prochaine coloc.</h2>
+        <p>Choisis une discussion ou contacte l’auteur d’une annonce.</p>
+        <a class="btn coral" routerLink="/annonces">Explorer les annonces</a>
+      </div>
+    }
+  </section>
+</div>

@@ -93,6 +93,9 @@ import { ListingMap } from './listing-map';
             >
               {{ r.favorite ? '♥ Retirer des favoris' : '♡ Ajouter aux favoris' }}
             </button>
+            @if (r.author_id !== auth.profile()?.id && r.status === 'PUBLISHED' && !r.is_hidden) {
+              <a class="btn coral" routerLink="/messages" [queryParams]="{ listing: r.id }">Contacter</a>
+            }
             @if (r.author_id === auth.profile()?.id) {
               <a class="btn ghost" [routerLink]="['/annonces', r.id, 'modifier']"
                 >Modifier mon annonce</a

@@ -16,6 +16,7 @@ public class ApiExceptionHandler {
  ResponseEntity<ApiError> database(Exception e,HttpServletRequest r) {
   Throwable cause=e;while(cause.getCause()!=null)cause=cause.getCause();
   if(cause instanceof java.sql.SQLException sql){
+   if("P0001".equals(sql.getSQLState())&&sql.getMessage().contains("FC_MESSAGE_RATE_LIMIT"))return response(HttpStatus.TOO_MANY_REQUESTS,"MESSAGE_RATE_LIMIT","Trop de messages. Réessaie dans une minute.",r);
    if("42501".equals(sql.getSQLState()))return response(HttpStatus.FORBIDDEN,"ACCESS_DENIED","Opération refusée.",r);
    if("P0002".equals(sql.getSQLState()))return response(HttpStatus.NOT_FOUND,"USER_NOT_FOUND","Utilisateur introuvable.",r);
    if("P0001".equals(sql.getSQLState())&&sql.getMessage().contains("FC_INCOMPLETE"))return response(HttpStatus.CONFLICT,"ONBOARDING_INCOMPLETE","Les cinq étapes doivent être valides avant la complétion.",r);

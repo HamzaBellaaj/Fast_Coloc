@@ -1,0 +1,8 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" android:layout_width="match_parent" android:layout_height="match_parent" android:orientation="vertical" android:padding="24dp">
+ <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="@string/notification_settings" android:textSize="24sp" android:textStyle="bold"/>
+ <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="@string/notification_description" android:paddingVertical="16dp"/>
+ <TextView android:id="@+id/notificationState" android:layout_width="match_parent" android:layout_height="wrap_content" android:accessibilityLiveRegion="polite"/>
+ <com.google.android.material.materialswitch.MaterialSwitch android:id="@+id/messageEmailSwitch" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="@string/notification_message_email" android:minHeight="64dp"/>
+ <com.google.android.material.button.MaterialButton android:id="@+id/saveNotifications" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="@string/notification_save"/>
+ <com.google.android.material.button.MaterialButton android:id="@+id/reloadNotifications" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="@string/notification_reload" style="@style/Widget.FastColoc.Button.Outlined"/>
+</LinearLayout>

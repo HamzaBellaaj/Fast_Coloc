@@ -1,0 +1,44 @@
+<section class="section-card spaced">
+  <h2 class="card-heading">Notifications par e-mail</h2>
+  <p>
+    Un rappel lorsqu’un nouveau message privé t’attend. Le contenu de la discussion reste dans
+    FastColoc.
+  </p>
+  @if (loading()) {
+    <p role="status">Chargement des préférences…</p>
+  } @else if (preferences(); as p) {
+    @if (p.deliveryMode === 'local') {
+      <p class="notice">
+        Mode de test : les e-mails arrivent dans la boîte locale, pas dans ta messagerie
+        personnelle.
+      </p>
+    } @else if (!p.deliveryAvailable) {
+      <p class="notice">L’envoi des e-mails n’est pas encore activé. Tes choix sont enregistrés.</p>
+    }
+    <form (ngSubmit)="save()">
+      <label class="row"
+        ><input
+          type="checkbox"
+          name="newMessageEmail"
+          [(ngModel)]="enabled"
+          [disabled]="saving()"
+        />
+        Recevoir un e-mail pour les nouveaux messages privés</label
+      >
+      <p class="tiny muted">
+        Les messages rapprochés sont regroupés. Un message déjà lu ne déclenche pas de rappel en
+        attente.
+      </p>
+      <button class="btn ghost" [disabled]="saving() || enabled === p.newMessageEmail">
+        {{ saving() ? 'Enregistrement…' : 'Enregistrer les notifications' }}
+      </button>
+    </form>
+  }
+  @if (error()) {
+    <p role="alert" class="notice error">{{ error() }}</p>
+    <button class="btn ghost" (click)="load()" [disabled]="loading() || saving()">Réessayer</button>
+  }
+  @if (saved()) {
+    <p role="status">Préférences enregistrées.</p>
+  }
+</section>

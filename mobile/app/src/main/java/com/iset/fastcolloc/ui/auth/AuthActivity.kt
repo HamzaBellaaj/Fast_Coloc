@@ -47,7 +47,7 @@ class AuthActivity : AppCompatActivity() {
         }
         androidx.core.view.ViewCompat.requestApplyInsets(binding.root)
         val nav = (supportFragmentManager.findFragmentById(R.id.authNavHost) as NavHostFragment).navController
-        val mainDestinations = setOf(R.id.discoverFragment, R.id.listingMapFragment, R.id.homeFragment, R.id.recommendationsFragment, R.id.listingCatalogFragment, R.id.favoritesFragment, R.id.mineListingsFragment, R.id.profileFragment)
+        val mainDestinations = setOf(R.id.messagesFragment, R.id.discoverFragment, R.id.listingMapFragment, R.id.homeFragment, R.id.recommendationsFragment, R.id.listingCatalogFragment, R.id.favoritesFragment, R.id.mineListingsFragment, R.id.profileFragment)
         val appBar = AppBarConfiguration(mainDestinations, binding.drawerLayout)
         binding.toolbar.setupWithNavController(nav, appBar)
         binding.toolbar.setNavigationOnClickListener { if (!nav.navigateUp(appBar)) onBackPressedDispatcher.onBackPressed() }
@@ -77,7 +77,7 @@ class AuthActivity : AppCompatActivity() {
             true
         }
         nav.addOnDestinationChangedListener { _, destination, _ ->
-            val signedInScreen = destination.id in mainDestinations || destination.id in setOf(R.id.listingDetailFragment, R.id.listingEditorFragment, R.id.publicationSuccessFragment)
+            val signedInScreen = destination.id in mainDestinations || destination.id in setOf(R.id.notificationSettingsFragment, R.id.conversationFragment, R.id.listingDetailFragment, R.id.listingEditorFragment, R.id.publicationSuccessFragment)
             binding.drawerLayout.setDrawerLockMode(if (signedInScreen) DrawerLayout.LOCK_MODE_UNLOCKED else DrawerLayout.LOCK_MODE_LOCKED_CLOSED)
             val home = destination.id == R.id.homeFragment
             binding.toolbar.setBackgroundColor(androidx.core.content.ContextCompat.getColor(this, R.color.fc_cream))

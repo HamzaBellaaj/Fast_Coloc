@@ -1,0 +1,462 @@
+{
+  "id": "FastColocNotify01",
+  "name": "FastColoc — Business notifications (local inbox)",
+  "active": false,
+  "nodes": [
+    {
+      "id": "node-1",
+      "name": "New notification",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        0,
+        200
+      ],
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "fastcoloc-notifications",
+        "authentication": "headerAuth",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "webhookId": "fastcoloc-business-notifications",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "fastcoloc-notification-hook",
+          "name": "FastColoc webhook authentication"
+        }
+      }
+    },
+    {
+      "id": "node-2",
+      "name": "Validate event",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        180,
+        200
+      ],
+      "parameters": {
+        "jsCode": "const p=$json.body??{};\nconst uuid=/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;\nconst valid=typeof p.eventId==='string'&&uuid.test(p.eventId)&&p.type==='NEW_MESSAGE'&&typeof p.conversationId==='string'&&uuid.test(p.conversationId)&&typeof p.to==='string'&&/^[^\\s@,;<>]+@[^\\s@,;<>]+\\.[^\\s@,;<>]+$/.test(p.to)&&p.to.length<=254;\nif(!valid)return [{json:{valid:'no'}}];\nreturn [{json:{valid:'yes',eventId:p.eventId,to:p.to,subject:'Un nouveau message sur FastColoc',text:'Un nouveau message t’attend sur FastColoc.\\n\\nOuvrir la discussion : http://localhost:4200/messages/'+p.conversationId+'\\n\\nTu peux modifier tes préférences de notification dans ton profil.'}}];"
+      }
+    },
+    {
+      "id": "node-3",
+      "name": "Valid event?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        360,
+        200
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "condition-2",
+              "leftValue": "={{ $json.valid }}",
+              "rightValue": "yes",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "node-4",
+      "name": "Invalid event",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        540,
+        200
+      ],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{\"error\":\"INVALID_NOTIFICATION\"}",
+        "options": {
+          "responseCode": 400
+        }
+      }
+    },
+    {
+      "id": "node-5",
+      "name": "Claim delivery",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        720,
+        200
+      ],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "WITH claimed AS (\n INSERT INTO public.notification_deliveries(event_id,status,lease_until)\n VALUES($1::uuid,'PROCESSING',now()+interval '5 minutes')\n ON CONFLICT(event_id) DO UPDATE SET status='PROCESSING',lease_token=gen_random_uuid(),lease_until=now()+interval '5 minutes',updated_at=now()\n WHERE notification_deliveries.status='FAILED' OR (notification_deliveries.status='PROCESSING' AND notification_deliveries.lease_until<now())\n RETURNING lease_token\n)\nSELECT CASE WHEN EXISTS(SELECT 1 FROM claimed) THEN 'send'\n WHEN (SELECT status FROM public.notification_deliveries WHERE event_id=$1::uuid)='SENT' THEN 'duplicate' ELSE 'busy' END AS action,\n (SELECT lease_token::text FROM claimed) AS lease_token;",
+        "options": {
+          "queryReplacement": "={{ [ $('Validate event').first().json.eventId ] }}"
+        }
+      },
+      "credentials": {
+        "postgres": {
+          "id": "fastcoloc-notification-db",
+          "name": "FastColoc notification ledger"
+        }
+      }
+    },
+    {
+      "id": "node-6",
+      "name": "Send this event?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        900,
+        200
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "condition-5",
+              "leftValue": "={{ $json.action }}",
+              "rightValue": "send",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "node-7",
+      "name": "Already sent?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1080,
+        200
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "condition-6",
+              "leftValue": "={{ $json.action }}",
+              "rightValue": "duplicate",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "node-8",
+      "name": "Duplicate acknowledged",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        1260,
+        200
+      ],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ {eventId:$('Validate event').first().json.eventId,status:'duplicate'} }}",
+        "options": {
+          "responseCode": 200
+        }
+      }
+    },
+    {
+      "id": "node-9",
+      "name": "Delivery in progress",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        1440,
+        200
+      ],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{\"error\":\"DELIVERY_IN_PROGRESS\"}",
+        "options": {
+          "responseCode": 503
+        }
+      }
+    },
+    {
+      "id": "node-10",
+      "name": "Send local email",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        1620,
+        200
+      ],
+      "parameters": {
+        "fromEmail": "FastColoc <notifications@fastcoloc.test>",
+        "toEmail": "={{ $('Validate event').first().json.to }}",
+        "subject": "={{ $('Validate event').first().json.subject }}",
+        "emailFormat": "text",
+        "text": "={{ $('Validate event').first().json.text }}",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "credentials": {
+        "smtp": {
+          "id": "fastcoloc-local-smtp",
+          "name": "FastColoc local inbox"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "id": "node-11",
+      "name": "Record accepted email",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        1800,
+        200
+      ],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE public.notification_deliveries SET status='SENT',lease_until=NULL,updated_at=now() WHERE event_id=$1::uuid AND lease_token=$2::uuid AND status='PROCESSING' RETURNING event_id;",
+        "options": {
+          "queryReplacement": "={{ [ $('Validate event').first().json.eventId, $('Claim delivery').first().json.lease_token ] }}"
+        }
+      },
+      "credentials": {
+        "postgres": {
+          "id": "fastcoloc-notification-db",
+          "name": "FastColoc notification ledger"
+        }
+      }
+    },
+    {
+      "id": "node-12",
+      "name": "Email acknowledged",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        1980,
+        200
+      ],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ {eventId:$('Validate event').first().json.eventId,status:'sent'} }}",
+        "options": {
+          "responseCode": 200
+        }
+      }
+    },
+    {
+      "id": "node-13",
+      "name": "Record SMTP failure",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        2160,
+        200
+      ],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE public.notification_deliveries SET status='FAILED',lease_until=NULL,updated_at=now() WHERE event_id=$1::uuid AND lease_token=$2::uuid RETURNING event_id;",
+        "options": {
+          "queryReplacement": "={{ [ $('Validate event').first().json.eventId, $('Claim delivery').first().json.lease_token ] }}"
+        }
+      },
+      "credentials": {
+        "postgres": {
+          "id": "fastcoloc-notification-db",
+          "name": "FastColoc notification ledger"
+        }
+      }
+    },
+    {
+      "id": "node-14",
+      "name": "Email failed",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        2340,
+        200
+      ],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{\"error\":\"EMAIL_UNAVAILABLE\"}",
+        "options": {
+          "responseCode": 503
+        }
+      }
+    }
+  ],
+  "connections": {
+    "New notification": {
+      "main": [
+        [
+          {
+            "node": "Validate event",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate event": {
+      "main": [
+        [
+          {
+            "node": "Valid event?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Valid event?": {
+      "main": [
+        [
+          {
+            "node": "Claim delivery",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Invalid event",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Claim delivery": {
+      "main": [
+        [
+          {
+            "node": "Send this event?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send this event?": {
+      "main": [
+        [
+          {
+            "node": "Send local email",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Already sent?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Already sent?": {
+      "main": [
+        [
+          {
+            "node": "Duplicate acknowledged",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Delivery in progress",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send local email": {
+      "main": [
+        [
+          {
+            "node": "Record accepted email",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Record SMTP failure",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Record accepted email": {
+      "main": [
+        [
+          {
+            "node": "Email acknowledged",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Record SMTP failure": {
+      "main": [
+        [
+          {
+            "node": "Email failed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "saveExecutionProgress": false,
+    "saveManualExecutions": false,
+    "saveDataErrorExecution": "none",
+    "saveDataSuccessExecution": "none",
+    "executionTimeout": 60
+  },
+  "versionId": "f45b5866-e507-4d21-90bb-b0f65ec98a91"
+}

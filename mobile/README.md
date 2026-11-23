@@ -179,3 +179,13 @@ Compilation US26 réussie avec `gradlew.bat :app:assembleDebug
 -PfastcolocApiUrl=http://127.0.0.1:8001/api/v1/`. Le parcours n’a pas été exécuté
 sur appareil pendant cette recette. L’appel réel de l’endpoint Spring vers n8n
 a réussi (voir le rapport dans `../backend/target/recommendations-live-report.json`).
+
+## Messagerie privée
+
+Le menu **Messages** ouvre les conversations ; **Contacter** sur une annonce ouvre le premier message. Une discussion séparée conserve le retour vers la boîte de réception. Les appels Retrofit passent par l'authentification et le rafraîchissement existants. Les messages ne sont pas mis en cache sur disque. Le ViewModel conserve le texte en cas d'échec et réutilise l'identifiant de la demande ; il efface son état privé si le compte change. Actualisation REST toutes les cinq secondes uniquement lorsque l'écran est repris. L'historique précédent et les conversations suivantes sont paginés. Aucun droit administratif de lecture des messages n'est ajouté.
+
+Compiler et tester : `.\gradlew.bat :app:assembleDebug :app:testDebugUnitTest`. Les tests MessagingViewModelTest couvrent la reprise, la création au premier envoi, la pagination, le changement de compte et les textes invalides. La recette sur appareil réel reste distincte de ces tests JVM.
+
+## Préférences de notifications
+
+Dans le profil, « Notifications par e-mail » ouvre les préférences communes au Web. Le mode local est affiché explicitement. Les notifications partent du backend pour les messages Android comme pour les messages Web ; aucun secret n8n/SMTP n’est embarqué. Trois tests JVM vérifient la sauvegarde, la reprise après erreur et le changement de compte.

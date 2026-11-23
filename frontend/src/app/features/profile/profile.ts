@@ -1,3 +1,4 @@
+import { NotificationSettings } from './notification-settings';
 import { Calendar } from '../../shared/calendar';
 import { Component, inject, OnInit } from '@angular/core';
 import { DatePipe } from '@angular/common';
@@ -11,7 +12,7 @@ import { Photos } from '../../shared/photos';
 import { Field } from '../../shared/field';
 import { RegistrationDraft } from '../onboarding/draft';
 @Component({
-  imports: [Calendar, RouterLink, ReactiveFormsModule, DatePipe, Photos, Field],
+  imports: [NotificationSettings, Calendar, RouterLink, ReactiveFormsModule, DatePipe, Photos, Field],
   templateUrl: './profile.html',
 })
 export class ProfilePage implements OnInit {

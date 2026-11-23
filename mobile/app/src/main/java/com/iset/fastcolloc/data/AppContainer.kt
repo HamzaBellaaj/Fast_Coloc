@@ -9,6 +9,8 @@ class AppContainer private constructor(private val application: android.app.Appl
     private val listingCache = com.iset.fastcolloc.data.local.ListingCache.get(application).listings()
     val repository = AuthRepository(ApiClient.create(sessions), sessions, ProfileCache.get(application).profiles()) { listingCache.clear() }
     val listings = ListingRepository(repository,listingCache)
+    val messaging = MessagingRepository(repository)
+    val notifications = NotificationRepository(repository)
     val oauth = OAuthCoordinator(application, repository)
     suspend fun prepareLegacy() = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
         if(application.getDatabasePath("fastcolloc_database").exists())

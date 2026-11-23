@@ -59,6 +59,7 @@
         <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginHorizontal="16dp" android:layout_marginTop="16dp" android:background="@drawable/bg_fc_card" android:padding="8dp" android:orientation="vertical">
             <com.google.android.material.button.MaterialButton android:id="@+id/btnRefresh" style="@style/Widget.FastColoc.TextButton" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Actualiser mon profil" />
             <View android:layout_width="match_parent" android:layout_height="1dp" android:background="@color/fc_line" android:layout_marginHorizontal="12dp" />
+            <com.google.android.material.button.MaterialButton android:id="@+id/btnNotificationSettings" style="@style/Widget.FastColoc.TextButton" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="@string/notification_settings"/>
             <com.google.android.material.button.MaterialButton android:id="@+id/btnLogout" style="@style/Widget.FastColoc.TextButton" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Déconnexion" android:textColor="@color/fc_error" app:icon="@drawable/ic_fc_logout" app:iconTint="@color/fc_error" />
         </LinearLayout>
     </LinearLayout>

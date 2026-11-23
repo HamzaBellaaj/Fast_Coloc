@@ -137,3 +137,13 @@ Vérifications : `npm run build`, `npm run typecheck` et
 `npx playwright test e2e/recommendations.spec.ts`. Le test navigateur couvre
 l’ordre, le chargement, les favoris, l’actualisation, l’erreur et la reprise,
 avec rendu responsive à 390 et 1440 px, sans appels supplémentaires à Ollama.
+
+## Messagerie privée
+
+Ouvrir `/messages` depuis la navigation ou utiliser **Contacter** sur une annonce. Le premier envoi crée la discussion ; le lien retrouve une discussion existante. Liste paginée, historique précédent, compteurs non lus et actualisation REST toutes les cinq secondes lorsque la page est visible. Le texte reste dans le formulaire après un échec d'envoi et le même identifiant est réutilisé pour une reprise. Le contenu est affiché comme texte, jamais comme HTML. Aucun message n'est enregistré dans localStorage. La lecture est marquée dans la discussion active lorsque la fenêtre est au premier plan.
+
+Tests : `npm test`, `npm run build`, puis `npx playwright test e2e/messaging.spec.ts`. Les tests navigateur utilisent des réponses HTTP simulées et des comptes fictifs, sans appel aux comptes réels.
+
+## Préférences de notifications
+
+Le profil contient une section « Notifications par e-mail » partagée avec Android via GET/PATCH /notification-preferences. Le mode local indique que les messages sont capturés dans Mailpit. Tests navigateur : `npx playwright test e2e/notification-preferences.spec.ts`.
