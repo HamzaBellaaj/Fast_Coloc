@@ -70,6 +70,7 @@ dependencies {
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
     implementation("androidx.browser:browser:1.9.0")
     implementation("io.coil-kt:coil:2.7.0")
+    implementation("org.osmdroid:osmdroid-android:6.1.20")
     testImplementation("com.squareup.okhttp3:mockwebserver:4.12.0")
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.10.2")
 

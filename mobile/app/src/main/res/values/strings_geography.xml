@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="discover_title">Découvrir</string>
+    <string name="discover_help">Découvre une annonce à la fois. Touche la carte pour ouvrir sa fiche.</string>
+    <string name="discover_pass">❌ Passer</string>
+    <string name="discover_like">❤️ Intéressé</string>
+    <string name="geo_map_title">Carte des annonces</string>
+    <string name="geo_retry">Actualiser / réessayer</string>
+    <string name="geo_search">Rechercher cette adresse</string>
+    <string name="geo_coordinates">Valider les coordonnées</string>
+    <string name="geo_help">Touche la carte ou déplace le marqueur. Une position dans l’eau est refusée. © OpenStreetMap contributors · ESA WorldCover 2021 (10 m).</string>
+    <string name="geo_details">Ouvrir la fiche</string>
+</resources>

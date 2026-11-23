@@ -47,7 +47,7 @@ class AuthActivity : AppCompatActivity() {
         }
         androidx.core.view.ViewCompat.requestApplyInsets(binding.root)
         val nav = (supportFragmentManager.findFragmentById(R.id.authNavHost) as NavHostFragment).navController
-        val mainDestinations = setOf(R.id.homeFragment, R.id.recommendationsFragment, R.id.listingCatalogFragment, R.id.favoritesFragment, R.id.mineListingsFragment, R.id.profileFragment)
+        val mainDestinations = setOf(R.id.discoverFragment, R.id.listingMapFragment, R.id.homeFragment, R.id.recommendationsFragment, R.id.listingCatalogFragment, R.id.favoritesFragment, R.id.mineListingsFragment, R.id.profileFragment)
         val appBar = AppBarConfiguration(mainDestinations, binding.drawerLayout)
         binding.toolbar.setupWithNavController(nav, appBar)
         binding.toolbar.setNavigationOnClickListener { if (!nav.navigateUp(appBar)) onBackPressedDispatcher.onBackPressed() }

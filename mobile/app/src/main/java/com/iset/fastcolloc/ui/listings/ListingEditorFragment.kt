@@ -1,6 +1,7 @@
 package com.iset.fastcolloc.ui.listings
 
 import android.os.Bundle
+import androidx.fragment.app.viewModels
 import com.iset.fastcolloc.ui.auth.calendarField
 import android.view.View
 import android.widget.ArrayAdapter
@@ -13,6 +14,11 @@ import com.iset.fastcolloc.databinding.FragmentListingEditorBinding
 
 class ListingEditorFragment :
     ListingBoundFragment<FragmentListingEditorBinding>(FragmentListingEditorBinding::inflate) {
+    private val location: com.iset.fastcolloc.viewmodel.LocationViewModel by viewModels {
+        com.iset.fastcolloc.viewmodel.LocationViewModelFactory(requireActivity().application)
+    }
+    private var locationController: EditorLocationController? = null
+    private var locationPending = false
     private var step = 0
     private var regionId: Long? = null
     private val isRequest get() = binding.spKind.selectedItemPosition == 1
@@ -51,6 +57,7 @@ class ListingEditorFragment :
             if (field is android.widget.AutoCompleteTextView) field.setText(value, false)
             else field.setText(value)
         }
+        locationController?.initial()
     }
 
     override fun onViewCreated(view: View, state: Bundle?) {
@@ -183,6 +190,7 @@ class ListingEditorFragment :
             if (validateCurrent()) { step = (step + 1).coerceAtMost(4); render() }
         }
         fun save(publish: Boolean = false) {
+            if (locationPending) { listings.formError("Attends la validation de la position avant d’enregistrer."); return }
             snapshotDraft()
             listings.saveFields(listings.draft.toMap(), if (isRequest) "REQUEST" else "OFFER", locality, publish)
         }
@@ -190,6 +198,9 @@ class ListingEditorFragment :
         binding.btnSaveForPhotos.setOnClickListener { save() }
         binding.btnAddListingPhoto.setOnClickListener { snapshotDraft(); picker.launch("image/*") }
         binding.btnPublishListing.setOnClickListener { save(true) }
+        locationController = EditorLocationController(viewLifecycleOwner, binding.locationPicker,
+            binding.etStreet, binding.etLatitude, binding.etLongitude, location,
+            { pending -> locationPending = pending; render() }, { snapshotDraft() })
         render()
     }
 
@@ -276,8 +287,8 @@ class ListingEditorFragment :
         binding.btnRequest.strokeWidth = if (isRequest) 6 else 2
         binding.sectionPresentation.isVisible = step == 1
         binding.sectionLocation.isVisible = if (isRequest) step == 2 else step == 1
-        binding.fieldLatitude.isVisible = !isRequest
-        binding.fieldLongitude.isVisible = !isRequest
+        binding.fieldLatitude.isVisible = true
+        binding.fieldLongitude.isVisible = true
         binding.sectionRent.isVisible = step == 2
         binding.sectionConditions.isVisible = if (isRequest) step == 3 else step == 2
         binding.sectionPreferences.isVisible = step == 3
@@ -294,11 +305,11 @@ class ListingEditorFragment :
         binding.labelAvailableUntil.text = if (isRequest) "Fin de recherche (facultatif)" else "Disponible jusqu’au (facultatif)"
         binding.btnBackStep.isEnabled = !busy && step > 0
         binding.btnNextStep.isVisible = step < 4
-        binding.btnNextStep.isEnabled = !busy
+        binding.btnNextStep.isEnabled = !busy && !locationPending
         binding.btnSaveListing.isVisible = step == 4
         binding.btnPublishListing.isVisible = step == 4
-        binding.btnSaveListing.isEnabled = !busy && !offline && own
-        binding.btnPublishListing.isEnabled = !busy && !offline && own
+        binding.btnSaveListing.isEnabled = !busy && !offline && own && !locationPending
+        binding.btnPublishListing.isEnabled = !busy && !offline && own && !locationPending
         binding.btnSaveListing.text = if (row?.status == "PUBLISHED") "Enregistrer les modifications" else "Garder en brouillon"
         binding.btnPublishListing.text = if (row?.status == "PUBLISHED") "Enregistrer et renouveler" else "Publier mon annonce"
         binding.btnSaveForPhotos.isVisible = false
@@ -329,7 +340,11 @@ class ListingEditorFragment :
         }
     }
 
+    override fun onResume() { super.onResume(); binding.locationPicker.editorMap.onResume() }
+    override fun onPause() { binding.locationPicker.editorMap.onPause(); super.onPause() }
     override fun onDestroyView() {
+        locationController?.destroy()
+        locationController = null
         snapshotDraft()
         binding.rvPhotos.adapter = null
         super.onDestroyView()

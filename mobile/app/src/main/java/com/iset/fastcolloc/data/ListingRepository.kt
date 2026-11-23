@@ -57,6 +57,14 @@ class ListingRepository(private val auth: AuthRepository, private val cache: Lis
     suspend fun estimate(logement: RequestBody, photos: List<MultipartBody.Part>) =
         auth.authorized { estimateRent(logement, photos) }
 
+    suspend fun catalog(query: Map<String,String>) = auth.authorized { listings(query) }
+    suspend fun map(query: Map<String,String>) = auth.authorized { listingMap(query) }
+    suspend fun searchAddress(query: String) = auth.authorized { searchAddress(query) }
+    suspend fun validatePosition(point: GeoCoordinatesDto) = auth.authorized { validatePosition(point) }
+    suspend fun interested(id: String) {
+        auth.authorized { favoriteListing(id) } // idempotent PUT; never toggle a previously saved favorite
+        cache.clearPages()
+    }
     suspend fun areas() = auth.authorized { listingAreas() }
     suspend fun recommendations() = auth.authorized { aiRecommendations() }
 

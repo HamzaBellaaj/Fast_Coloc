@@ -113,9 +113,16 @@
                 [(ngModel)]="form.street"
                 placeholder="Rue ou secteur recherché" /></label
             ><fc-location-picker
+              [address]="form.street"
+              [locality]="areaName"
+              (busyChange)="geoBusy.set($event)"
               [latitude]="form.latitude"
               [longitude]="form.longitude"
-              (position)="form.latitude = $event.latitude; form.longitude = $event.longitude"
+              (position)="
+                form.latitude = $event.latitude;
+                form.longitude = $event.longitude;
+                form.street = $event.address
+              "
             />
             <div class="grid2">
               <label
@@ -403,9 +410,16 @@
               @if (!isRequest) {
                 <p class="help">Place le logement sur la carte pour préciser sa position.</p>
                 <fc-location-picker
+                  [address]="form.street"
+                  [locality]="areaName"
+                  (busyChange)="geoBusy.set($event)"
                   [latitude]="form.latitude"
                   [longitude]="form.longitude"
-                  (position)="form.latitude = $event.latitude; form.longitude = $event.longitude"
+                  (position)="
+                    form.latitude = $event.latitude;
+                    form.longitude = $event.longitude;
+                    form.street = $event.address
+                  "
                 />
                 <div class="grid2">
                   <label
@@ -465,12 +479,19 @@
                   [required]="!isRequest"
                   maxlength="250"
               /></label>
-              @if (!isRequest) {
+              @if (isRequest) {
                 <p class="help">Place le logement sur la carte pour préciser sa position.</p>
                 <fc-location-picker
+                  [address]="form.street"
+                  [locality]="areaName"
+                  (busyChange)="geoBusy.set($event)"
                   [latitude]="form.latitude"
                   [longitude]="form.longitude"
-                  (position)="form.latitude = $event.latitude; form.longitude = $event.longitude"
+                  (position)="
+                    form.latitude = $event.latitude;
+                    form.longitude = $event.longitude;
+                    form.street = $event.address
+                  "
                 />
                 <div class="grid2">
                   <label
@@ -478,7 +499,7 @@
                       name="latitude"
                       [(ngModel)]="form.latitude"
                       type="number"
-                      required
+                      [required]="!isRequest"
                       min="30"
                       max="38"
                       step="0.000001" /></label
@@ -487,7 +508,7 @@
                       name="longitude"
                       [(ngModel)]="form.longitude"
                       type="number"
-                      required
+                      [required]="!isRequest"
                       min="7"
                       max="12"
                       step="0.000001"

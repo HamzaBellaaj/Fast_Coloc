@@ -4,4 +4,4 @@
     <item android:id="@+id/s2Filters" android:title="@string/s2_filters" app:showAsAction="ifRoom" />
     <item android:id="@+id/s2Refresh" android:title="@string/s2_refresh" app:showAsAction="never" />
 <item android:id="@+id/s2Mine" android:title="@string/s2_mine" app:showAsAction="never" />
-</menu>
+<item android:id="@+id/s2Map" android:title="@string/geo_map_title" /></menu>

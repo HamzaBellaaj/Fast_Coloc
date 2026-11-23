@@ -31,6 +31,7 @@ export class ListingEditor implements OnInit, OnDestroy {
   route = inject(ActivatedRoute);
   router = inject(Router);
   busy = signal(true);
+  geoBusy = signal(false);
   allowed = signal(true);
   saved = signal<Listing | null>(null);
   areas = signal<Area[]>([]);
@@ -66,6 +67,7 @@ export class ListingEditor implements OnInit, OnDestroy {
     return a ? a.governorate + ' · ' + a.locality : '';
   }
   back() {
+    if (this.geoBusy()) return;
     this.flowError = '';
     this.step = Math.max(0, this.step - 1);
   }
@@ -384,6 +386,7 @@ export class ListingEditor implements OnInit, OnDestroy {
     return true;
   }
   next(f: NgForm) {
+    if (this.geoBusy()) return;
     if (this.adminMode) {
       if (f.invalid) {
         f.control.markAllAsTouched();
@@ -400,7 +403,7 @@ export class ListingEditor implements OnInit, OnDestroy {
     this.step = Math.min(4, this.step + 1);
   }
   async save(f?: NgForm, publishAfter = false) {
-    if (this.busy() || (!this.adminMode && !this.validateAll())) return;
+    if (this.busy() || this.geoBusy() || (!this.adminMode && !this.validateAll())) return;
     if (f?.invalid || (this.adminMode && !this.reason.trim())) {
       f?.control.markAllAsTouched();
       return;

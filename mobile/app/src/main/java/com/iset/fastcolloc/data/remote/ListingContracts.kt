@@ -30,6 +30,7 @@ data class ListingDto(
     val version: Long?,
     val favorite: Boolean,
     val photos: List<ListingPhotoDto>,
+    @SerializedName("is_hidden") val isHidden: Boolean = false,
 )
 
 data class ListingPageDto(
@@ -81,3 +82,15 @@ data class RentEstimateRequestDto(val localisation: String, val type: String,
 data class RecommendationDto(val listing: ListingDto, val score: Int, val raison: String)
 data class RecommendationsDto(val success: Boolean, val profileIncomplete: Boolean,
     val recommendations: List<RecommendationDto>)
+
+// The map endpoint deliberately does not return gallery/favorite fields.
+data class ListingMarkerDto(val id: String, val title: String, val locality: String,
+    val rent: Double, val latitude: Double?, val longitude: Double?, val kind: String,
+    @SerializedName("author_id") val authorId: String,
+    val status: String, @SerializedName("is_hidden") val isHidden: Boolean,
+    @SerializedName("expires_at") val expiresAt: String?)
+data class ListingMapPageDto(val items: List<ListingMarkerDto>, val total: Long, val page: Int, val size: Int)
+data class GeoPlaceDto(val address: String, val latitude: Double, val longitude: Double)
+data class GeoCoordinatesDto(val latitude: Double, val longitude: Double)
+data class GeoPositionDto(val latitude: Double, val longitude: Double, val address: String,
+    val approximate: Boolean, val source: String = "")

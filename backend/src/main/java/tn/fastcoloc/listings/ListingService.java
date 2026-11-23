@@ -18,11 +18,12 @@ import tn.fastcoloc.profiles.ProfileDataService;
 
 @Service
 public class ListingService {
+ private final tn.fastcoloc.geography.LocationService locations;
  private final JdbcTemplate jdbc;private final ProfileDataService data;private final OnboardingService accounts;
  private final SupabaseGateway storage;private final PhotoService images;private final int maxDays;private final int maxPhotos;
  private static final String SELECT="select l.*,p.name as locality,g.name as governorate,g.id as governorate_id from fastcoloc.listings l join fastcoloc.localities p on p.id=l.locality_id join fastcoloc.governorates g on g.id=p.governorate_id ";
- public ListingService(JdbcTemplate jdbc,ProfileDataService data,OnboardingService accounts,SupabaseGateway storage,PhotoService images,
-  @Value("${fastcoloc.listings.max-publication-days:365}")int maxDays,@Value("${fastcoloc.listings.max-photos:10}")int maxPhotos){this.jdbc=jdbc;this.data=data;this.accounts=accounts;this.storage=storage;this.images=images;this.maxDays=maxDays;this.maxPhotos=maxPhotos;}
+ public ListingService(tn.fastcoloc.geography.LocationService locations,JdbcTemplate jdbc,ProfileDataService data,OnboardingService accounts,SupabaseGateway storage,PhotoService images,
+  @Value("${fastcoloc.listings.max-publication-days:365}")int maxDays,@Value("${fastcoloc.listings.max-photos:10}")int maxPhotos){this.locations=locations;this.jdbc=jdbc;this.data=data;this.accounts=accounts;this.storage=storage;this.images=images;this.maxDays=maxDays;this.maxPhotos=maxPhotos;}
  private void bind(UUID actor){if(actor==null)jdbc.queryForObject("select set_config('fastcoloc.user_id','',true)",String.class);else accounts.bindAndLock(actor);}
  private void author(UUID actor,UUID id){
   accounts.bindAndLock(actor);
@@ -30,6 +31,7 @@ public class ListingService {
   // All updates for this author share the Sprint 1 advisory lock; version prevents stale editors.
  }
  void validate(ListingWrite r){
+  if(r.latitude()!=null && r.longitude()!=null)locations.validate(r.latitude().doubleValue(),r.longitude().doubleValue());
   if(r.availableUntil()!=null&&r.availableUntil().isBefore(r.availableFrom()))throw bad("Fin de disponibilité antérieure au début.");
   if(r.publicationDays()>maxDays)throw bad("Durée de publication supérieure à la limite configurée.");
   if(!Boolean.TRUE.equals(jdbc.queryForObject("select exists(select 1 from fastcoloc.localities l join fastcoloc.governorates g on g.id=l.governorate_id where l.id=? and g.country_code='TN')",Boolean.class,r.localityId())))throw bad("Localité tunisienne requise.");

@@ -80,6 +80,9 @@ class ListingCatalogFragment :
 
                 override fun onMenuItemSelected(item: MenuItem): Boolean {
                     when (item.itemId) {
+                        R.id.s2Map -> findNavController().navigate(R.id.listingMapFragment, Bundle().apply {
+                            putString("filters", org.json.JSONObject(listings.query).toString())
+                        })
                         R.id.s2Filters -> filters()
                         R.id.s2Refresh -> listings.load()
                         else -> return false

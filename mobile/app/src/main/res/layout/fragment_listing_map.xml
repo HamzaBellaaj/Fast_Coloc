@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" android:layout_width="match_parent" android:layout_height="match_parent" android:orientation="vertical" android:padding="12dp" android:background="@color/fc_cream">
+    <EditText android:id="@+id/query" android:layout_width="match_parent" android:layout_height="wrap_content" android:hint="Ville, quartier ou mots-clés" android:inputType="text" android:maxLength="160" android:minHeight="48dp"/>
+    <com.google.android.material.button.MaterialButton android:id="@+id/btnSearch" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Rechercher sur la carte" style="@style/Widget.FastColoc.Button.Outlined"/>
+    <TextView android:id="@+id/tvState" android:layout_width="match_parent" android:layout_height="wrap_content" android:accessibilityLiveRegion="polite"/>
+    <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Fond OpenStreetMap via Internet, sans clé. Les filtres du catalogue sont conservés à son ouverture." android:textAppearance="@style/TextAppearance.FastColoc.Supporting"/>
+    <ProgressBar android:id="@+id/progress" android:layout_width="wrap_content" android:layout_height="wrap_content" android:visibility="gone"/>
+    <com.iset.fastcolloc.ui.listings.FastColocMapView android:id="@+id/map" android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="1"/>
+    <TextView android:id="@+id/tvSelection" android:layout_width="match_parent" android:layout_height="wrap_content" android:padding="8dp"/>
+    <com.google.android.material.button.MaterialButton android:id="@+id/btnDetails" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="@string/geo_details" android:visibility="gone" style="@style/Widget.FastColoc.Button.Outlined"/>
+</LinearLayout>

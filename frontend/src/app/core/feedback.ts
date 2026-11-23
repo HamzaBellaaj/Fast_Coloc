@@ -5,6 +5,8 @@ export function errorMessage(error: unknown): string {
   if (error instanceof HttpErrorResponse) {
     const code: string = error.error?.code ?? '';
     const messages: Record<string, string> = {
+      INVALID_POSITION: 'Position refusée : choisis un point terrestre en Tunisie, hors eau et zones humides.',
+      GEOGRAPHY_UNAVAILABLE: 'La position terrestre ne peut pas être vérifiée. Réessaie avant d’enregistrer.',
       ACCOUNT_BLOCKED: 'Ce compte est bloqué. Contacte l’administration FastColoc.',
       INVALID_CREDENTIALS: 'E-mail ou mot de passe incorrect, ou adresse non confirmée.',
       LISTING_HIDDEN:

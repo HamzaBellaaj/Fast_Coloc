@@ -16,6 +16,7 @@ class ListingAdapter(
     private val open: (ListingDto) -> Unit,
     private val favorite: (ListingDto) -> Unit,
     private val recommendation: (ListingDto) -> Pair<Int,String>? = { null },
+    private val discovery: Boolean = false,
 ) :
     ListAdapter<ListingDto, ListingAdapter.Holder>(
         object : DiffUtil.ItemCallback<ListingDto>() {
@@ -46,6 +47,7 @@ class ListingAdapter(
                 else "Publiée jusqu’au ${row.expiresAt?.take(10)}"
             b.btnFavorite.text =
                 if (row.favorite) "Retirer des favoris" else "Enregistrer dans mes favoris"
+            b.btnFavorite.isVisible = !discovery
             b.btnFavorite.isEnabled = enabled && row.status == "PUBLISHED"
             b.ivPhoto.contentDescription = row.photos.firstOrNull()?.caption ?: row.title
             b.ivPhoto.scaleType = if (row.photos.firstOrNull()?.url.isNullOrBlank()) android.widget.ImageView.ScaleType.CENTER_INSIDE else android.widget.ImageView.ScaleType.CENTER_CROP

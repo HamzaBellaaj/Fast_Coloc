@@ -62,4 +62,6 @@
     </fragment>
 <fragment android:id="@id/favoritesFragment" android:name="com.iset.fastcolloc.ui.listings.ListingCatalogFragment" android:label="Mes favoris"><argument android:name="mode" app:argType="string" android:defaultValue="favorites" /></fragment>
 <fragment android:id="@id/mineListingsFragment" android:name="com.iset.fastcolloc.ui.listings.ListingCatalogFragment" android:label="Mes annonces"><argument android:name="mode" app:argType="string" android:defaultValue="mine" /></fragment>
-<fragment android:id="@+id/publicationSuccessFragment" android:name="com.iset.fastcolloc.ui.listings.PublicationSuccessFragment" android:label="Annonce publiée"><argument android:name="listingId" app:argType="string" /><argument android:name="title" app:argType="string" android:defaultValue="" /></fragment></navigation>
+<fragment android:id="@+id/publicationSuccessFragment" android:name="com.iset.fastcolloc.ui.listings.PublicationSuccessFragment" android:label="Annonce publiée"><argument android:name="listingId" app:argType="string" /><argument android:name="title" app:argType="string" android:defaultValue="" /></fragment><fragment android:id="@+id/discoverFragment" android:name="com.iset.fastcolloc.ui.listings.DiscoverFragment" android:label="@string/discover_title" />
+<fragment android:id="@+id/listingMapFragment" android:name="com.iset.fastcolloc.ui.listings.ListingMapFragment" android:label="@string/geo_map_title" />
+</navigation>

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical">
+    <com.google.android.material.button.MaterialButton android:id="@+id/btnSearchAddress" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="@string/geo_search" style="@style/Widget.FastColoc.Button.Outlined"/>
+    <com.google.android.material.button.MaterialButton android:id="@+id/btnCoordinates" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="@string/geo_coordinates" style="@style/Widget.FastColoc.Button.Outlined"/>
+    <LinearLayout android:id="@+id/results" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical"/>
+    <TextView android:id="@+id/tvLocationState" android:layout_width="match_parent" android:layout_height="wrap_content" android:accessibilityLiveRegion="polite" android:padding="8dp"/>
+    <ProgressBar android:id="@+id/geoProgress" android:layout_width="wrap_content" android:layout_height="wrap_content" android:visibility="gone"/>
+    <com.iset.fastcolloc.ui.listings.FastColocMapView android:id="@+id/editorMap" android:layout_width="match_parent" android:layout_height="300dp"/>
+    <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="@string/geo_help" android:textAppearance="@style/TextAppearance.FastColoc.Supporting"/>
+</LinearLayout>

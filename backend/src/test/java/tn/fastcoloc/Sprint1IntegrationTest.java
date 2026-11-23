@@ -60,6 +60,37 @@ class Sprint1IntegrationTest {
   r.add("logging.level.org.springframework",()->"WARN");r.add("debug",()->false);
  }
  @Autowired TestRestTemplate http;
+ @org.springframework.test.context.bean.override.mockito.MockitoBean tn.fastcoloc.geography.LocationGateway geography;
+ @BeforeEach void geographicProvidersAreLocalFixtures() throws Exception {
+  org.mockito.Mockito.when(geography.landCover(org.mockito.ArgumentMatchers.anyDouble(),org.mockito.ArgumentMatchers.anyDouble())).thenReturn(JSON.readTree("{\"values\":[50]}"));
+  org.mockito.Mockito.when(geography.reverse(org.mockito.ArgumentMatchers.anyDouble(),org.mockito.ArgumentMatchers.anyDouble())).thenReturn(JSON.readTree("{\"address\":{\"country_code\":\"tn\",\"road\":\"Rue fixture\",\"city\":\"Tunis\"}}"));
+ }
+ @Test void geographySaveRejectsWaterAndPersistsCreateAndEditCoordinates() throws Exception {
+  listingAccounts();
+  var create = listingBody("OFFER",350);
+  create.put("latitude",36.812341);create.put("longitude",10.181231);create.put("street","Adresse initiale");
+  var response = request(HttpMethod.POST,"/api/v1/listings",create,USER);
+  assertThat(response.getStatusCode()).as(response.getBody()).isEqualTo(HttpStatus.CREATED);
+  String id = JSON.readTree(response.getBody()).path("id").asText();
+  var saved = JSON.readTree(request(HttpMethod.GET,"/api/v1/listings/"+id,null,USER).getBody());
+  assertThat(saved.path("latitude").asDouble()).isEqualTo(36.812341);
+  assertThat(saved.path("street").asText()).isEqualTo("Adresse initiale");
+  var update = listingBody("OFFER",400);update.put("version",0);update.put("latitude",36.812342);update.put("longitude",10.181232);update.put("street","Adresse corrigée");
+  assertThat(request(HttpMethod.PUT,"/api/v1/listings/"+id,update,USER).getStatusCode()).isEqualTo(HttpStatus.OK);
+  saved = JSON.readTree(request(HttpMethod.GET,"/api/v1/listings/"+id,null,USER).getBody());
+  assertThat(saved.path("longitude").asDouble()).isEqualTo(10.181232);
+  assertThat(saved.path("street").asText()).isEqualTo("Adresse corrigée");
+  org.mockito.Mockito.when(geography.landCover(36.85,10.25)).thenReturn(JSON.readTree("{\"values\":[80]}"));
+  update.put("latitude",36.85);update.put("longitude",10.25);update.put("version",1);
+  assertThat(request(HttpMethod.PUT,"/api/v1/listings/"+id,update,USER).getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+  assertThat(request(HttpMethod.POST,"/api/v1/listings",update,USER).getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+  saved = JSON.readTree(request(HttpMethod.GET,"/api/v1/listings/"+id,null,USER).getBody());
+  assertThat(saved.path("latitude").asDouble()).isEqualTo(36.812342);
+  assertThat(saved.path("street").asText()).isEqualTo("Adresse corrigée");
+  assertThat(request(HttpMethod.POST,"/api/v1/geography/position",Map.of("latitude",36.85,"longitude",10.25),USER).getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+  assertThat(request(HttpMethod.POST,"/api/v1/geography/position",Map.of("latitude",36.8,"longitude",10.18),null).getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
+ }
+
  @Test void emailRedirectsAreEncodedExactlyOnceForWebAndAndroid()throws Exception{
   for(String client:List.of("android","web"))for(String route:List.of("signup","forgot-password","resend-confirmation")){
    String body=route.equals("signup")?"{\"email\":\"fixture@example.invalid\",\"password\":\"Local-test-password-123\"}":"{\"email\":\"fixture@example.invalid\"}";

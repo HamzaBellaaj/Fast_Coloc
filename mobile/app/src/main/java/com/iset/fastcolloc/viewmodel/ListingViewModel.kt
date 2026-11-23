@@ -359,7 +359,11 @@ class ListingViewModel(
     }
 
     private fun failure(e: Exception) {
-        _message.postValue(AuthRepository.message(e))
+        val geographic = if (e is retrofit2.HttpException) runCatching {
+            val body = com.google.gson.JsonParser.parseString(e.response()?.errorBody()?.string()).asJsonObject
+            if (body.get("code")?.asString in setOf("INVALID_POSITION", "GEOGRAPHY_UNAVAILABLE")) body.get("message")?.asString else null
+        }.getOrNull() else null
+        _message.postValue(geographic ?: AuthRepository.message(e))
         if (e is SessionExpired || e is AccountBlocked) _event.postValue(UiEvent("login"))
     }
 }
