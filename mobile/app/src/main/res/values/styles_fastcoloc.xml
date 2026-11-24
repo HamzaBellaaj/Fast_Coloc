@@ -2,7 +2,7 @@
 <resources>
     <style name="ShapeAppearance.FastColoc.Photo" parent="">
         <item name="cornerFamily">rounded</item>
-        <item name="cornerSize">18dp</item>
+        <item name="cornerSize">12dp</item>
     </style>
     <style name="TextAppearance.FastColoc.Body" parent="TextAppearance.Material3.BodyMedium">
         <item name="android:fontFamily">@font/dm_sans</item>
@@ -10,12 +10,12 @@
         <item name="android:textSize">15sp</item>
     <item name="fontFamily">@font/dm_sans</item></style>
     <style name="TextAppearance.FastColoc.Title" parent="TextAppearance.Material3.HeadlineMedium">
-        <item name="android:fontFamily">@font/baloo2</item>
+        <item name="android:fontFamily">@font/dm_sans</item>
         <item name="android:textStyle">bold</item>
         <item name="android:textColor">@color/fc_plum</item>
-        <item name="android:textSize">30sp</item>
-        <item name="android:lineSpacingExtra">2dp</item>
-    <item name="fontFamily">@font/baloo2</item></style>
+        <item name="android:textSize">28sp</item>
+        <item name="android:lineSpacingExtra">0dp</item>
+    <item name="fontFamily">@font/dm_sans</item></style>
     <style name="TextAppearance.FastColoc.Brand" parent="TextAppearance.Material3.HeadlineMedium">
         <item name="android:fontFamily">@font/baloo2</item>
         <item name="android:textStyle">bold</item>

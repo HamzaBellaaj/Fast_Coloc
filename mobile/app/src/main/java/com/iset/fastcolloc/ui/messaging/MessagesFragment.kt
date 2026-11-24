@@ -1,6 +1,5 @@
 package com.iset.fastcolloc.ui.messaging
 import android.os.Bundle
-import android.graphics.Color
 import android.view.*
 import android.widget.*
 import androidx.core.view.isVisible
@@ -53,8 +52,18 @@ class MessagesFragment:BoundFragment<FragmentMessagesBinding>(FragmentMessagesBi
   val lastId:String? get()=rows.lastOrNull()?.id
   fun submit(value:List<Row>,isThread:Boolean){if(rows==value&&thread==isThread)return;val old=rows;val diff=DiffUtil.calculateDiff(object:DiffUtil.Callback(){override fun getOldListSize()=old.size;override fun getNewListSize()=value.size;override fun areItemsTheSame(a:Int,b:Int)=old[a].id==value[b].id;override fun areContentsTheSame(a:Int,b:Int)=old[a]==value[b]});rows=value;thread=isThread;diff.dispatchUpdatesTo(this)}
   class Holder(val text:TextView):RecyclerView.ViewHolder(text)
-  override fun onCreateViewHolder(parent:ViewGroup,type:Int):Holder{val text=TextView(parent.context);text.layoutParams=RecyclerView.LayoutParams(-1,-2);text.setPadding(24,20,24,20);text.textSize=16f;return Holder(text)}
+  override fun onCreateViewHolder(parent:ViewGroup,type:Int):Holder{val text=TextView(parent.context);text.layoutParams=RecyclerView.LayoutParams(-1,-2);val unit=parent.resources.displayMetrics.density;text.setPadding((16*unit).toInt(),(13*unit).toInt(),(16*unit).toInt(),(13*unit).toInt());text.textSize=14f;text.typeface=androidx.core.content.res.ResourcesCompat.getFont(parent.context,R.font.dm_sans);return Holder(text)}
   override fun getItemCount()=rows.size
-  override fun onBindViewHolder(holder:Holder,position:Int){val row=rows[position];holder.text.text=row.title+"\n"+row.detail;holder.text.setTextColor(Color.rgb(37,21,50));holder.text.setBackgroundColor(if(thread&&row.mine)Color.rgb(239,229,252)else Color.rgb(255,246,239));holder.text.gravity=if(thread&&row.mine)Gravity.END else Gravity.START;holder.text.setOnClickListener{if(!thread)open(row.id)}}
+  override fun onBindViewHolder(holder:Holder,position:Int){
+   val row=rows[position];val context=holder.text.context;val unit=context.resources.displayMetrics.density
+   val own=thread&&row.mine;val ink=androidx.core.content.ContextCompat.getColor(context,if(own)R.color.fc_white else R.color.fc_plum)
+   val secondary=androidx.core.content.ContextCompat.getColor(context,if(own)R.color.fc_cream else R.color.fc_muted)
+   val text=android.text.SpannableString(row.title+"\n"+row.detail)
+   text.setSpan(android.text.style.RelativeSizeSpan(.8f),row.title.length+1,text.length,0);text.setSpan(android.text.style.ForegroundColorSpan(secondary),row.title.length+1,text.length,0)
+   holder.text.text=text;holder.text.setTextColor(ink)
+   holder.text.background=android.graphics.drawable.GradientDrawable().apply{setColor(androidx.core.content.ContextCompat.getColor(context,if(own)R.color.fc_violet else if(thread)R.color.fc_cream else R.color.fc_white));cornerRadius=12*unit}
+   holder.text.layoutParams=RecyclerView.LayoutParams(-1,-2).apply{setMargins(if(own)(40*unit).toInt()else 0,(4*unit).toInt(),if(thread&&!own)(40*unit).toInt()else 0,(10*unit).toInt())}
+   holder.text.gravity=if(own)Gravity.END else Gravity.START;holder.text.setOnClickListener{if(!thread)open(row.id)}
+  }
  }
 }

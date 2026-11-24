@@ -1,54 +1,76 @@
-<section class="home-story"><div class="story-pin"><section class="welcome" aria-labelledby="welcome-title"><div class="welcome-copy"><span class="eyebrow"><span class="status-dot"></span> LA COLOCATION, VERSION TUNISIENNE</span><h1 id="welcome-title">Une coloc<br />qui te<br /><span>ressemble.</span></h1><p>Trouve ton prochain chez-toi et les bonnes personnes avec qui le partager.</p><div class="welcome-actions"><a class="btn" routerLink="/annonces" fcLiquidPop>Explorer les annonces ↗</a><a class="text-action" routerLink="/annonces/nouvelle">Publier une annonce →</a></div><div class="story-shortcuts"><a href="#home-search">Rechercher par région et budget</a><a href="#recent-title">Passer aux annonces ↓</a></div><div class="welcome-note"><img src="/assets/fastcoloc-symbol.svg" width="32" height="32" alt=""/><span>Pensé pour les étudiants<br/><strong>et les jeunes actifs.</strong></span></div></div><fc-apartment-stage /></section><div class="scroll-cue" aria-hidden="true"><span></span> UN PETIT SCROLL, UN NOUVEAU DÉPART</div></div></section>
-<form
-  id="home-search"
-  class="home-search"
-  (ngSubmit)="search()"
-  aria-label="Trouver une colocation"
->
-  <label
-    ><span>OÙ ON S’INSTALLE ?</span
-    ><select name="region" [(ngModel)]="region">
-      <option value="">Toute la Tunisie</option>
-      @for (r of regions; track r.id) {
-        <option [value]="r.id">{{ r.name }}</option>
-      }
-    </select></label
+<section class="home-intro" aria-labelledby="welcome-title">
+  <div class="home-heading">
+    <h1 id="welcome-title">
+      Trouve ta place.<br class="mobile-only" />
+      Partage le quotidien.
+    </h1>
+    <p>Des logements et des colocs, partout en Tunisie.</p>
+  </div>
+  <form
+    id="home-search"
+    class="home-search"
+    (ngSubmit)="search()"
+    aria-label="Trouver une colocation"
   >
-  <label
-    ><span>TON BUDGET MAX.</span>
-    <div class="budget-input">
-      <input
-        name="budget"
-        type="number"
-        min="0"
-        step="0.001"
-        [(ngModel)]="budget"
-        placeholder="Sans limite"
-        aria-label="Budget maximum en TND par mois"
-      /><small>TND / mois</small>
-    </div></label
-  >
-  <label
-    ><span>TON ENVIE</span
-    ><select name="kind" [(ngModel)]="kind">
-      <option value="">Offres et demandes</option>
-      <option value="OFFER">Trouver une place</option>
-      <option value="REQUEST">Voir les demandes</option>
-    </select></label
-  >
-  <button class="btn" type="submit">Explorer ↗</button>
-</form>
-<section class="recent-section" fcReveal aria-labelledby="recent-title">
+    <label
+      ><span>Où ?</span
+      ><select name="region" [(ngModel)]="region">
+        <option value="">Toute la Tunisie</option>
+        @for (r of regions; track r.id) {
+          <option [value]="r.id">{{ r.name }}</option>
+        }
+      </select></label
+    ><label
+      ><span>Quel budget ?</span>
+      <div class="budget-input">
+        <input
+          name="budget"
+          type="number"
+          min="0"
+          step="0.001"
+          [(ngModel)]="budget"
+          placeholder="Sans limite"
+          aria-label="Budget maximum en TND par mois"
+        /><small>TND / mois</small>
+      </div></label
+    ><label
+      ><span>Ta recherche</span
+      ><select name="kind" [(ngModel)]="kind">
+        <option value="">Offres et demandes</option>
+        <option value="OFFER">Trouver une place</option>
+        <option value="REQUEST">Rencontrer des colocs</option>
+      </select></label
+    ><button class="search-submit" type="submit" aria-label="Explorer les annonces">
+      <img src="/assets/figma/search.svg" width="20" height="20" alt="" /><span>Rechercher</span>
+    </button>
+  </form>
+  <div class="home-hero">
+    <img
+      class="hero-photo"
+      src="/assets/figma/home-house.png"
+      alt="Une maison ouverte sur son jardin à la tombée du jour"
+      width="1280"
+      height="854"
+      fetchpriority="high"
+    />
+    <div class="hero-copy">
+      <p>Le début d’une belle cohabitation.</p>
+      <h2>Un chez-toi à trouver.<br />Une histoire à partager.</h2>
+      <a class="btn hero-explore" routerLink="/annonces" fcLiquidPop>Explorer les annonces</a>
+    </div>
+  </div>
+</section>
+<section class="recent-section" aria-labelledby="recent-title">
   <div class="section-heading">
     <div>
-      <span class="eyebrow">UNE NOUVELLE ADRESSE, UNE NOUVELLE HISTOIRE</span>
-      <h2 id="recent-title">Ça vient d’arriver<span class="coral-text">.</span></h2>
+      <h2 id="recent-title">De nouvelles places à partager</h2>
+      <p class="muted">Les dernières annonces de la communauté.</p>
     </div>
-    <a class="text-action" routerLink="/annonces">Toutes les annonces ↗</a>
+    <a class="text-action" routerLink="/annonces">Tout voir ↗</a>
   </div>
   @if (busy()) {
     <div class="recent-grid" role="status" aria-label="Chargement des annonces">
-      @for (i of [1, 2, 3]; track i) {
+      @for (i of [1, 2, 3, 4]; track i) {
         <div class="listing-skeleton">
           <div></div>
           <span></span><span></span>
@@ -57,21 +79,16 @@
     </div>
   } @else if (failed()) {
     <div class="home-empty" role="alert">
-      <img src="/assets/fastcoloc-symbol.svg" alt="" width="56" height="56" />
-      <div>
-        <h3>Les annonces prennent un peu de temps.</h3>
-        <p>Réessaie pour découvrir les dernières publications.</p>
-      </div>
+      <h3>Les annonces ne sont pas disponibles.</h3>
+      <p>Réessaie pour retrouver les dernières publications.</p>
       <button class="btn ghost" (click)="load()">Réessayer</button>
     </div>
   } @else if (!items().length) {
     <div class="home-empty">
       <img src="/assets/fastcoloc-symbol.svg" alt="" width="56" height="56" />
-      <div>
-        <h3>La prochaine histoire peut être la tienne.</h3>
-        <p>Aucune annonce pour le moment. Propose une place ou publie ta recherche.</p>
-      </div>
-      <a class="btn ghost" routerLink="/annonces/nouvelle">Créer mon annonce ↗</a>
+      <h3>La première place peut être la tienne.</h3>
+      <p>Propose une chambre ou partage ta recherche avec la communauté.</p>
+      <a class="btn" routerLink="/annonces/nouvelle">Créer mon annonce</a>
     </div>
   } @else {
     <div class="recent-grid">
@@ -85,42 +102,36 @@
     </div>
   }
 </section>
-<section class="how-section" fcReveal aria-labelledby="how-title">
-  <div class="how-intro">
-    <span class="eyebrow">ON FAIT SIMPLE</span>
-    <h2 id="how-title">Ta coloc commence<br />par un premier pas.</h2>
-    <p>De la recherche à la publication, chacun trouve sa place.</p>
-    <a class="text-action" routerLink="/register/1">Créer mon profil ↗</a>
+<section class="discovery-section" aria-labelledby="discover-title">
+  <div class="section-heading">
+    <div>
+      <h2 id="discover-title">Une coloc qui te ressemble</h2>
+      <p class="muted">Commence par ce qui compte pour toi.</p>
+    </div>
   </div>
-  <ol class="how-steps">
-    <li>
-      <span>01</span>
+  <div class="discovery-grid">
+    <a class="discovery-card" routerLink="/annonces" [queryParams]="{ kind: 'OFFER' }"
+      ><span class="discovery-symbol" aria-hidden="true">⌂</span>
       <div>
-        <h3>Explore à ton rythme.</h3>
-        <p>Une région, un budget, une envie : découvre les annonces qui te correspondent.</p>
-      </div>
-    </li>
-    <li>
-      <span>02</span>
+        <h3>Une place à partager</h3>
+        <p>Chambres, studios et appartements : trouve ton prochain chez-toi.</p>
+        <span class="text-action">Voir les logements ↗</span>
+      </div></a
+    ><a class="discovery-card" routerLink="/annonces" [queryParams]="{ kind: 'REQUEST' }"
+      ><span class="discovery-symbol" aria-hidden="true">♡</span>
       <div>
-        <h3>Garde tes coups de cœur.</h3>
-        <p>Connecte-toi pour retrouver tes favoris et consulter les détails des annonces.</p>
-      </div>
-    </li>
-    <li>
-      <span>03</span>
-      <div>
-        <h3>Fais de la place à la suite.</h3>
-        <p>Tu proposes un logement ou tu cherches une coloc ? Publie ton annonce.</p>
-      </div>
-    </li>
-  </ol>
+        <h3>Les bonnes personnes</h3>
+        <p>Découvre les recherches de celles et ceux qui imaginent la même coloc.</p>
+        <span class="text-action">Rencontrer les colocs ↗</span>
+      </div></a
+    >
+  </div>
 </section>
-<section class="publish-banner" fcReveal>
+<section class="publish-banner">
   <div>
-    <span class="eyebrow">UNE CHAMBRE LIBRE ? UN NOUVEAU DÉPART ?</span>
-    <h2>La bonne coloc commence avec toi.</h2>
-    <p>Partage ton offre ou ta recherche avec FastColoc.</p>
+    <h2>Une chambre libre ?<br />Fais de la place à une nouvelle histoire.</h2>
+    <p>Publie ton annonce et échange directement avec tes futurs colocs.</p>
+    <a class="btn coral" routerLink="/annonces/nouvelle">Proposer ma coloc</a>
   </div>
-  <a class="btn coral" routerLink="/annonces/nouvelle">Publier mon annonce ↗</a>
+  <img src="/assets/fastcoloc-symbol.svg" width="130" height="130" alt="" />
 </section>

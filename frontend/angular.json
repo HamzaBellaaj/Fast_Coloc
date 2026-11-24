@@ -49,7 +49,14 @@
                 "input": "public"
               }
             ],
-            "styles": ["node_modules/leaflet/dist/leaflet.css", "src/fonts.css", "src/styles.css", "src/layout.css", "src/listings.css"],
+            "styles": [
+              "node_modules/leaflet/dist/leaflet.css",
+              "src/fonts.css",
+              "src/styles.css",
+              "src/layout.css",
+              "src/listings.css",
+              "src/interface.css"
+            ],
             "polyfills": ["zone.js"]
           },
           "configurations": {

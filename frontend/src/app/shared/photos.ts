@@ -19,9 +19,18 @@ import { Feedback } from '../core/feedback';
       <div class="upload-icon" aria-hidden="true">📷</div>
       <h3>Ton sourire fait la différence</h3>
       <p class="help">JPEG, PNG ou WebP · 5 photos maximum · 5 MiB par photo</p>
-      <label class="btn ghost file-label" for="photo-file">Choisir une photo</label
+      <button
+        type="button"
+        class="btn ghost file-label"
+        (click)="photoFile.click()"
+        [disabled]="busy || photos.length >= 5"
+      >
+        Choisir une photo</button
       ><input
         id="photo-file"
+        #photoFile
+        tabindex="-1"
+        aria-label="Photo à envoyer"
         type="file"
         accept="image/jpeg,image/png,image/webp"
         (change)="choose($event)"
@@ -35,8 +44,13 @@ import { Feedback } from '../core/feedback';
         ><input class="text-input" id="new-caption" [(ngModel)]="caption" maxlength="500" />
         <div class="row wrap">
           <button class="btn" (click)="upload()" [disabled]="busy">
-            {{ busy ? 'Envoi…' : 'Envoyer la photo' }}</button
-          ><button class="btn ghost" (click)="discard()" [disabled]="busy">Annuler</button>
+            {{ busy ? 'Envoi…' : 'Envoyer la photo' }}</button><button
+            class="btn ghost"
+            (click)="discard()"
+            [disabled]="busy"
+          >
+            Annuler
+          </button>
         </div>
       </div>
     }

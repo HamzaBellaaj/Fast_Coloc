@@ -189,3 +189,9 @@ Compiler et tester : `.\gradlew.bat :app:assembleDebug :app:testDebugUnitTest`. 
 ## Préférences de notifications
 
 Dans le profil, « Notifications par e-mail » ouvre les préférences communes au Web. Le mode local est affiché explicitement. Les notifications partent du backend pour les messages Android comme pour les messages Web ; aucun secret n8n/SMTP n’est embarqué. Trois tests JVM vérifient la sauvegarde, la reprise après erreur et le changement de compte.
+
+## Interface inspiree des references Figma
+
+Les styles partages, la typographie des titres, les cartes photo, l'accueil, les details d'annonce, la messagerie et les preferences e-mail suivent la refonte Web. Les ressources du logo et le fichier colors.xml restent inchanges. Les identifiants des vues et les contrats API sont conserves. La photo d'accueil Figma est locale dans drawable-nodpi ; les photos des annonces restent dynamiques.
+
+Validation : assembleDebug et testDebugUnitTest. La verification visuelle sur appareil reste a effectuer lorsqu'un appareil ou emulateur Android est disponible.

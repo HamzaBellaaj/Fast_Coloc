@@ -12,6 +12,9 @@ export class App {
   auth = inject(Auth);
   feedback = inject(Feedback);
   menuOpen = false;
+  focusMain() {
+    document.getElementById('main')?.focus();
+  }
   constructor() {
     inject(Router).events.subscribe((event) => {
       if (event instanceof NavigationEnd) {

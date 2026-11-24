@@ -1,5 +1,3 @@
-import { Reveal } from '../../shared/reveal';
-import { ApartmentStage } from './apartment-stage';
 import { LiquidPopLink } from '../../shared/liquid-pop';
 import { ListingCard } from '../listings/listing-card';
 import { Component, inject, OnInit, signal } from '@angular/core';
@@ -10,7 +8,7 @@ import { Auth } from '../../core/auth';
 import { Feedback } from '../../core/feedback';
 import { Area, Listing, ListingPage } from '../listings/models';
 @Component({
-  imports: [Reveal, ApartmentStage, LiquidPopLink, RouterLink, FormsModule, ListingCard],
+  imports: [LiquidPopLink, RouterLink, FormsModule, ListingCard],
   templateUrl: './home.html',
   styleUrl: './home.css',
 })
@@ -46,7 +44,7 @@ export class Home implements OnInit {
     this.failed.set(false);
     try {
       this.items.set(
-        (await this.api.request<ListingPage>('GET', '/listings?sort=NEWEST&size=3&page=0')).items,
+        (await this.api.request<ListingPage>('GET', '/listings?sort=NEWEST&size=4&page=0')).items,
       );
     } catch {
       this.failed.set(true);

@@ -1,6 +1,6 @@
 import { ListingCard } from './listing-card';
 import { Calendar } from '../../shared/calendar';
-import { Component, DestroyRef, inject, OnInit, signal } from '@angular/core';
+import { Component, DestroyRef, ElementRef, inject, OnInit, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { RouterLink, ActivatedRoute, Router } from '@angular/router';
@@ -14,6 +14,7 @@ import { ListingMap } from './listing-map';
   selector: 'fc-catalog',
   imports: [ListingCard, Calendar, FormsModule, RouterLink, DatePipe, ListingMap],
   templateUrl: './catalog.html',
+  styleUrl: './catalog.css',
 })
 export class Catalog implements OnInit {
   api = inject(Api);
@@ -47,6 +48,7 @@ export class Catalog implements OnInit {
   };
   pendingFavorites = signal<string[]>([]);
   private requestNumber = 0;
+  private host = inject<ElementRef<HTMLElement>>(ElementRef);
   private destroyRef = inject(DestroyRef);
   get regions() {
     return [
@@ -128,6 +130,7 @@ export class Catalog implements OnInit {
     }
   }
   search(page = 0) {
+    this.host.nativeElement.querySelector('.catalog-advanced')?.removeAttribute('open');
     void this.router.navigate([], {
       relativeTo: this.route,
       queryParams: { ...this.filters, page },

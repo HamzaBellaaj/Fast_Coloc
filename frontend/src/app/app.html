@@ -1,5 +1,7 @@
-<a class="skip-link" href="#main">Aller au contenu</a>
-<div class="shell">
+<a class="skip-link" href="#main" (click)="$event.preventDefault(); focusMain()"
+  >Aller au contenu</a
+>
+<header class="site-header">
   <nav class="nav" aria-label="Navigation principale">
     <a class="brand" routerLink="/" aria-label="FastColoc, accueil"
       ><img
@@ -10,40 +12,34 @@
         height="38"
       />fast<b>coloc</b><span class="coral-text">.</span></a
     >
-    <button
-      class="btn small ghost menu-button"
-      (click)="menuOpen = !menuOpen"
-      [attr.aria-expanded]="menuOpen"
-      aria-controls="navigation"
-    >
-      Menu ☰
-    </button>
-    <div
-      class="navlinks"
-      id="navigation"
-      [class.open]="menuOpen"
-      (keydown.escape)="menuOpen = false"
-    >
+    <div class="desktop-destinations">
       <a
         routerLink="/"
         routerLinkActive="active"
         [routerLinkActiveOptions]="{ exact: true }"
         ariaCurrentWhenActive="page"
         >Accueil</a
-      >
-      <a routerLink="/annonces" routerLinkActive="active" ariaCurrentWhenActive="page">Explorer</a>
+      ><a routerLink="/annonces" routerLinkActive="active" ariaCurrentWhenActive="page">Explorer</a>
       @if (auth.session()) {
-        <a routerLink="/messages" routerLinkActive="active" ariaCurrentWhenActive="page">Messages</a>
-        <a routerLink="/pour-toi" routerLinkActive="active" ariaCurrentWhenActive="page">Pour toi ✨</a>
-        <a class="btn small coral" routerLink="/annonces/nouvelle">Publier une annonce ↗</a>
+        <a routerLink="/pour-toi" routerLinkActive="active" ariaCurrentWhenActive="page">Pour toi</a
+        ><a routerLink="/messages" routerLinkActive="active" ariaCurrentWhenActive="page"
+          >Messages</a
+        >
+      }
+    </div>
+    <div class="nav-actions">
+      <a class="host-link" routerLink="/annonces/nouvelle">Proposer une coloc</a>
+      @if (auth.session()) {
         <details class="account-menu">
-          <summary>
-            <span class="account-initial">{{ (auth.profile()?.firstName || 'F').charAt(0) }}</span>
-            Mon espace <span aria-hidden="true">⌄</span>
+          <summary aria-label="Mon espace">
+            <img src="/assets/figma/menu.svg" width="24" height="24" alt="" /><span
+              class="account-initial"
+              >{{ (auth.profile()?.firstName || 'F').charAt(0) }}</span
+            ><span class="sr-only">Mon espace</span>
           </summary>
           <div class="account-links">
-            <a routerLink="/profile">Mon profil</a><a routerLink="/favoris">Mes favoris</a
-            ><a routerLink="/mes-annonces">Mes annonces</a>
+            <a routerLink="/profile">Mon profil</a><a routerLink="/messages">Mes messages</a
+            ><a routerLink="/favoris">Mes favoris</a><a routerLink="/mes-annonces">Mes annonces</a>
             @if (auth.profile()?.role === 'ADMIN') {
               <a routerLink="/admin">Administration</a>
             }
@@ -51,11 +47,41 @@
           </div>
         </details>
       } @else {
-        <a routerLink="/login">Se connecter</a
-        ><a class="btn small coral" routerLink="/register/1">S’inscrire ↗</a>
+        <a class="login-link" routerLink="/login">Se connecter</a
+        ><a class="btn small" routerLink="/register/1">S’inscrire</a>
       }
+      <button
+        class="mobile-menu-toggle"
+        (click)="menuOpen = !menuOpen"
+        [attr.aria-expanded]="menuOpen"
+        aria-controls="navigation"
+        aria-label="Ouvrir le menu"
+      >
+        <img src="/assets/figma/menu.svg" width="24" height="24" alt="" />
+      </button>
     </div>
   </nav>
+  <div
+    class="mobile-navigation"
+    id="navigation"
+    [class.open]="menuOpen"
+    (keydown.escape)="menuOpen = false"
+  >
+    <a routerLink="/">Accueil</a><a routerLink="/annonces">Explorer les annonces</a
+    ><a routerLink="/annonces/nouvelle">Publier une annonce</a>
+    @if (auth.session()) {
+      <a routerLink="/pour-toi">Pour toi</a><a routerLink="/messages">Messages</a
+      ><a routerLink="/favoris">Mes favoris</a><a routerLink="/mes-annonces">Mes annonces</a
+      ><a routerLink="/profile">Mon profil</a>
+      @if (auth.profile()?.role === 'ADMIN') {
+        <a routerLink="/admin">Administration</a>
+      }
+    } @else {
+      <a routerLink="/login">Se connecter</a><a routerLink="/register/1">S’inscrire</a>
+    }
+  </div>
+</header>
+<div class="shell">
   @if (feedback.message()) {
     <div class="notice" [class.error]="feedback.failure()" role="status" aria-live="polite">
       <span>{{ feedback.message() }}</span><button
@@ -68,11 +94,35 @@
     </div>
   }
   <main id="main" tabindex="-1"><router-outlet /></main>
-  <footer class="footer">
-    © FastColoc · La coloc, c’est mieux ensemble.<br /><span class="tiny"
-      >Ton profil reste privé. Tes annonces publiées sont visibles dans le catalogue.</span
-    >
-  </footer>
 </div>
-
+<footer class="site-footer">
+  <div class="footer-content">
+    <div>
+      <a class="brand" routerLink="/" aria-label="FastColoc, accueil"
+        ><img
+          class="brand-icon"
+          src="/assets/fastcoloc-symbol.svg"
+          alt=""
+          width="38"
+          height="38"
+        />fast<b>coloc</b><span class="coral-text">.</span></a
+      >
+      <p>La coloc, c’est mieux ensemble.</p>
+    </div>
+    <div>
+      <strong>Ta prochaine coloc</strong><a routerLink="/annonces">Explorer les annonces</a
+      ><a routerLink="/annonces/nouvelle">Proposer un logement</a
+      ><a routerLink="/pour-toi">Trouver mon match</a>
+    </div>
+    <div>
+      <strong>Ton espace</strong><a routerLink="/favoris">Mes favoris</a
+      ><a routerLink="/messages">Mes messages</a
+      ><a routerLink="/profile">Profil et notifications</a>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span>© FastColoc · Tunisie</span
+    ><span>Ton profil reste privé. À toi de faire le premier pas.</span><span>Français · TND</span>
+  </div>
+</footer>
 <fc-liquid-surface />

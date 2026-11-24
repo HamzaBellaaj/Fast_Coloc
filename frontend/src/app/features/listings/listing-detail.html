@@ -1,0 +1,176 @@
+<div class="detail-page">
+  <a class="detail-back" [routerLink]="backLink">← Retour aux annonces</a>
+  @if (busy()) {
+    <p role="status" class="notice">Ouverture de l’annonce…</p>
+  }
+  @if (row(); as r) {
+    @if (
+      route.snapshot.queryParamMap.get('published') === '1' &&
+      r.author_id === auth.profile()?.id &&
+      r.status === 'PUBLISHED'
+    ) {
+      <section class="publication-notice" role="status">
+        <img src="/assets/fastcoloc-symbol.svg" width="56" height="56" alt="" />
+        <div>
+          <h2>Ton annonce est en ligne.</h2>
+          <p>Elle est maintenant visible dans le catalogue.</p>
+        </div>
+        <a class="btn ghost" routerLink="/mes-annonces">Mes annonces</a>
+      </section>
+    }
+    <header class="detail-heading">
+      <div>
+        <span class="tag">{{
+          r.kind === 'OFFER' ? 'Une place à partager' : 'Une coloc à trouver'
+        }}</span>
+        <h1 class="listing-title">{{ r.title }}</h1>
+        <p>{{ r.locality }} · {{ r.governorate }}</p>
+      </div>
+      <button
+        class="detail-save"
+        [disabled]="changing() || r.status === 'DRAFT' || !!r.is_hidden"
+        (click)="favorite()"
+        [attr.aria-pressed]="r.favorite"
+      >
+        {{ r.favorite ? '♥ Enregistrée' : '♡ Enregistrer' }}
+      </button>
+    </header>
+    <div
+      class="detail-gallery"
+      [class.single-photo]="r.photos.length === 1"
+      [class.two-photos]="r.photos.length === 2"
+      [class.three-photos]="r.photos.length === 3"
+      [class.four-photos]="r.photos.length === 4"
+    >
+      @for (p of r.photos.slice(0, 5); track p.id) {
+        <button
+          class="gallery-photo"
+          (click)="galleryDialog.showModal()"
+          [attr.aria-label]="'Afficher les photos de ' + r.title"
+        >
+          <img
+            [src]="p.url"
+            [alt]="p.caption || r.title"
+            [attr.loading]="$first ? 'eager' : 'lazy'"
+          />
+        </button>
+      } @empty {
+        <div class="gallery-empty">
+          <img src="/assets/fastcoloc-symbol.svg" width="64" height="64" alt="" />
+          <p>Aucune photo fournie par l’auteur.</p>
+        </div>
+      }
+      @if (r.photos.length) {
+        <button class="btn ghost all-photos" (click)="galleryDialog.showModal()">
+          Voir les {{ r.photos.length }} photo(s)
+        </button>
+      }
+    </div>
+    <dialog #galleryDialog class="photo-dialog" aria-labelledby="gallery-title">
+      <div class="photo-dialog-heading">
+        <h2 id="gallery-title">{{ r.title }}</h2>
+        <button class="btn ghost small" (click)="galleryDialog.close()" autofocus>Fermer ×</button>
+      </div>
+      @for (p of r.photos; track p.id) {
+        <figure>
+          <img [src]="p.url" [alt]="p.caption || r.title" loading="lazy" />
+          @if (p.caption) {
+            <figcaption>{{ p.caption }}</figcaption>
+          }
+        </figure>
+      }
+    </dialog>
+    <div class="detail-columns">
+      <div class="detail-content">
+        <section class="detail-section">
+          <h2>{{ r.property_type || 'Un logement à partager' }}</h2>
+          <p class="muted">
+            {{ r.capacity }} personne(s) ·
+            {{ r.roommate_type || 'Tous les profils sont bienvenus' }}
+          </p>
+          <div class="detail-facts">
+            <div>
+              <span aria-hidden="true">⌂</span>
+              <div>
+                <strong>Un quotidien à partager</strong>
+                <p>
+                  {{
+                    r.kind === 'OFFER'
+                      ? 'Découvre le logement et échange avec son auteur.'
+                      : 'Fais connaissance et imaginez votre prochaine coloc.'
+                  }}
+                </p>
+              </div>
+            </div>
+            <div>
+              <span aria-hidden="true">◷</span>
+              <div>
+                <strong>Disponible dès le {{ r.available_from | date: 'dd/MM/yyyy' }}</strong>
+                @if (r.available_until) {
+                  <p>Jusqu’au {{ r.available_until | date: 'dd/MM/yyyy' }}</p>
+                } @else {
+                  <p>Échange directement pour préciser les disponibilités.</p>
+                }
+              </div>
+            </div>
+          </div>
+        </section>
+        <section class="detail-section">
+          <h2>À propos de cette annonce</h2>
+          <p class="listing-description">{{ r.description }}</p>
+        </section>
+        <section class="detail-section">
+          <h2>Les équipements</h2>
+          <div class="amenities">
+            @for (e of r.equipment; track $index) {
+              <span><span aria-hidden="true">✓</span>{{ e }}</span>
+            } @empty {
+              <p class="muted">L’auteur n’a pas précisé les équipements.</p>
+            }
+          </div>
+        </section>
+      </div>
+      <aside class="contact-panel">
+        <p class="contact-price">{{ r.rent | number: '1.0-3' }} <span>TND / mois</span></p>
+        <h2>Ça pourrait être ta coloc.</h2>
+        <p>Une question sur l’annonce ? Présente-toi et échange directement avec son auteur.</p>
+        <div class="contact-availability">
+          <span>Disponibilité</span><strong>{{ r.available_from | date: 'dd/MM/yyyy' }}</strong
+          ><span>Localité</span><strong>{{ r.locality }}</strong>
+        </div>
+        @if (r.author_id !== auth.profile()?.id && r.status === 'PUBLISHED' && !r.is_hidden) {
+          <a class="btn" routerLink="/messages" [queryParams]="{ listing: r.id }">Contacter</a
+          ><small>La discussion reste privée entre vous.</small>
+        }
+        @if (r.author_id === auth.profile()?.id) {
+          <a class="btn" [routerLink]="['/annonces', r.id, 'modifier']">Modifier mon annonce</a>
+        }
+        <p class="listing-state">
+          {{
+            r.is_hidden
+              ? 'Masquée par l’administration'
+              : r.status === 'DRAFT'
+                ? 'Brouillon'
+                : 'Annonce publiée'
+          }}
+          @if (r.expires_at) {
+            · jusqu’au {{ r.expires_at | date: 'dd/MM/yyyy' }}
+          }
+        </p>
+      </aside>
+    </div>
+    @if (r.kind === 'OFFER') {
+      <section class="detail-location">
+        <h2>Où se trouve le logement ?</h2>
+        <p class="muted">{{ r.street }}, {{ r.locality }}, {{ r.governorate }}</p>
+        <fc-listing-map [items]="[r]" (zone)="searchZone($event)" />
+      </section>
+    }
+  } @else if (!busy()) {
+    <section class="section-card empty-listings">
+      <h2>Annonce indisponible</h2>
+      <p>Elle peut avoir expiré ou être réservée à son auteur.</p>
+      <button class="btn" (click)="load()">Réessayer</button>
+    </section>
+  }
+</div>

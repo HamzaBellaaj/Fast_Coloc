@@ -147,3 +147,11 @@ Tests : `npm test`, `npm run build`, puis `npx playwright test e2e/messaging.spe
 ## Préférences de notifications
 
 Le profil contient une section « Notifications par e-mail » partagée avec Android via GET/PATCH /notification-preferences. Le mode local indique que les messages sont capturés dans Mailpit. Tests navigateur : `npx playwright test e2e/notification-preferences.spec.ts`.
+
+## Interface Figma / FastColoc
+
+La branche UI conserve les fichiers du logo et les valeurs de la palette originale (violet, corail, rose, creme, prune). Les maquettes [Home, Search and Listing Pages](https://www.figma.com/design/aS0K4Rzw42BB2wpc2Wo5bQ/) et [UI Kit](https://www.figma.com/design/wfDlJ0T5wolSDUAwtR4t3h/) servent de references de mise en page : recherche segmentee, cartes photo, liste/carte, galerie et panneau de contact. Les interactions restent celles de FastColoc : loyer mensuel en TND et messagerie privee, sans reservations touristiques ni avis fictifs.
+
+Les assets Figma utilises sont stockes dans public/assets/figma. La photo d'accueil provient du frame 1:2130 ; les photos des annonces restent issues de l'API. Les champs et cartes s'appuient sur les composants 208:2067 et 238:2494 du UI Kit. Le systeme visuel partage est dans src/interface.css, complete par les styles propres aux ecrans.
+
+Verification navigateur isolee : depuis frontend, lancer les fichiers e2e/ui-redesign.spec.ts, e2e/messaging.spec.ts et e2e/notification-preferences.spec.ts avec Playwright. Ces tests utilisent des fixtures locales et n'envoient aucun message ou e-mail reel. Ils couvrent la recherche, les filtres au clavier, les galeries, les preferences, la messagerie et les mises en page telephone/bureau. Les captures de verification sont generees dans test-results (ignore par Git).
