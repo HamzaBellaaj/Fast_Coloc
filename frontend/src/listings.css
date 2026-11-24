@@ -115,6 +115,11 @@
   border: 2px solid white;
   box-shadow: 0 3px 14px #25153244;
 }
+.coloc-pin--golden {
+  background: #f5b82e;
+  color: #382308;
+  border-color: #fff4d0;
+}
 .listing-title {
   font-size: clamp(32px, 4vw, 56px);
   overflow-wrap: anywhere;

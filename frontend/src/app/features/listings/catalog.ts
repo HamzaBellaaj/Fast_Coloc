@@ -1,5 +1,6 @@
 import { ListingCard } from './listing-card';
 import { Calendar } from '../../shared/calendar';
+import { BoostCheckout, BoostMethod } from '../payment/boost-checkout';
 import { Component, DestroyRef, inject, OnInit, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
@@ -204,6 +205,37 @@ export class Catalog implements OnInit {
       await this.load();
     } catch (e) {
       this.feedback.error(e);
+    }
+  }
+  private checkout = inject(BoostCheckout);
+  get lastBoostPayment() {
+    return sessionStorage.getItem('fastcoloc.boost-payment');
+  }
+  boostTarget = signal<Listing | null>(null);
+  boostMonths = 1;
+  boostMethod: BoostMethod = 'PAYPAL';
+  boostBusy = signal(false);
+
+  openBoost(row: Listing) {
+    this.boostTarget.set(row);
+    this.boostMonths = 1;
+    this.boostMethod = 'PAYPAL';
+  }
+
+  closeBoost() {
+    if (!this.boostBusy()) this.boostTarget.set(null);
+  }
+
+  async confirmBoost() {
+    const listing = this.boostTarget();
+    if (!listing || this.boostBusy()) return;
+    this.boostBusy.set(true);
+    try {
+      await this.checkout.start(listing.id, Number(this.boostMonths), this.boostMethod);
+    } catch (e) {
+      this.feedback.error(e);
+    } finally {
+      this.boostBusy.set(false);
     }
   }
 }

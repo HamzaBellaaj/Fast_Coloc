@@ -64,6 +64,10 @@
         } @else {
           <span class="tag">Annonce indisponible</span>
         }
+        @if (selected()?.participant_id || listing()?.author_id; as participantId) {
+          <a class="link" [routerLink]="['/membres', participantId]">Voir le profil</a>
+          <fc-block-user [target]="participantId" (blockedChange)="blockChanged($event)" />
+        }
       </header>
       <div #history class="history" aria-label="Historique des messages">
         @if (older()) {
@@ -83,6 +87,9 @@
           </p>
         }
       </div>
+      @if (exchangeUnavailable()) {
+        <p class="notice" role="status">Cet échange est indisponible.</p>
+      } @else {
       <form class="composer" (ngSubmit)="send()">
         <label for="message-content">Ton message</label
         ><textarea
@@ -101,6 +108,7 @@
           </button>
         </div>
       </form>
+      }
     } @else if (!loading()) {
       <div class="empty">
         <h2>Parlons de ta prochaine coloc.</h2>

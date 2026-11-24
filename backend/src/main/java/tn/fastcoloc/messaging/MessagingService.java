@@ -14,6 +14,7 @@ public class MessagingService {
  select c.id,c.listing_id,c.listing_reference,c.listing_title,c.listing_kind,c.locality,c.rent,c.created_at,c.updated_at,
  case when c.owner_id=? then c.guest_name else c.owner_name end as participant_name,
  case when c.owner_id=? then c.guest_id else c.owner_id end as participant_id,
+ not fastcoloc.personal_exchange_blocked(case when c.owner_id=nullif(current_setting('fastcoloc.user_id',true),'')::uuid then c.guest_id else c.owner_id end) as exchange_available,
  coalesce((select m.content from fastcoloc.messages m where m.conversation_id=c.id order by m.id desc limit 1),'') as last_message,
  (select count(*) from fastcoloc.messages m where m.conversation_id=c.id and m.sender_id<>? and m.id>case when c.owner_id=? then c.owner_read_id else c.guest_read_id end) as unread_count,
  exists(select 1 from fastcoloc.listings l where l.id=c.listing_id and l.status='PUBLISHED' and not l.is_hidden and l.expires_at>statement_timestamp()) as listing_available

@@ -29,6 +29,8 @@ export interface Listing {
   is_hidden?: boolean;
   published_at: string | null;
   expires_at: string | null;
+  golden?: boolean;
+  golden_until?: string | null;
   version: number;
   favorite: boolean;
   photos: ListingPhoto[];
@@ -41,7 +43,7 @@ export interface ListingPage {
 }
 export type ListingMarker = Pick<
   Listing,
-  'id' | 'kind' | 'title' | 'rent' | 'latitude' | 'longitude'
+  'id' | 'kind' | 'title' | 'rent' | 'latitude' | 'longitude' | 'golden'
 >;
 export interface ListingMapPage {
   items: ListingMarker[];
