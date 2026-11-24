@@ -1,12 +1,15 @@
+import { DesktopStatus } from './desktop-status';
 import { Component, input } from '@angular/core';
 import { AbstractControl } from '@angular/forms';
 @Component({
+  imports: [DesktopStatus],
   selector: 'app-field',
   template: `<div class="field">
-    <label [attr.for]="fieldId()">{{ label() }}</label
-    ><ng-content />
+    <label [attr.for]="fieldId()">{{ label() }}</label><ng-content />
     @if (control()?.invalid && control()?.touched) {
-      <p class="field-error" [id]="fieldId() + '-error'" role="alert">{{ error() }}</p>
+      <p class="field-error" [id]="fieldId() + '-error'" role="alert" fcStatus="error">
+        {{ error() }}
+      </p>
     }
   </div>`,
 })

@@ -1,3 +1,4 @@
+import { DesktopStatus } from './desktop-status';
 import {
   Component,
   inject,
@@ -13,10 +14,10 @@ import { Photo } from '../core/models';
 import { Feedback } from '../core/feedback';
 @Component({
   selector: 'app-photos',
-  imports: [FormsModule],
+  imports: [DesktopStatus, FormsModule],
   template: `
     <div class="upload">
-      <div class="upload-icon" aria-hidden="true">📷</div>
+      <div class="upload-icon" aria-hidden="true"></div>
       <h3>Ton sourire fait la différence</h3>
       <p class="help">JPEG, PNG ou WebP · 5 photos maximum · 5 MiB par photo</p>
       <button
@@ -24,6 +25,7 @@ import { Feedback } from '../core/feedback';
         class="btn ghost file-label"
         (click)="photoFile.click()"
         [disabled]="busy || photos.length >= 5"
+        [fcStatus]="busy ? 'loading' : null"
       >
         Choisir une photo</button
       ><input
@@ -43,11 +45,17 @@ import { Feedback } from '../core/feedback';
           >Description (facultative)</label
         ><input class="text-input" id="new-caption" [(ngModel)]="caption" maxlength="500" />
         <div class="row wrap">
-          <button class="btn" (click)="upload()" [disabled]="busy">
+          <button
+            class="btn"
+            (click)="upload()"
+            [disabled]="busy"
+            [fcStatus]="busy ? 'loading' : null"
+          >
             {{ busy ? 'Envoi…' : 'Envoyer la photo' }}</button><button
             class="btn ghost"
             (click)="discard()"
             [disabled]="busy"
+            [fcStatus]="busy ? 'loading' : null"
           >
             Annuler
           </button>
@@ -71,9 +79,19 @@ import { Feedback } from '../core/feedback';
             maxlength="500"
           />
           <div class="row wrap">
-            <button class="btn small ghost" (click)="saveCaption(photo)" [disabled]="busy">
+            <button
+              class="btn small ghost"
+              (click)="saveCaption(photo)"
+              [disabled]="busy"
+              [fcStatus]="busy ? 'loading' : null"
+            >
               Enregistrer</button
-            ><button class="btn small ghost" (click)="remove(photo)" [disabled]="busy">
+            ><button
+              class="btn small ghost"
+              (click)="remove(photo)"
+              [disabled]="busy"
+              [fcStatus]="busy ? 'loading' : null"
+            >
               Supprimer
             </button>
           </div>

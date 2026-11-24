@@ -105,9 +105,9 @@ test('Pour toi: one initial request, AI order, favorites, explicit refresh and e
   await expect(page.locator('fc-listing-card')).toHaveCount(2);
   await expect(page.locator('fc-listing-card h3')).toHaveText(rows.map((row) => row.title));
   await expect(page.locator('.recommendation-match').first()).toContainText('95');
-  await expect(page.getByRole('link', { name: 'Compléter mon profil ↗' })).toBeVisible();
+  await expect(page.getByRole('link', { name: 'Compléter mon profil' })).toBeVisible();
   await expect(
-    page.getByRole('link', { name: 'Découvrir cette annonce ↗' }).first(),
+    page.getByRole('link', { name: 'Découvrir cette annonce' }).first(),
   ).toHaveAttribute('href', '/annonces/b?from=%2Fpour-toi');
   await page.getByRole('button', { name: 'Ajouter aux favoris' }).first().click();
   await expect(page.getByRole('button', { name: 'Retirer des favoris' })).toBeVisible();

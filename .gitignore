@@ -46,3 +46,6 @@ Thumbs.db
 *.pgdump
 *.dump
 *.backup
+
+# Design review evidence and local checkpoints
+**/.hallmark/

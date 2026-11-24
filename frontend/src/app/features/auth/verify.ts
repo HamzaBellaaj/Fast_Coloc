@@ -1,3 +1,4 @@
+import { DesktopStatus } from '../../shared/desktop-status';
 import { Component, inject } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
@@ -5,9 +6,9 @@ import { Api } from '../../core/api';
 import { Feedback } from '../../core/feedback';
 import { Field } from '../../shared/field';
 @Component({
-  imports: [ReactiveFormsModule, RouterLink, Field],
+  imports: [DesktopStatus, ReactiveFormsModule, RouterLink, Field],
   template: ` <section class="success-box">
-    <div class="illustration" aria-hidden="true">📨</div>
+    <div class="illustration" aria-hidden="true"></div>
     <span class="tag">CONFIRMATION</span>
     <h1 class="form-title">Un petit clic, et c’est parti !</h1>
     <p>
@@ -18,7 +19,7 @@ import { Field } from '../../shared/field';
       Les informations saisies avant confirmation restent dans la mémoire de cette page. Les étapes
       enregistrées après connexion sont conservées sur le serveur.
     </p>
-    <a class="btn" routerLink="/login">J’ai confirmé mon e-mail →</a>
+    <a class="btn" routerLink="/login">J’ai confirmé mon e-mail</a>
     <form class="form" [formGroup]="form" (ngSubmit)="resend()" novalidate>
       <app-field
         fieldId="resend-email"
@@ -29,7 +30,11 @@ import { Field } from '../../shared/field';
           type="email"
           autocomplete="email"
           formControlName="email" /></app-field
-      ><button class="btn ghost" [disabled]="busy || cooldown > 0">
+      ><button
+        class="btn ghost"
+        [disabled]="busy || cooldown > 0"
+        [fcStatus]="busy ? 'loading' : null"
+      >
         {{
           busy
             ? 'Envoi…'

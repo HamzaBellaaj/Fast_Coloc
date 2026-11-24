@@ -1,7 +1,7 @@
 <div class="detail-page">
-  <a class="detail-back" [routerLink]="backLink">← Retour aux annonces</a>
+  <a class="detail-back" [routerLink]="backLink">Retour aux annonces</a>
   @if (busy()) {
-    <p role="status" class="notice">Ouverture de l’annonce…</p>
+    <fc-skeleton kind="gallery" label="Ouverture de l’annonce…" />
   }
   @if (row(); as r) {
     @if (
@@ -9,7 +9,7 @@
       r.author_id === auth.profile()?.id &&
       r.status === 'PUBLISHED'
     ) {
-      <section class="publication-notice" role="status">
+      <section class="publication-notice" role="status" fcStatus="success">
         <img src="/assets/fastcoloc-symbol.svg" width="56" height="56" alt="" />
         <div>
           <h2>Ton annonce est en ligne.</h2>
@@ -32,7 +32,7 @@
         (click)="favorite()"
         [attr.aria-pressed]="r.favorite"
       >
-        {{ r.favorite ? '♥ Enregistrée' : '♡ Enregistrer' }}
+        <fc-icon name="heart" /> {{ r.favorite ? 'Enregistrée' : 'Enregistrer' }}
       </button>
     </header>
     <div
@@ -90,7 +90,7 @@
           </p>
           <div class="detail-facts">
             <div>
-              <span aria-hidden="true">⌂</span>
+              <fc-icon name="house" />
               <div>
                 <strong>Un quotidien à partager</strong>
                 <p>
@@ -103,7 +103,7 @@
               </div>
             </div>
             <div>
-              <span aria-hidden="true">◷</span>
+              <fc-icon name="clock" />
               <div>
                 <strong>Disponible dès le {{ r.available_from | date: 'dd/MM/yyyy' }}</strong>
                 @if (r.available_until) {

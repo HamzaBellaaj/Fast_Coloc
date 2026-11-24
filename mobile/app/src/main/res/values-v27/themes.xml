@@ -3,6 +3,6 @@
     <!-- Dark system-bar icons are available starting with Android 8.1. -->
     <style name="Theme.FastColloc" parent="Base.Theme.FastColloc">
         <item name="android:windowLightNavigationBar">true</item>
-        <item name="android:navigationBarColor">@color/fc_background</item>
+        <item name="android:navigationBarColor">@color/fc_page</item>
     </style>
 </resources>

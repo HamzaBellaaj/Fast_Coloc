@@ -1,3 +1,4 @@
+import { DesktopStatus } from '../../shared/desktop-status';
 import { Component, inject } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
@@ -8,7 +9,7 @@ import { AuthLayout } from '../../shared/auth-layout';
 import { Field } from '../../shared/field';
 import { matchingPasswords, passwordPolicy } from '../../shared/validators';
 @Component({
-  imports: [ReactiveFormsModule, RouterLink, AuthLayout, Field],
+  imports: [DesktopStatus, ReactiveFormsModule, RouterLink, AuthLayout, Field],
   templateUrl: './auth-page.html',
 })
 export class AuthPage {

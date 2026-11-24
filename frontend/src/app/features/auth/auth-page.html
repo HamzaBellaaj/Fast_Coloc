@@ -4,7 +4,7 @@
       mode === 'login'
         ? 'Heureux de te revoir'
         : mode === 'forgot'
-          ? 'Mot de passe oublié ? 🔐'
+          ? 'Mot de passe oublié ? '
           : 'Nouveau mot de passe'
     }}
   </h1>
@@ -23,11 +23,11 @@
     </div>
     <a class="btn" routerLink="/forgot-password">Recevoir un nouveau lien</a>
   } @else if (sent) {
-    <div class="side-note form" role="status">
+    <div class="side-note form" role="status" fcStatus="pending">
       Si cette demande est admissible, un e-mail sera envoyé. Vérifie aussi tes courriers
       indésirables. Ouvre le lien dans ce navigateur.
     </div>
-    <a class="link" routerLink="/login">← Retour à la connexion</a>
+    <a class="link" routerLink="/login">Retour à la connexion</a>
   } @else {
     <form class="form" [formGroup]="form" (ngSubmit)="submit()" [attr.aria-busy]="busy" novalidate>
       @if (mode !== 'reset') {
@@ -78,34 +78,42 @@
           /></app-field>
           <p class="help">12 à 72 caractères, au maximum 72 octets UTF-8.</p>
           @if (form.hasError('passwordMismatch') && form.controls.confirm.touched) {
-            <p class="field-error" role="alert">Les mots de passe ne correspondent pas.</p>
+            <p class="field-error" role="alert" fcStatus="error">
+              Les mots de passe ne correspondent pas.
+            </p>
           }
         }
       }
       @if (mode === 'login') {
         <a class="link help" routerLink="/forgot-password">Mot de passe oublié ?</a>
       }
-      <button class="btn" type="submit" [disabled]="busy">
+      <button class="btn" type="submit" [disabled]="busy" [fcStatus]="busy ? 'loading' : null">
         {{
           busy
             ? 'Un instant…'
             : mode === 'login'
-              ? 'Se connecter →'
+              ? 'Se connecter'
               : mode === 'forgot'
-                ? 'Recevoir le lien →'
-                : 'Enregistrer le mot de passe →'
+                ? 'Recevoir le lien'
+                : 'Enregistrer le mot de passe'
         }}
       </button>
       @if (mode === 'login') {
         <div class="or">ou continuer avec</div>
-        <button class="btn ghost" type="button" (click)="google()" [disabled]="busy">
+        <button
+          class="btn ghost"
+          type="button"
+          (click)="google()"
+          [disabled]="busy"
+          [fcStatus]="busy ? 'loading' : null"
+        >
           Continuer avec Google
         </button>
         <p class="help center">
           Pas encore de compte ? <a routerLink="/register/1">Rejoins FastColoc</a>
         </p>
       } @else {
-        <a class="link help" routerLink="/login">← Retour à la connexion</a>
+        <a class="link help" routerLink="/login">Retour à la connexion</a>
       }
     </form>
   }

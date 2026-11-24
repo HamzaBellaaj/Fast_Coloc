@@ -31,7 +31,8 @@ class RecommendationsFragment : ListingBoundFragment<FragmentRecommendationsBind
         binding.btnCompleteRecommendationProfile.setOnClickListener { findNavController().navigate(R.id.profileFragment) }
         val owner = viewLifecycleOwner
         recommendations.state.observe(viewLifecycleOwner) { result ->
-            binding.recommendationProgress.isVisible = result.loading
+            binding.recommendationProgress.isVisible = result.loading && result.items.isNotEmpty()
+            binding.housingSkeleton.isVisible = result.loading && result.items.isEmpty()
             binding.btnRefreshRecommendations.isEnabled = !result.loading && result.pending.isEmpty()
             binding.btnCompleteRecommendationProfile.isVisible = result.incomplete && !result.loading
             binding.tvRecommendationHint.isVisible = result.incomplete && !result.loading

@@ -1,15 +1,18 @@
+import { DesktopStatus } from '../../shared/desktop-status';
 import { Component, inject, OnInit } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { Auth } from '../../core/auth';
 import { errorMessage } from '../../core/feedback';
 @Component({
-  imports: [RouterLink],
+  imports: [DesktopStatus, RouterLink],
   template: `<section class="success-box" [attr.aria-busy]="!error">
     <div class="illustration" aria-hidden="true">
       <img src="/assets/fastcoloc-symbol.svg" width="100" height="100" alt="" />
     </div>
     <h1 class="form-title">{{ error ? 'Le lien n’a pas abouti' : 'Vérification en cours…' }}</h1>
-    <p role="status">{{ error || 'Nous vérifions ton lien sécurisé. Un instant.' }}</p>
+    <p role="status" [fcStatus]="error ? 'error' : 'loading'">
+      {{ error || 'Nous vérifions ton lien sécurisé. Un instant.' }}
+    </p>
     @if (error) {
       <div class="form">
         <a class="btn" routerLink="/login">Se connecter</a

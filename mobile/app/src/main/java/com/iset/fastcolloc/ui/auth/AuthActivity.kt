@@ -80,9 +80,9 @@ class AuthActivity : AppCompatActivity() {
             val signedInScreen = destination.id in mainDestinations || destination.id in setOf(R.id.notificationSettingsFragment, R.id.conversationFragment, R.id.listingDetailFragment, R.id.listingEditorFragment, R.id.publicationSuccessFragment)
             binding.drawerLayout.setDrawerLockMode(if (signedInScreen) DrawerLayout.LOCK_MODE_UNLOCKED else DrawerLayout.LOCK_MODE_LOCKED_CLOSED)
             val home = destination.id == R.id.homeFragment
-            binding.toolbar.setBackgroundColor(androidx.core.content.ContextCompat.getColor(this, R.color.fc_cream))
-            binding.toolbar.setTitleTextColor(androidx.core.content.ContextCompat.getColor(this, R.color.fc_plum))
-            binding.toolbar.navigationIcon?.setTint(androidx.core.content.ContextCompat.getColor(this, R.color.fc_violet))
+            binding.toolbar.setBackgroundColor(androidx.core.content.ContextCompat.getColor(this, R.color.fc_page))
+            binding.toolbar.setTitleTextColor(androidx.core.content.ContextCompat.getColor(this, R.color.fc_text))
+            binding.toolbar.navigationIcon?.setTint(androidx.core.content.ContextCompat.getColor(this, R.color.fc_link))
             binding.toolbar.setTitleTextAppearance(this, R.style.TextAppearance_FastColoc_Section)
             title = if (home) "FastColoc" else destination.label
             binding.toolbar.isVisible = destination.id != R.id.loginFragment

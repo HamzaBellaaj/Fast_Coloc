@@ -1,3 +1,4 @@
+import { DesktopStatus } from '../../shared/desktop-status';
 import { Component, inject, OnInit, OnDestroy } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
@@ -12,7 +13,7 @@ import { Photos } from '../../shared/photos';
 import { matchingPasswords, passwordPolicy, splitList } from '../../shared/validators';
 import { RegistrationDraft } from './draft';
 @Component({
-  imports: [ReactiveFormsModule, RouterLink, AuthLayout, Field, Photos],
+  imports: [DesktopStatus, ReactiveFormsModule, RouterLink, AuthLayout, Field, Photos],
   templateUrl: './registration.html',
 })
 export class Registration implements OnInit, OnDestroy {
@@ -35,7 +36,7 @@ export class Registration implements OnInit, OnDestroy {
     'Tes infos, ton départ',
     'Où es-tu actuellement ?',
     'Parlons un peu de toi',
-    'Comment te contacter ? 💬',
+    'Comment te contacter ? ',
     'Montre ton meilleur sourire',
   ];
   labels = [

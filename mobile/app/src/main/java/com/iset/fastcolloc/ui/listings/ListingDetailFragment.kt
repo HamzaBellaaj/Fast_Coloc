@@ -21,6 +21,7 @@ class ListingDetailFragment :
             val row = listings.selected.value?.takeIf { it.id == id }
             val busy = listings.busy.value == true
             val offline = listings.offline.value == true
+            binding.housingSkeleton.isVisible = busy && row == null
             binding.tvState.text =
                 if (busy) "Chargement…"
                 else if (offline) "Copie locale · informations à vérifier en ligne."

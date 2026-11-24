@@ -1,3 +1,6 @@
+import { Skeleton } from '../../shared/skeleton';
+import { Icon } from '../../shared/icon';
+import { DesktopStatus } from '../../shared/desktop-status';
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { Router, RouterLink, ActivatedRoute } from '@angular/router';
 import { DecimalPipe, DatePipe } from '@angular/common';
@@ -7,7 +10,7 @@ import { Feedback } from '../../core/feedback';
 import { Listing } from './models';
 import { ListingMap } from './listing-map';
 @Component({
-  imports: [RouterLink, DecimalPipe, DatePipe, ListingMap],
+  imports: [Skeleton, Icon, DesktopStatus, RouterLink, DecimalPipe, DatePipe, ListingMap],
   templateUrl: './listing-detail.html',
   styleUrl: './listing-detail.css',
 })

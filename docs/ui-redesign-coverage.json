@@ -1,0 +1,536 @@
+{
+  "date": "2026-11-24",
+  "branch": "ayoub-ui-redesign",
+  "scope": "Active Angular and native Android frontends; existing APIs and business rules preserved",
+  "routeCaptures": 208,
+  "widths": [
+    375,
+    768,
+    1024,
+    1440
+  ],
+  "themes": [
+    "light",
+    "dark"
+  ],
+  "checks": {
+    "webBuild": "pass",
+    "webTypecheck": "pass",
+    "webUnit": {
+      "tests": 35,
+      "failed": 0
+    },
+    "backendUnit": {
+      "tests": 95,
+      "skipped": 2,
+      "failed": 0
+    },
+    "android": {
+      "build": "pass",
+      "unitTests": 24,
+      "lint": "pass (existing warnings)"
+    },
+    "hallmark": {
+      "scope": [
+        "frontend/src/housing/housing.css",
+        "frontend/src/housing/tokens.css",
+        "frontend/src/housing/base.css"
+      ],
+      "floorFails": 0,
+      "warnings": 0,
+      "waived": 1,
+      "reason": "Comparable housing results use equal photo cards",
+      "review": "In-thread review: 0 blocking findings in the new design layer; equal housing result grid waiver recorded"
+    },
+    "liveMember": "PASS: real API listing discovery, details, favorites, private messaging, preferences; temporary records cleaned",
+    "liveAdmin": "PASS: existing admin credentials, isolated target account, edit/error recovery and dialog responsiveness; target cleaned",
+    "browser": {
+      "fixtureTests": 43,
+      "passed": 43,
+      "liveRoleTests": 2,
+      "liveRoles": [
+        "member",
+        "ADMIN"
+      ],
+      "routes": 26,
+      "responsiveCaptures": 208
+    }
+  },
+  "notVerified": [
+    "Android device/runtime/theme/accessibility walkthrough: no device, configured AVD or system image",
+    "Live AI recommendation and rent-estimation service responses: UI states exercised with fixtures; external model service not invoked",
+    "Real Google OAuth and email delivery: external account/provider browser flows not re-run",
+    "Live OSM tile availability: deterministic browser screenshots block remote tiles; map/location controls covered by existing geography test"
+  ],
+  "rows": [
+    {
+      "frontend": "Angular responsive web",
+      "interface": "/",
+      "states": "full; light/dark",
+      "verification": "PASS: running Angular with isolated HTTP test data; 375/768/1024/1440",
+      "blocker": ""
+    },
+    {
+      "frontend": "Angular responsive web",
+      "interface": "/annonces",
+      "states": "results; empty; error; loading; filters; photos",
+      "verification": "PASS: running Angular with isolated HTTP test data; 375/768/1024/1440",
+      "blocker": ""
+    },
+    {
+      "frontend": "Angular responsive web",
+      "interface": "/favoris",
+      "states": "full; light/dark",
+      "verification": "PASS: running Angular with isolated HTTP test data; 375/768/1024/1440",
+      "blocker": ""
+    },
+    {
+      "frontend": "Angular responsive web",
+      "interface": "/mes-annonces",
+      "states": "full; light/dark",
+      "verification": "PASS: running Angular with isolated HTTP test data; 375/768/1024/1440",
+      "blocker": ""
+    },
+    {
+      "frontend": "Angular responsive web",
+      "interface": "/annonces/ui-listing",
+      "states": "results; empty; error; loading; filters; photos",
+      "verification": "PASS: running Angular with isolated HTTP test data; 375/768/1024/1440",
+      "blocker": ""
+    },
+    {
+      "frontend": "Angular responsive web",
+      "interface": "/annonces/nouvelle",
+      "states": "results; empty; error; loading; filters; photos",
+      "verification": "PASS: running Angular with isolated HTTP test data; 375/768/1024/1440",
+      "blocker": ""
+    },
+    {
+      "frontend": "Angular responsive web",
+      "interface": "/annonces/own/modifier?step=0",
+      "states": "form; validation; permission; light/dark",
+      "verification": "PASS: running Angular with isolated HTTP test data; 375/768/1024/1440",
+      "blocker": ""
+    },
+    {
+      "frontend": "Angular responsive web",
+      "interface": "/annonces/own/modifier?step=1",
+      "states": "form; validation; permission; light/dark",
+      "verification": "PASS: running Angular with isolated HTTP test data; 375/768/1024/1440",
+      "blocker": ""
+    },
+    {
+      "frontend": "Angular responsive web",
+      "interface": "/annonces/own/modifier?step=2",
+      "states": "form; validation; permission; light/dark",
+      "verification": "PASS: running Angular with isolated HTTP test data; 375/768/1024/1440",
+      "blocker": ""
+    },
+    {
+      "frontend": "Angular responsive web",
+      "interface": "/annonces/own/modifier?step=3",
+      "states": "form; validation; permission; light/dark",
+      "verification": "PASS: running Angular with isolated HTTP test data; 375/768/1024/1440",
+      "blocker": ""
+    },
+    {
+      "frontend": "Angular responsive web",
+      "interface": "/annonces/own/modifier?step=4",
+      "states": "form; validation; permission; light/dark",
+      "verification": "PASS: running Angular with isolated HTTP test data; 375/768/1024/1440",
+      "blocker": ""
+    },
+    {
+      "frontend": "Angular responsive web",
+      "interface": "/pour-toi",
+      "states": "full; light/dark",
+      "verification": "PASS: running Angular with isolated HTTP test data; 375/768/1024/1440",
+      "blocker": ""
+    },
+    {
+      "frontend": "Angular responsive web",
+      "interface": "/messages",
+      "states": "inbox; thread; composer; empty; error; sending",
+      "verification": "PASS: running Angular with isolated HTTP test data; 375/768/1024/1440",
+      "blocker": ""
+    },
+    {
+      "frontend": "Angular responsive web",
+      "interface": "/messages/conversation-1",
+      "states": "inbox; thread; composer; empty; error; sending",
+      "verification": "PASS: running Angular with isolated HTTP test data; 375/768/1024/1440",
+      "blocker": ""
+    },
+    {
+      "frontend": "Angular responsive web",
+      "interface": "/messages?listing=ui-listing",
+      "states": "inbox; thread; composer; empty; error; sending",
+      "verification": "PASS: running Angular with isolated HTTP test data; 375/768/1024/1440",
+      "blocker": ""
+    },
+    {
+      "frontend": "Angular responsive web",
+      "interface": "/profile",
+      "states": "full; loading; preferences; feedback; upload empty",
+      "verification": "PASS: running Angular with isolated HTTP test data; 375/768/1024/1440",
+      "blocker": ""
+    },
+    {
+      "frontend": "Angular responsive web",
+      "interface": "/register/1",
+      "states": "full; light/dark",
+      "verification": "PASS: running Angular with isolated HTTP test data; 375/768/1024/1440",
+      "blocker": ""
+    },
+    {
+      "frontend": "Angular responsive web",
+      "interface": "/register/2",
+      "states": "full; light/dark",
+      "verification": "PASS: running Angular with isolated HTTP test data; 375/768/1024/1440",
+      "blocker": ""
+    },
+    {
+      "frontend": "Angular responsive web",
+      "interface": "/register/3",
+      "states": "full; light/dark",
+      "verification": "PASS: running Angular with isolated HTTP test data; 375/768/1024/1440",
+      "blocker": ""
+    },
+    {
+      "frontend": "Angular responsive web",
+      "interface": "/register/4",
+      "states": "full; light/dark",
+      "verification": "PASS: running Angular with isolated HTTP test data; 375/768/1024/1440",
+      "blocker": ""
+    },
+    {
+      "frontend": "Angular responsive web",
+      "interface": "/register/5",
+      "states": "full; light/dark",
+      "verification": "PASS: running Angular with isolated HTTP test data; 375/768/1024/1440",
+      "blocker": ""
+    },
+    {
+      "frontend": "Angular responsive web",
+      "interface": "/admin",
+      "states": "ADMIN; table; dialogs; loading; permission",
+      "verification": "PASS: running Angular with isolated HTTP test data; 375/768/1024/1440",
+      "blocker": ""
+    },
+    {
+      "frontend": "Angular responsive web",
+      "interface": "/admin/annonces",
+      "states": "results; empty; error; loading; filters; photos",
+      "verification": "PASS: running Angular with isolated HTTP test data; 375/768/1024/1440",
+      "blocker": ""
+    },
+    {
+      "frontend": "Angular responsive web",
+      "interface": "/admin/annonces/ui-listing",
+      "states": "results; empty; error; loading; filters; photos",
+      "verification": "PASS: running Angular with isolated HTTP test data; 375/768/1024/1440",
+      "blocker": ""
+    },
+    {
+      "frontend": "Angular responsive web",
+      "interface": "/admin/annonces/ui-listing/modifier",
+      "states": "form; validation; permission; light/dark",
+      "verification": "PASS: running Angular with isolated HTTP test data; 375/768/1024/1440",
+      "blocker": ""
+    },
+    {
+      "frontend": "Angular responsive web",
+      "interface": "/page-inexistante",
+      "states": "full; light/dark",
+      "verification": "PASS: running Angular with isolated HTTP test data; 375/768/1024/1440",
+      "blocker": ""
+    },
+    {
+      "frontend": "Angular public web",
+      "interface": "/login",
+      "states": "public; validation; invalid/recovery link; keyboard; light/dark",
+      "verification": "PASS: browser checks; login also exercised against live backend",
+      "blocker": ""
+    },
+    {
+      "frontend": "Angular public web",
+      "interface": "/forgot-password",
+      "states": "public; validation; invalid/recovery link; keyboard; light/dark",
+      "verification": "PASS: browser checks; login also exercised against live backend",
+      "blocker": ""
+    },
+    {
+      "frontend": "Angular public web",
+      "interface": "/reset-password",
+      "states": "public; validation; invalid/recovery link; keyboard; light/dark",
+      "verification": "PASS: browser checks; login also exercised against live backend",
+      "blocker": ""
+    },
+    {
+      "frontend": "Angular public web",
+      "interface": "/verify-email",
+      "states": "public; validation; invalid/recovery link; keyboard; light/dark",
+      "verification": "PASS: browser checks; login also exercised against live backend",
+      "blocker": ""
+    },
+    {
+      "frontend": "Angular public web",
+      "interface": "/auth/callback",
+      "states": "public; validation; invalid/recovery link; keyboard; light/dark",
+      "verification": "PASS: browser checks; login also exercised against live backend",
+      "blocker": ""
+    },
+    {
+      "frontend": "Angular public web",
+      "interface": "/register/1",
+      "states": "public; validation; invalid/recovery link; keyboard; light/dark",
+      "verification": "PASS: browser checks; login also exercised against live backend",
+      "blocker": ""
+    },
+    {
+      "frontend": "Angular secondary interface",
+      "interface": "Desktop account dropdown; mobile menu; saved theme; Escape and focus return",
+      "states": "keyboard; focus; feedback; light/dark",
+      "verification": "PASS: automated interactions and reviewed screenshots",
+      "blocker": ""
+    },
+    {
+      "frontend": "Angular secondary interface",
+      "interface": "Desktop filter modal; mobile disclosure; expanded criteria; sorting",
+      "states": "keyboard; focus; feedback; light/dark",
+      "verification": "PASS: automated interactions and reviewed screenshots",
+      "blocker": ""
+    },
+    {
+      "frontend": "Angular secondary interface",
+      "interface": "Photo gallery modal; favorite controls; contact composer",
+      "states": "keyboard; focus; feedback; light/dark",
+      "verification": "PASS: automated interactions and reviewed screenshots",
+      "blocker": ""
+    },
+    {
+      "frontend": "Angular secondary interface",
+      "interface": "Admin contacts; block; delete user; hide/delete listing dialogs",
+      "states": "keyboard; focus; feedback; light/dark",
+      "verification": "PASS: automated interactions and reviewed screenshots",
+      "blocker": ""
+    },
+    {
+      "frontend": "Angular secondary interface",
+      "interface": "Notification preference save; saving/success/error/warning/pending icons",
+      "states": "keyboard; focus; feedback; light/dark",
+      "verification": "PASS: automated interactions and reviewed screenshots",
+      "blocker": ""
+    },
+    {
+      "frontend": "Android native",
+      "interface": "loginFragment",
+      "states": "shared light/night theme; layout resources; controls; loading; empty/error where present in source",
+      "verification": "BUILD/UNIT/LINT PASS; device walkthrough not verified",
+      "blocker": "adb devices: no connected device; emulator -list-avds: no configured AVD; SDK has no system image"
+    },
+    {
+      "frontend": "Android native",
+      "interface": "registerStep1Fragment",
+      "states": "shared light/night theme; layout resources; controls; loading; empty/error where present in source",
+      "verification": "BUILD/UNIT/LINT PASS; device walkthrough not verified",
+      "blocker": "adb devices: no connected device; emulator -list-avds: no configured AVD; SDK has no system image"
+    },
+    {
+      "frontend": "Android native",
+      "interface": "registerStep2Fragment",
+      "states": "shared light/night theme; layout resources; controls; loading; empty/error where present in source",
+      "verification": "BUILD/UNIT/LINT PASS; device walkthrough not verified",
+      "blocker": "adb devices: no connected device; emulator -list-avds: no configured AVD; SDK has no system image"
+    },
+    {
+      "frontend": "Android native",
+      "interface": "registerStep3Fragment",
+      "states": "shared light/night theme; layout resources; controls; loading; empty/error where present in source",
+      "verification": "BUILD/UNIT/LINT PASS; device walkthrough not verified",
+      "blocker": "adb devices: no connected device; emulator -list-avds: no configured AVD; SDK has no system image"
+    },
+    {
+      "frontend": "Android native",
+      "interface": "registerStep4Fragment",
+      "states": "shared light/night theme; layout resources; controls; loading; empty/error where present in source",
+      "verification": "BUILD/UNIT/LINT PASS; device walkthrough not verified",
+      "blocker": "adb devices: no connected device; emulator -list-avds: no configured AVD; SDK has no system image"
+    },
+    {
+      "frontend": "Android native",
+      "interface": "registerStep5Fragment",
+      "states": "shared light/night theme; layout resources; controls; loading; empty/error where present in source",
+      "verification": "BUILD/UNIT/LINT PASS; device walkthrough not verified",
+      "blocker": "adb devices: no connected device; emulator -list-avds: no configured AVD; SDK has no system image"
+    },
+    {
+      "frontend": "Android native",
+      "interface": "registrationSuccessFragment",
+      "states": "shared light/night theme; layout resources; controls; loading; empty/error where present in source",
+      "verification": "BUILD/UNIT/LINT PASS; device walkthrough not verified",
+      "blocker": "adb devices: no connected device; emulator -list-avds: no configured AVD; SDK has no system image"
+    },
+    {
+      "frontend": "Android native",
+      "interface": "verifyFragment",
+      "states": "shared light/night theme; layout resources; controls; loading; empty/error where present in source",
+      "verification": "BUILD/UNIT/LINT PASS; device walkthrough not verified",
+      "blocker": "adb devices: no connected device; emulator -list-avds: no configured AVD; SDK has no system image"
+    },
+    {
+      "frontend": "Android native",
+      "interface": "forgotFragment",
+      "states": "shared light/night theme; layout resources; controls; loading; empty/error where present in source",
+      "verification": "BUILD/UNIT/LINT PASS; device walkthrough not verified",
+      "blocker": "adb devices: no connected device; emulator -list-avds: no configured AVD; SDK has no system image"
+    },
+    {
+      "frontend": "Android native",
+      "interface": "resetFragment",
+      "states": "shared light/night theme; layout resources; controls; loading; empty/error where present in source",
+      "verification": "BUILD/UNIT/LINT PASS; device walkthrough not verified",
+      "blocker": "adb devices: no connected device; emulator -list-avds: no configured AVD; SDK has no system image"
+    },
+    {
+      "frontend": "Android native",
+      "interface": "homeFragment",
+      "states": "shared light/night theme; layout resources; controls; loading; empty/error where present in source",
+      "verification": "BUILD/UNIT/LINT PASS; device walkthrough not verified",
+      "blocker": "adb devices: no connected device; emulator -list-avds: no configured AVD; SDK has no system image"
+    },
+    {
+      "frontend": "Android native",
+      "interface": "recommendationsFragment",
+      "states": "shared light/night theme; layout resources; controls; loading; empty/error where present in source",
+      "verification": "BUILD/UNIT/LINT PASS; device walkthrough not verified",
+      "blocker": "adb devices: no connected device; emulator -list-avds: no configured AVD; SDK has no system image"
+    },
+    {
+      "frontend": "Android native",
+      "interface": "profileFragment",
+      "states": "shared light/night theme; layout resources; controls; loading; empty/error where present in source",
+      "verification": "BUILD/UNIT/LINT PASS; device walkthrough not verified",
+      "blocker": "adb devices: no connected device; emulator -list-avds: no configured AVD; SDK has no system image"
+    },
+    {
+      "frontend": "Android native",
+      "interface": "listingCatalogFragment",
+      "states": "shared light/night theme; layout resources; controls; loading; empty/error where present in source",
+      "verification": "BUILD/UNIT/LINT PASS; device walkthrough not verified",
+      "blocker": "adb devices: no connected device; emulator -list-avds: no configured AVD; SDK has no system image"
+    },
+    {
+      "frontend": "Android native",
+      "interface": "listingDetailFragment",
+      "states": "shared light/night theme; layout resources; controls; loading; empty/error where present in source",
+      "verification": "BUILD/UNIT/LINT PASS; device walkthrough not verified",
+      "blocker": "adb devices: no connected device; emulator -list-avds: no configured AVD; SDK has no system image"
+    },
+    {
+      "frontend": "Android native",
+      "interface": "listingEditorFragment",
+      "states": "shared light/night theme; layout resources; controls; loading; empty/error where present in source",
+      "verification": "BUILD/UNIT/LINT PASS; device walkthrough not verified",
+      "blocker": "adb devices: no connected device; emulator -list-avds: no configured AVD; SDK has no system image"
+    },
+    {
+      "frontend": "Android native",
+      "interface": "favoritesFragment",
+      "states": "shared light/night theme; layout resources; controls; loading; empty/error where present in source",
+      "verification": "BUILD/UNIT/LINT PASS; device walkthrough not verified",
+      "blocker": "adb devices: no connected device; emulator -list-avds: no configured AVD; SDK has no system image"
+    },
+    {
+      "frontend": "Android native",
+      "interface": "mineListingsFragment",
+      "states": "shared light/night theme; layout resources; controls; loading; empty/error where present in source",
+      "verification": "BUILD/UNIT/LINT PASS; device walkthrough not verified",
+      "blocker": "adb devices: no connected device; emulator -list-avds: no configured AVD; SDK has no system image"
+    },
+    {
+      "frontend": "Android native",
+      "interface": "publicationSuccessFragment",
+      "states": "shared light/night theme; layout resources; controls; loading; empty/error where present in source",
+      "verification": "BUILD/UNIT/LINT PASS; device walkthrough not verified",
+      "blocker": "adb devices: no connected device; emulator -list-avds: no configured AVD; SDK has no system image"
+    },
+    {
+      "frontend": "Android native",
+      "interface": "discoverFragment",
+      "states": "shared light/night theme; layout resources; controls; loading; empty/error where present in source",
+      "verification": "BUILD/UNIT/LINT PASS; device walkthrough not verified",
+      "blocker": "adb devices: no connected device; emulator -list-avds: no configured AVD; SDK has no system image"
+    },
+    {
+      "frontend": "Android native",
+      "interface": "listingMapFragment",
+      "states": "shared light/night theme; layout resources; controls; loading; empty/error where present in source",
+      "verification": "BUILD/UNIT/LINT PASS; device walkthrough not verified",
+      "blocker": "adb devices: no connected device; emulator -list-avds: no configured AVD; SDK has no system image"
+    },
+    {
+      "frontend": "Android native",
+      "interface": "messagesFragment",
+      "states": "shared light/night theme; layout resources; controls; loading; empty/error where present in source",
+      "verification": "BUILD/UNIT/LINT PASS; device walkthrough not verified",
+      "blocker": "adb devices: no connected device; emulator -list-avds: no configured AVD; SDK has no system image"
+    },
+    {
+      "frontend": "Android native",
+      "interface": "conversationFragment",
+      "states": "shared light/night theme; layout resources; controls; loading; empty/error where present in source",
+      "verification": "BUILD/UNIT/LINT PASS; device walkthrough not verified",
+      "blocker": "adb devices: no connected device; emulator -list-avds: no configured AVD; SDK has no system image"
+    },
+    {
+      "frontend": "Android native",
+      "interface": "notificationSettingsFragment",
+      "states": "shared light/night theme; layout resources; controls; loading; empty/error where present in source",
+      "verification": "BUILD/UNIT/LINT PASS; device walkthrough not verified",
+      "blocker": "adb devices: no connected device; emulator -list-avds: no configured AVD; SDK has no system image"
+    },
+    {
+      "frontend": "Android secondary interface",
+      "interface": "Drawer; bottom navigation; listing filter dialog",
+      "states": "resource and source review only; platform dialogs need a device",
+      "verification": "STATIC/BUILD verified; runtime BLOCKED",
+      "blocker": "No Android device or emulator available"
+    },
+    {
+      "frontend": "Android secondary interface",
+      "interface": "Photo picker; camera/storage permission and system chooser",
+      "states": "resource and source review only; platform dialogs need a device",
+      "verification": "STATIC/BUILD verified; runtime BLOCKED",
+      "blocker": "No Android device or emulator available"
+    },
+    {
+      "frontend": "Android secondary interface",
+      "interface": "Delete/renew confirmations; offline cached data; retry",
+      "states": "resource and source review only; platform dialogs need a device",
+      "verification": "STATIC/BUILD verified; runtime BLOCKED",
+      "blocker": "No Android device or emulator available"
+    },
+    {
+      "frontend": "Android secondary interface",
+      "interface": "Discover swipe/pass/like; map and location selection",
+      "states": "resource and source review only; platform dialogs need a device",
+      "verification": "STATIC/BUILD verified; runtime BLOCKED",
+      "blocker": "No Android device or emulator available"
+    },
+    {
+      "frontend": "Android secondary interface",
+      "interface": "Notification preferences; message sending; native skeletons",
+      "states": "resource and source review only; platform dialogs need a device",
+      "verification": "STATIC/BUILD verified; runtime BLOCKED",
+      "blocker": "No Android device or emulator available"
+    },
+    {
+      "frontend": "Static reference archive",
+      "interface": "maquette/FastColoc_Maquettes_Sprint1/{web,android}",
+      "states": "Sprint 1 independent HTML design references; not shipped application frontends",
+      "verification": "Inventoried as reference-only (README identifies mockups)",
+      "blocker": "Not a runtime application; preserved as historical reference"
+    }
+  ]
+}

@@ -5,15 +5,15 @@
     FastColoc.
   </p>
   @if (loading()) {
-    <p role="status">Chargement des préférences…</p>
+    <p role="status" fcStatus="loading">Chargement des préférences…</p>
   } @else if (preferences(); as p) {
     @if (p.deliveryMode === 'local') {
-      <p class="notice">
+      <p class="notice" fcStatus="warning">
         Mode de test : les e-mails arrivent dans la boîte locale, pas dans ta messagerie
         personnelle.
       </p>
     } @else if (!p.deliveryAvailable) {
-      <p class="notice">L’envoi des e-mails n’est pas encore activé. Tes choix sont enregistrés.</p>
+      <p class="notice" fcStatus="warning">L’envoi des e-mails n’est pas encore activé. Tes choix sont enregistrés.</p>
     }
     <form (ngSubmit)="save()">
       <label class="row"
@@ -29,16 +29,27 @@
         Les messages rapprochés sont regroupés. Un message déjà lu ne déclenche pas de rappel en
         attente.
       </p>
-      <button class="btn ghost" [disabled]="saving() || enabled === p.newMessageEmail">
+      <button
+        class="btn ghost"
+        [disabled]="saving() || enabled === p.newMessageEmail"
+        [fcStatus]="saving() ? 'loading' : null"
+      >
         {{ saving() ? 'Enregistrement…' : 'Enregistrer les notifications' }}
       </button>
     </form>
   }
   @if (error()) {
-    <p role="alert" class="notice error">{{ error() }}</p>
-    <button class="btn ghost" (click)="load()" [disabled]="loading() || saving()">Réessayer</button>
+    <p role="alert" class="notice error" fcStatus="error">{{ error() }}</p>
+    <button
+      class="btn ghost"
+      (click)="load()"
+      [disabled]="loading() || saving()"
+      [fcStatus]="loading() ? 'loading' : null"
+    >
+      Réessayer
+    </button>
   }
   @if (saved()) {
-    <p role="status">Préférences enregistrées.</p>
+    <p role="status" fcStatus="success">Préférences enregistrées.</p>
   }
 </section>

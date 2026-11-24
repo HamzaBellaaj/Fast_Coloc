@@ -1,3 +1,4 @@
+import { DesktopStatus } from '../../shared/desktop-status';
 import { Component, ElementRef, inject, OnInit, OnDestroy, ViewChild } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { FormBuilder, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
@@ -10,7 +11,7 @@ import { Field } from '../../shared/field';
 import { nonBlank } from '../../shared/validators';
 import { AdminNav } from './admin-nav';
 @Component({
-  imports: [FormsModule, ReactiveFormsModule, DatePipe, Field, AdminNav],
+  imports: [DesktopStatus, FormsModule, ReactiveFormsModule, DatePipe, Field, AdminNav],
   templateUrl: './admin.html',
   styleUrl: './admin.css',
 })

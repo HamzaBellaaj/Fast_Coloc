@@ -1,3 +1,4 @@
+import { DesktopStatus } from '../../shared/desktop-status';
 import { DatePipe, DecimalPipe, NgTemplateOutlet } from '@angular/common';
 import { EditorDrafts } from './editor-draft';
 import { Calendar } from '../../shared/calendar';
@@ -12,6 +13,7 @@ import { LocationPicker } from './location-picker';
 import { AdminNav } from '../admin/admin-nav';
 @Component({
   imports: [
+    DesktopStatus,
     DatePipe,
     DecimalPipe,
     NgTemplateOutlet,

@@ -1,3 +1,4 @@
+import { DesktopStatus } from '../../shared/desktop-status';
 import { Component, ElementRef, inject, OnInit, signal, ViewChild } from '@angular/core';
 import { DatePipe, DecimalPipe } from '@angular/common';
 import { FormsModule, NgForm } from '@angular/forms';
@@ -25,7 +26,7 @@ interface History {
   after_state: Record<string, unknown> | null;
 }
 @Component({
-  imports: [AdminNav, RouterLink, FormsModule, DatePipe, DecimalPipe],
+  imports: [DesktopStatus, AdminNav, RouterLink, FormsModule, DatePipe, DecimalPipe],
   templateUrl: './admin-listings.html',
   styleUrl: './admin-listings.css',
 })

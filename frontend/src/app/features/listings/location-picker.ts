@@ -1,3 +1,4 @@
+import { DesktopStatus } from '../../shared/desktop-status';
 import {
   AfterViewInit,
   Component,
@@ -26,6 +27,7 @@ interface GeoPlace {
   address: string;
 }
 @Component({
+  imports: [DesktopStatus],
   selector: 'fc-location-picker',
   template: `<div class="row wrap">
       <button
@@ -33,10 +35,17 @@ interface GeoPlace {
         class="btn small ghost"
         [disabled]="busy || address.trim().length < 3"
         (click)="search()"
+        [fcStatus]="busy ? 'loading' : null"
       >
         Rechercher cette adresse
       </button>
-      <button type="button" class="btn small ghost" [disabled]="busy" (click)="coordinates()">
+      <button
+        type="button"
+        class="btn small ghost"
+        [disabled]="busy"
+        (click)="coordinates()"
+        [fcStatus]="busy ? 'loading' : null"
+      >
         Valider les coordonnées
       </button>
     </div>
@@ -44,13 +53,19 @@ interface GeoPlace {
       <div class="section-card" aria-label="Adresses proposées">
         <p>Choisis une adresse ; aucun résultat n’est sélectionné automatiquement.</p>
         @for (place of results; track $index) {
-          <button type="button" class="btn small ghost" [disabled]="busy" (click)="choose(place)">
+          <button
+            type="button"
+            class="btn small ghost"
+            [disabled]="busy"
+            (click)="choose(place)"
+            [fcStatus]="busy ? 'loading' : null"
+          >
             {{ place.address }}
           </button>
         }
       </div>
     }
-    <p class="help" role="status" aria-live="polite">
+    <p class="help" role="status" aria-live="polite" [fcStatus]="busy ? 'loading' : null">
       {{ busy ? 'Vérification de la position terrestre…' : message }}
     </p>
     <div #canvas class="listing-map" aria-label="Choisir la position terrestre de l’annonce"></div>

@@ -1,4 +1,5 @@
 package com.iset.fastcolloc.ui.auth
+import com.iset.fastcolloc.ui.showBusy
 
 import android.os.Bundle
 import android.view.View
@@ -16,6 +17,6 @@ class LoginFragment : BoundFragment<FragmentLoginBinding>(FragmentLoginBinding::
         binding.btnOpenRegister.setOnClickListener { vm.editing = false; findNavController().navigate(R.id.action_login_to_register1) }
         binding.btnGoogle.setOnClickListener { vm.google() }
         binding.btnForgot.setOnClickListener { findNavController().navigate(R.id.forgotFragment) }
-        vm.busy.observe(viewLifecycleOwner) { busy -> binding.btnLogin.isEnabled = !busy; binding.btnGoogle.isEnabled = !busy; binding.btnOpenRegister.isEnabled = !busy; binding.btnForgot.isEnabled = !busy }
+        vm.busy.observe(viewLifecycleOwner) { busy -> binding.btnLogin.showBusy(busy); binding.btnLogin.isEnabled = !busy; binding.btnGoogle.isEnabled = !busy; binding.btnOpenRegister.isEnabled = !busy; binding.btnForgot.isEnabled = !busy }
     }
 }

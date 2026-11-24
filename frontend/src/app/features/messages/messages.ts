@@ -1,3 +1,5 @@
+import { Skeleton } from '../../shared/skeleton';
+import { DesktopStatus } from '../../shared/desktop-status';
 import {
   Component,
   DestroyRef,
@@ -18,7 +20,7 @@ import { errorMessage } from '../../core/feedback';
 import { Listing } from '../listings/models';
 import { Conversation, Message, Messaging } from './messaging';
 @Component({
-  imports: [FormsModule, RouterLink, DatePipe, DecimalPipe],
+  imports: [Skeleton, DesktopStatus, FormsModule, RouterLink, DatePipe, DecimalPipe],
   templateUrl: './messages.html',
   styleUrl: './messages.css',
 })

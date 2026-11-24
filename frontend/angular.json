@@ -1,4 +1,4 @@
-﻿{
+{
   "$schema": "./node_modules/@angular/cli/lib/config/schema.json",
   "version": 1,
   "cli": {
@@ -55,9 +55,12 @@
               "src/styles.css",
               "src/layout.css",
               "src/listings.css",
-              "src/interface.css"
+              "src/interface.css",
+              "src/housing/housing.css"
             ],
-            "polyfills": ["zone.js"]
+            "polyfills": [
+              "zone.js"
+            ]
           },
           "configurations": {
             "production": {

@@ -43,15 +43,15 @@
         <item>Organisé</item>
         <item>Très organisé</item>
     </string-array>
-    <string name="recommendations_title">Pour toi ✨</string>
+    <string name="recommendations_title">Pour toi </string>
     <string name="recommendations_intro">Des logements à découvrir, classés selon tes envies.</string>
     <string name="recommendations_loading">On cherche les bonnes affinités… Le calcul IA peut prendre un petit moment.</string>
     <string name="recommendations_empty">Aucune recommandation disponible parmi les offres actuelles.</string>
     <string name="recommendations_count">%1$d piste(s) à explorer · Classement personnalisé par l’IA</string>
     <string name="recommendations_refresh">Actualiser les recommandations</string>
     <string name="recommendations_profile_hint">Un budget et tes localités préférées nous aideront à affiner la sélection.</string>
-    <string name="recommendations_complete_profile">Compléter mon profil ↗</string>
+    <string name="recommendations_complete_profile">Compléter mon profil</string>
     <string name="recommendations_score">%1$d / 100</string>
     <string name="recommendations_match_label">Compatibilité avec ton profil</string>
-    <string name="recommendations_details">Découvrir cette annonce ↗</string>
+    <string name="recommendations_details">Découvrir cette annonce</string>
 </resources>

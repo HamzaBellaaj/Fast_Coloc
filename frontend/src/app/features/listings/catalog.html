@@ -13,7 +13,7 @@
       </h2>
       <p class="muted">Des offres et des demandes, partout en Tunisie.</p>
     </div>
-    <a class="btn coral" routerLink="/annonces/nouvelle">Publier une annonce ↗</a>
+    <a class="btn coral" routerLink="/annonces/nouvelle">Publier une annonce</a>
   </div>
   <form class="listing-filters" (ngSubmit)="search()" aria-label="Recherche multicritère">
     <label
@@ -23,16 +23,38 @@
         maxlength="160"
         placeholder="Ville, quartier, mots-clés…"
     /></label>
-    <details
-      class="catalog-advanced"
-      #advancedFilters
-      (keydown.escape)="advancedFilters.open = false; advancedSummary.focus()"
-    >
-      <summary #advancedSummary>
-        Filtres et tri <img src="/assets/figma/chevron-down.svg" alt="" width="24" height="24" />
-      </summary>
+    <ng-template #catalogFields>
       <div class="catalog-filter-fields">
-        <label
+        @if (theme.desktop()) {
+          <fieldset class="desktop-kind">
+            <legend>Type d’annonce</legend>
+            <div>
+              <label
+                ><input
+                  type="radio"
+                  name="desktopKind"
+                  value=""
+                  [(ngModel)]="filters['kind']"
+                /><span>Tout</span></label
+              ><label
+                ><input
+                  type="radio"
+                  name="desktopKind"
+                  value="OFFER"
+                  [(ngModel)]="filters['kind']"
+                /><span>Offres</span></label
+              ><label
+                ><input
+                  type="radio"
+                  name="desktopKind"
+                  value="REQUEST"
+                  [(ngModel)]="filters['kind']"
+                /><span>Demandes</span></label
+              >
+            </div>
+          </fieldset>
+        }
+        <label class="listing-kind-field"
           >Annonce<select name="kind" [(ngModel)]="filters['kind']">
             <option value="">Offres et demandes</option>
             <option value="OFFER">Offres</option>
@@ -125,19 +147,55 @@
           </select></label
         >
         <div class="catalog-filter-submit">
+          @if (theme.desktop()) {
+            <button class="desktop-clear-filters" type="button" (click)="clear()">
+              Tout effacer
+            </button>
+          }
           <button type="submit" class="btn">Afficher les résultats</button>
         </div>
-      </div>
-    </details>
+      </div></ng-template
+    >
+    @if (theme.desktop()) {
+      <button class="desktop-filter-trigger" type="button" (click)="filterDialog.showModal()">
+        <fc-icon name="sliders-horizontal" /> Filtres et tri
+      </button>
+      <dialog
+        #filterDialog
+        class="desktop-filter-dialog"
+        aria-labelledby="desktop-filter-title"
+        (click)="closeBackdrop($event, filterDialog)"
+      >
+        <header class="desktop-filter-heading">
+          <h2 id="desktop-filter-title">Filtres</h2>
+          <button type="button" aria-label="Fermer les filtres" (click)="filterDialog.close()">
+            <span aria-hidden="true">×</span>
+          </button>
+        </header>
+        <ng-container [ngTemplateOutlet]="catalogFields" />
+      </dialog>
+    } @else {
+      <details
+        class="catalog-advanced"
+        #advancedFilters
+        (keydown.escape)="advancedFilters.open = false; advancedSummary.focus()"
+      >
+        <summary #advancedSummary>
+          Filtres et tri <fc-icon name="chevron-down" />
+        </summary>
+        <ng-container [ngTemplateOutlet]="catalogFields" />
+      </details>
+    }
     <div class="row wrap">
-      <button class="btn" [disabled]="busy()">Rechercher</button
+      <button class="btn" [disabled]="busy()" [fcStatus]="busy() ? 'loading' : null">
+        Rechercher</button
       ><button type="button" class="btn ghost" (click)="clear()">Réinitialiser</button>
     </div>
   </form>
   @if (busy()) {
-    <p role="status" class="notice">Recherche des annonces…</p>
+    <fc-skeleton kind="cards" label="Recherche des annonces…" />
   } @else if (failed()) {
-    <div class="notice error" role="alert">
+    <div class="notice error" role="alert" fcStatus="error">
       Les annonces sont indisponibles.<button class="btn small" (click)="load()">Réessayer</button>
     </div>
   } @else {
@@ -146,7 +204,7 @@
         <p class="muted result-count" role="status">{{ total() }} résultat(s)</p>
         @if (!items().length) {
           <section class="section-card empty-listings">
-            <span class="display">⌂</span>
+            <fc-icon name="house" />
             <h3>
               {{
                 mode === 'mine'
@@ -201,14 +259,14 @@
         @if (total() > 12) {
           <div class="row pagination">
             <button class="btn ghost" [disabled]="page === 0" (click)="search(page - 1)">
-              ← Précédent</button
+              Précédent</button
             ><span>Page {{ page + 1 }}</span
             ><button
               class="btn ghost"
               [disabled]="(page + 1) * 12 >= total()"
               (click)="search(page + 1)"
             >
-              Suivant →
+              Suivant
             </button>
           </div>
         }
@@ -221,9 +279,11 @@
             recherche.
           </p>
           @if (mapBusy()) {
-            <p role="status">Chargement des positions…</p>
+            <p role="status" fcStatus="loading">Chargement des positions…</p>
           } @else if (mapFailed()) {
-            <p role="alert">Carte indisponible. Affine les critères ou réessaie.</p>
+            <p role="alert" fcStatus="error">
+              Carte indisponible. Affine les critères ou réessaie.
+            </p>
             <button class="btn small ghost" (click)="load()">Réessayer</button>
           } @else {
             <p class="tiny muted">{{ markers().length }} offre(s) sur la carte.</p>

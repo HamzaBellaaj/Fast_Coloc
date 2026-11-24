@@ -1,3 +1,5 @@
+import { Skeleton } from '../../shared/skeleton';
+import { DesktopStatus } from '../../shared/desktop-status';
 import { Component, inject, OnDestroy, OnInit, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { Api } from '../../core/api';
@@ -16,7 +18,7 @@ interface RecommendationResponse {
 }
 
 @Component({
-  imports: [RouterLink, ListingCard],
+  imports: [Skeleton, DesktopStatus, RouterLink, ListingCard],
   templateUrl: './recommendations.html',
   styleUrl: './recommendations.css',
 })

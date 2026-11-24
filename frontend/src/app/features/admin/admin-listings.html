@@ -1,7 +1,7 @@
 <div class="panel-layout">
   <fc-admin-nav />
   <section>
-    <span class="tag">ADMINISTRATION · ANNONCES</span>
+    <span class="tag">Administration des annonces</span>
     @if (!id) {
       <h1 class="page-title">Des colocs en confiance.</h1>
       <p class="muted">Consulte et modère les offres et demandes de la communauté.</p>
@@ -72,8 +72,19 @@
             </select></label
           >
           <div class="filter-actions">
-            <button class="btn small" [disabled]="loading()">Rechercher</button
-            ><button type="button" class="btn small ghost" (click)="reset()" [disabled]="loading()">
+            <button
+              class="btn small"
+              [disabled]="loading()"
+              [fcStatus]="loading() ? 'loading' : null"
+            >
+              Rechercher</button
+            ><button
+              type="button"
+              class="btn small ghost"
+              (click)="reset()"
+              [disabled]="loading()"
+              [fcStatus]="loading() ? 'loading' : null"
+            >
               Réinitialiser
             </button>
           </div>
@@ -111,6 +122,15 @@
                     <td>
                       {{ r.kind === 'OFFER' ? 'Offre' : 'Demande' }}<br /><span
                         class="status"
+                        [fcStatus]="
+                          r.display_status === 'PUBLISHED'
+                            ? 'success'
+                            : r.display_status === 'HIDDEN'
+                              ? 'error'
+                              : r.display_status === 'DRAFT'
+                                ? 'pending'
+                                : 'warning'
+                        "
                         [class.blocked]="r.is_hidden"
                         >{{ labels[r.display_status] }}</span
                       >
@@ -138,7 +158,7 @@
           </div>
           <div class="row between wrap spaced">
             <button class="btn small ghost" [disabled]="page === 0" (click)="paginate(-1)">
-              ← Précédent</button
+              Précédent</button
             ><span class="help"
               >{{ total() ? page * size + 1 : 0 }}–{{ page * size + items().length }} /
               {{ total() }} · Page {{ page + 1 }}</span
@@ -147,13 +167,13 @@
               [disabled]="(page + 1) * size >= total()"
               (click)="paginate(1)"
             >
-              Suivant →
+              Suivant
             </button>
           </div>
         }
       </section>
     } @else {
-      <a class="link back-link" routerLink="/admin/annonces">← Gestion des annonces</a>
+      <a class="link back-link" routerLink="/admin/annonces">Gestion des annonces</a>
       @if (row(); as r) {
         <div class="detail-head">
           <div>
@@ -162,7 +182,20 @@
               {{ r.author_name || 'Auteur sans nom' }} · {{ r.locality }}, {{ r.governorate }}
             </p>
           </div>
-          <span class="status" [class.blocked]="r.is_hidden">{{ labels[r.display_status] }}</span>
+          <span
+            class="status"
+            [fcStatus]="
+              r.display_status === 'PUBLISHED'
+                ? 'success'
+                : r.display_status === 'HIDDEN'
+                  ? 'error'
+                  : r.display_status === 'DRAFT'
+                    ? 'pending'
+                    : 'warning'
+            "
+            [class.blocked]="r.is_hidden"
+            >{{ labels[r.display_status] }}</span
+          >
         </div>
         <section class="section-card moderation-actions">
           <div>
@@ -174,15 +207,30 @@
               >Modifier l’annonce</a
             >
             @if (r.is_hidden) {
-              <button class="btn small" (click)="open('restore')" [disabled]="busy()">
+              <button
+                class="btn small"
+                (click)="open('restore')"
+                [disabled]="busy()"
+                [fcStatus]="busy() ? 'loading' : null"
+              >
                 Réactiver
               </button>
             } @else {
-              <button class="btn small coral" (click)="open('hide')" [disabled]="busy()">
+              <button
+                class="btn small coral"
+                (click)="open('hide')"
+                [disabled]="busy()"
+                [fcStatus]="busy() ? 'loading' : null"
+              >
                 Masquer
               </button>
             }
-            <button class="btn small danger" (click)="open('delete')" [disabled]="busy()">
+            <button
+              class="btn small danger"
+              (click)="open('delete')"
+              [disabled]="busy()"
+              [fcStatus]="busy() ? 'loading' : null"
+            >
               Supprimer
             </button>
           </div>
@@ -337,11 +385,11 @@
       }
     }
     @if (loading()) {
-      <p class="notice" role="status">Chargement des annonces…</p>
+      <p class="notice" role="status" fcStatus="loading">Chargement des annonces…</p>
     }
     @if (failed()) {
       <section class="section-card">
-        <p role="alert">
+        <p role="alert" fcStatus="error">
           Impossible de charger les annonces. Vérifie ta connexion et ton accès administrateur.
         </p>
         <button class="btn ghost" (click)="load()">Réessayer</button>
@@ -385,11 +433,19 @@
       ></textarea>
     </label>
     <div class="row wrap">
-      <button type="button" class="btn ghost" (click)="close()" [disabled]="busy()">Annuler</button
+      <button
+        type="button"
+        class="btn ghost"
+        (click)="close()"
+        [disabled]="busy()"
+        [fcStatus]="busy() ? 'loading' : null"
+      >
+        Annuler</button
       ><button
         class="btn"
         [class.danger]="action === 'delete'"
         [disabled]="busy() || moderation.invalid || !reason.trim()"
+        [fcStatus]="busy() ? 'loading' : null"
       >
         {{ busy() ? 'Traitement…' : 'Confirmer l’action' }}
       </button>

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" android:layout_width="match_parent" android:layout_height="match_parent" android:orientation="vertical" android:padding="12dp" android:background="@color/fc_cream">
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" android:layout_width="match_parent" android:layout_height="match_parent" android:orientation="vertical" android:padding="12dp" android:background="@color/fc_page">
     <EditText android:id="@+id/query" android:layout_width="match_parent" android:layout_height="wrap_content" android:hint="Ville, quartier ou mots-clés" android:inputType="text" android:maxLength="160" android:minHeight="48dp"/>
     <com.google.android.material.button.MaterialButton android:id="@+id/btnSearch" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Rechercher sur la carte" style="@style/Widget.FastColoc.Button.Outlined"/>
     <TextView android:id="@+id/tvState" android:layout_width="match_parent" android:layout_height="wrap_content" android:accessibilityLiveRegion="polite"/>

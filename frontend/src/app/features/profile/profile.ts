@@ -1,3 +1,5 @@
+import { Skeleton } from '../../shared/skeleton';
+import { DesktopStatus } from '../../shared/desktop-status';
 import { NotificationSettings } from './notification-settings';
 import { Calendar } from '../../shared/calendar';
 import { Component, inject, OnInit } from '@angular/core';
@@ -12,7 +14,17 @@ import { Photos } from '../../shared/photos';
 import { Field } from '../../shared/field';
 import { RegistrationDraft } from '../onboarding/draft';
 @Component({
-  imports: [NotificationSettings, Calendar, RouterLink, ReactiveFormsModule, DatePipe, Photos, Field],
+  imports: [
+    Skeleton,
+    DesktopStatus,
+    NotificationSettings,
+    Calendar,
+    RouterLink,
+    ReactiveFormsModule,
+    DatePipe,
+    Photos,
+    Field,
+  ],
   templateUrl: './profile.html',
 })
 export class ProfilePage implements OnInit {

@@ -1,4 +1,5 @@
 package com.iset.fastcolloc.ui.auth
+import com.iset.fastcolloc.ui.showBusy
 
 import android.os.Bundle
 import android.view.View
@@ -14,6 +15,6 @@ class EmailFragment : BoundFragment<FragmentEmailBinding>(FragmentEmailBinding::
         binding.btnSend.setText(if(forgot) R.string.s1_send_recovery else R.string.s1_btnSend)
         binding.btnSend.setOnClickListener { if(forgot) vm.recover(binding.etEmail.text.toString()) else vm.resend(binding.etEmail.text.toString()) }
         binding.btnLogin.setOnClickListener { findNavController().popBackStack(R.id.loginFragment, false) }
-        vm.busy.observe(viewLifecycleOwner) { binding.btnSend.isEnabled = !it; binding.btnLogin.isEnabled = !it }
+        vm.busy.observe(viewLifecycleOwner) { binding.btnSend.showBusy(it); binding.btnSend.isEnabled = !it; binding.btnLogin.isEnabled = !it }
     }
 }

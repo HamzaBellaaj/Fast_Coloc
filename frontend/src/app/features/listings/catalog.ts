@@ -1,10 +1,14 @@
+import { Skeleton } from '../../shared/skeleton';
+import { Icon } from '../../shared/icon';
+import { DesktopTheme } from '../../core/desktop-theme';
+import { DesktopStatus } from '../../shared/desktop-status';
 import { ListingCard } from './listing-card';
 import { Calendar } from '../../shared/calendar';
 import { Component, DestroyRef, ElementRef, inject, OnInit, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { RouterLink, ActivatedRoute, Router } from '@angular/router';
-import { DatePipe } from '@angular/common';
+import { DatePipe, NgTemplateOutlet } from '@angular/common';
 import { Api } from '../../core/api';
 import { Auth } from '../../core/auth';
 import { Feedback } from '../../core/feedback';
@@ -12,11 +16,23 @@ import { Area, Listing, ListingPage, ListingMarker, ListingMapPage } from './mod
 import { ListingMap } from './listing-map';
 @Component({
   selector: 'fc-catalog',
-  imports: [ListingCard, Calendar, FormsModule, RouterLink, DatePipe, ListingMap],
+  imports: [
+    Skeleton,
+    Icon,
+    NgTemplateOutlet,
+    DesktopStatus,
+    ListingCard,
+    Calendar,
+    FormsModule,
+    RouterLink,
+    DatePipe,
+    ListingMap,
+  ],
   templateUrl: './catalog.html',
   styleUrl: './catalog.css',
 })
 export class Catalog implements OnInit {
+  readonly theme = inject(DesktopTheme);
   api = inject(Api);
   auth = inject(Auth);
   feedback = inject(Feedback);
@@ -129,7 +145,19 @@ export class Catalog implements OnInit {
       if (generation === this.requestNumber) this.busy.set(false);
     }
   }
+  closeBackdrop(event: MouseEvent, dialog: HTMLDialogElement) {
+    if (event.target !== dialog) return;
+    const r = dialog.getBoundingClientRect();
+    if (
+      event.clientX < r.left ||
+      event.clientX > r.right ||
+      event.clientY < r.top ||
+      event.clientY > r.bottom
+    )
+      dialog.close();
+  }
   search(page = 0) {
+    this.host.nativeElement.querySelector<HTMLDialogElement>('.desktop-filter-dialog')?.close();
     this.host.nativeElement.querySelector('.catalog-advanced')?.removeAttribute('open');
     void this.router.navigate([], {
       relativeTo: this.route,

@@ -3,12 +3,19 @@
     <h1>Messages</h1>
     <p class="muted">Une question, une visite, une future coloc.</p>
   </div>
-  <button class="btn ghost small" (click)="retry()" [disabled]="loading()">Actualiser</button>
+  <button
+    class="btn ghost small"
+    (click)="retry()"
+    [disabled]="loading()"
+    [fcStatus]="loading() ? 'loading' : null"
+  >
+    Actualiser
+  </button>
 </div>
 <div class="messaging-layout">
   <aside class="inbox" aria-label="Conversations">
     @if (inboxError()) {
-      <p class="notice error" role="status">{{ inboxError() }}</p>
+      <p class="notice error" role="status" fcStatus="error">{{ inboxError() }}</p>
     }
     @for (c of conversations(); track c.id) {
       <a
@@ -35,17 +42,22 @@
       </p>
     }
     @if (moreInbox()) {
-      <button class="btn ghost small" (click)="moreConversations()" [disabled]="loadingInboxPage()">
+      <button
+        class="btn ghost small"
+        (click)="moreConversations()"
+        [disabled]="loadingInboxPage()"
+        [fcStatus]="loadingInboxPage() ? 'loading' : null"
+      >
         Autres conversations
       </button>
     }
   </aside>
   <section class="discussion" aria-label="Discussion" [attr.aria-busy]="loading()">
     @if (loading()) {
-      <p role="status" class="empty">Ouverture de la messagerie…</p>
+      <fc-skeleton kind="rows" label="Ouverture de la messagerie…" />
     }
     @if (error()) {
-      <p class="notice error" role="alert">{{ error() }}</p>
+      <p class="notice error" role="alert" fcStatus="error">{{ error() }}</p>
     }
     @if (selected() || listing()) {
       <header class="thread-header">
@@ -67,7 +79,12 @@
       </header>
       <div #history class="history" aria-label="Historique des messages">
         @if (older()) {
-          <button class="btn ghost small" (click)="olderMessages()" [disabled]="loadingOlder()">
+          <button
+            class="btn ghost small"
+            (click)="olderMessages()"
+            [disabled]="loadingOlder()"
+            [fcStatus]="loadingOlder() ? 'loading' : null"
+          >
             Messages précédents
           </button>
         }
@@ -96,7 +113,11 @@
         ></textarea>
         <div>
           <small>{{ draft.length }} / 4000</small
-          ><button class="btn" [disabled]="sending() || loading() || !draft.trim()">
+          ><button
+            class="btn"
+            [disabled]="sending() || loading() || !draft.trim()"
+            [fcStatus]="sending() ? 'loading' : null"
+          >
             {{ sending() ? 'Envoi…' : 'Envoyer' }}
           </button>
         </div>

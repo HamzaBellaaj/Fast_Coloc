@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { mkdirSync, readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 
 // Isolated UI check: no Supabase writes and no additional Ollama/Tavily calls.
 test('US25: estimate a new listing, dismiss, apply and keep editing the rent', async ({ page }) => {
@@ -28,6 +29,7 @@ test('US25: estimate a new listing, dismiss, apply and keep editing the rent', a
       };
     if (path.endsWith('/listings/areas'))
       body = [{ id: 1, locality: 'Ariana', governorate: 'Ariana', governorate_id: 1 }];
+    if (path.endsWith('/geography/position')) body={latitude:36.86,longitude:10.19,address:'Centre'};
     if (path.endsWith('/ai/rent-estimate')) {
       estimateCalls++;
       expect(route.request().headers()['authorization']).toBe('Bearer ui-test');
@@ -54,7 +56,7 @@ test('US25: estimate a new listing, dismiss, apply and keep editing the rent', a
     await route.fulfill({ json: body });
   });
   await page.goto('/annonces/nouvelle');
-  await page.getByRole('button', { name: 'Continuer →', exact: true }).click();
+  await page.getByRole('button', { name: 'Continuer', exact: true }).click();
   await page.getByLabel('Titre', { exact: true }).fill('Appartement lumineux à Ariana');
   await page
     .getByLabel('Décris ton logement', { exact: true })
@@ -69,11 +71,12 @@ test('US25: estimate a new listing, dismiss, apply and keep editing the rent', a
   await page.getByLabel('Adresse du logement', { exact: true }).fill('Centre');
   await page.getByLabel('Latitude', { exact: true }).fill('36.86');
   await page.getByLabel('Longitude', { exact: true }).fill('10.19');
-  await page.getByRole('button', { name: 'Continuer →', exact: true }).click();
+  await expect(page.getByRole('status').filter({hasText:'Position terrestre validée'})).toBeVisible();
+  await page.getByRole('button', { name: 'Continuer', exact: true }).click();
   const rent = page.getByLabel('Loyer mensuel (TND)', { exact: true });
   await rent.fill('900');
   const estimate = page.getByRole('button', {
-    name: '✨ Estimer mon loyer avec l’IA',
+    name: 'Estimer mon loyer avec l’IA',
     exact: true,
   });
   await estimate.click();
@@ -85,7 +88,7 @@ test('US25: estimate a new listing, dismiss, apply and keep editing the rent', a
       ['salon.jpg', 'cuisine.jpg', 'retirer.jpg'].map((name) => ({
         name,
         mimeType: 'image/jpeg',
-        buffer: readFileSync('public/assets/coloc-interior.jpg'),
+        buffer: readFileSync(resolve(__dirname, '../public/assets/coloc-interior.jpg')),
       })),
     );
   await expect(page.locator('.ai-pending-gallery figure')).toHaveCount(3);

@@ -22,4 +22,5 @@
     <color name="warm_sand">@color/fc_cream</color>
     <color name="mist">@color/fc_line</color>
     <color name="frost">@color/fc_white</color>
+    <color name="fc_page">#FFFAF7</color><color name="fc_surface">#FFFFFF</color><color name="fc_surface_alt">#F2EDF5</color><color name="fc_text">#251532</color><color name="fc_link">#5520BD</color><color name="fc_control">#96869F</color>
 </resources>

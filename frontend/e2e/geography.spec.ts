@@ -141,7 +141,7 @@ test('listing editor synchronizes map, address and coordinates and preserves the
   await expect(lat()).toHaveValue('36.81');
   await expect(lon()).toHaveValue('10.19');
   for (let i = 0; i < 3; i++)
-    await page.getByRole('button', { name: 'Continuer →', exact: true }).click();
+    await page.getByRole('button', { name: 'Continuer', exact: true }).click();
   await page.getByRole('button', { name: 'Enregistrer les modifications', exact: true }).click();
   await expect.poll(() => writes).toBe(1);
   await page.reload();

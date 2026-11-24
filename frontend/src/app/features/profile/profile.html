@@ -1,5 +1,5 @@
 @if (loading) {
-  <div class="section-card loading" role="status">Chargement de ton espace privé…</div>
+  <fc-skeleton kind="rows" label="Chargement de ton espace privé…" />
 } @else if (details; as d) {
   <header class="topbar">
     <div>
@@ -16,7 +16,7 @@
     ><a [routerLink]="[]" fragment="profile-photos">Photos</a>
   </nav>
   <section class="hero-profile">
-    <h2>
+    <h2 [fcStatus]="d.profile.completedAt ? 'success' : 'pending'">
       {{
         d.profile.completedAt
           ? 'Ton inscription est complète !'
@@ -38,7 +38,7 @@
       }
     </div>
     @if (!d.profile.completedAt) {
-      <a class="btn coral" [routerLink]="auth.destination()">Reprendre mon inscription →</a>
+      <a class="btn coral" [routerLink]="auth.destination()">Reprendre mon inscription</a>
     } @else {
       <p class="tiny">Complétée le {{ d.profile.completedAt | date: 'dd/MM/yyyy à HH:mm' }}</p>
     }
@@ -56,7 +56,7 @@
         <dt>Rôle / statut</dt>
         <dd>{{ d.profile.role }} · {{ d.profile.status }}</dd>
       </dl>
-      <a class="link" routerLink="/register/1">Modifier mes informations ↗</a>
+      <a class="link" routerLink="/register/1">Modifier mes informations</a>
     </section>
     <section class="section-card">
       <h2 class="card-heading">À propos de moi</h2>
@@ -86,7 +86,7 @@
         <dt>Biographie</dt>
         <dd>{{ d.personal.biography || 'Non renseignée' }}</dd>
       </dl>
-      <a class="link" routerLink="/register/3">Modifier mes habitudes ↗</a>
+      <a class="link" routerLink="/register/3">Modifier mes habitudes</a>
     </section>
     <section class="section-card">
       <h2 class="card-heading">Mon adresse</h2>
@@ -95,10 +95,10 @@
         {{ d.address.postal_code }} {{ localityName }} · {{ governorateName }} ·
         {{ countryName || 'Pays non renseigné' }}
       </p>
-      <a class="link" routerLink="/register/2">Modifier mon adresse ↗</a>
+      <a class="link" routerLink="/register/2">Modifier mon adresse</a>
     </section>
     <section class="section-card">
-      <h2 class="card-heading">💬 Mes contacts privés</h2>
+      <h2 class="card-heading"> Mes contacts privés</h2>
       <dl>
         <dt>Mobile</dt>
         <dd>{{ d.contacts.mobile_phone || 'Non renseigné' }}</dd>
@@ -111,7 +111,7 @@
         <dt>Site Web</dt>
         <dd>{{ d.contacts.website_url || 'Non renseigné' }}</dd>
       </dl>
-      <a class="link" routerLink="/register/4">Mettre à jour mes contacts ↗</a>
+      <a class="link" routerLink="/register/4">Mettre à jour mes contacts</a>
     </section>
   </div>
   <section class="section-card spaced" id="profile-preferences">
@@ -148,7 +148,7 @@
             <option [ngValue]="p.id">{{ p.name }}</option>
           }
         </select></app-field
-      ><button class="btn" [disabled]="busy">
+      ><button class="btn" [disabled]="busy" [fcStatus]="busy ? 'loading' : null">
         {{ busy ? 'Enregistrement…' : 'Enregistrer mes préférences' }}
       </button>
     </form>

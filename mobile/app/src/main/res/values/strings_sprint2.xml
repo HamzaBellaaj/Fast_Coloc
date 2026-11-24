@@ -2,9 +2,9 @@
 <resources>
 <string name="s2_catalog_title">Trouve ta coloc.</string>
 <string name="s2_tvState"></string>
-<string name="s2_btnNewListing">Publier une annonce ↗</string>
-<string name="s2_previous">← Précédent</string>
-<string name="s2_next">Suivant →</string>
+<string name="s2_btnNewListing">Publier une annonce</string>
+<string name="s2_previous">Précédent</string>
+<string name="s2_next">Suivant</string>
 <string name="s2_photo">Photo de l’annonce</string>
 <string name="s2_tvTitle"></string>
 <string name="s2_tvPlace"></string>
@@ -74,8 +74,8 @@
 <string name="s2_hint_etPublicationDays">Durée de publication (1 à 365 jours)</string>
 <string name="s2_editor_title">Ton annonce, à ta façon.</string>
 <string name="s2_tvStep">Étape 1 / 3</string>
-<string name="s2_btnBackStep">← Retour</string>
-<string name="s2_btnNextStep">Continuer →</string>
+<string name="s2_btnBackStep">Retour</string>
+<string name="s2_btnNextStep">Continuer</string>
 <string name="s2_btnSaveListing">Enregistrer le brouillon</string>
 <string name="s2_gallery_title">Les photos de ta coloc</string>
 <string name="s2_gallery_help">Enregistre les modifications avant d’ajouter des photos. Jusqu’à 10 photos, 5 MiB chacune.</string>

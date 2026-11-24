@@ -1,7 +1,7 @@
 <a class="skip-link" href="#main" (click)="$event.preventDefault(); focusMain()"
   >Aller au contenu</a
 >
-<header class="site-header">
+<header class="site-header" (keydown.escape)="closeMenu()">
   <nav class="nav" aria-label="Navigation principale">
     <a class="brand" routerLink="/" aria-label="FastColoc, accueil"
       ><img
@@ -28,13 +28,31 @@
       }
     </div>
     <div class="nav-actions">
+      @if (theme.desktop()) {
+        <label class="desktop-theme-control"
+          ><span>Thème</span
+          ><select
+            aria-label="Thème du bureau"
+            [value]="theme.choice()"
+            (change)="theme.choose($any($event.target).value)"
+          >
+            <option value="system">Système</option>
+            <option value="light">Clair</option>
+            <option value="dark">Sombre</option>
+          </select></label
+        >
+      }
       <a class="host-link" routerLink="/annonces/nouvelle">Proposer une coloc</a>
       @if (auth.session()) {
-        <details class="account-menu">
-          <summary aria-label="Mon espace">
-            <img src="/assets/figma/menu.svg" width="24" height="24" alt="" /><span
-              class="account-initial"
-              >{{ (auth.profile()?.firstName || 'F').charAt(0) }}</span
+        <details
+          class="account-menu"
+          #accountMenu
+          (keydown.escape)="accountMenu.open = false; accountSummary.focus()"
+        >
+          <summary aria-label="Mon espace" #accountSummary>
+            <fc-icon name="menu" /><span class="account-initial">{{
+              (auth.profile()?.firstName || 'F').charAt(0)
+            }}</span
             ><span class="sr-only">Mon espace</span>
           </summary>
           <div class="account-links">
@@ -52,12 +70,12 @@
       }
       <button
         class="mobile-menu-toggle"
-        (click)="menuOpen = !menuOpen"
+        (click)="toggleMenu()"
         [attr.aria-expanded]="menuOpen"
         aria-controls="navigation"
         aria-label="Ouvrir le menu"
       >
-        <img src="/assets/figma/menu.svg" width="24" height="24" alt="" />
+        <fc-icon name="menu" />
       </button>
     </div>
   </nav>
@@ -67,6 +85,17 @@
     [class.open]="menuOpen"
     (keydown.escape)="menuOpen = false"
   >
+    <label class="mobile-theme-control"
+      >Thème<select
+        aria-label="Thème"
+        [value]="theme.choice()"
+        (change)="theme.choose($any($event.target).value)"
+      >
+        <option value="system">Système</option>
+        <option value="light">Clair</option>
+        <option value="dark">Sombre</option>
+      </select></label
+    >
     <a routerLink="/">Accueil</a><a routerLink="/annonces">Explorer les annonces</a
     ><a routerLink="/annonces/nouvelle">Publier une annonce</a>
     @if (auth.session()) {
@@ -83,7 +112,13 @@
 </header>
 <div class="shell">
   @if (feedback.message()) {
-    <div class="notice" [class.error]="feedback.failure()" role="status" aria-live="polite">
+    <div
+      class="notice"
+      [class.error]="feedback.failure()"
+      [fcStatus]="feedback.failure() ? 'error' : 'success'"
+      role="status"
+      aria-live="polite"
+    >
       <span>{{ feedback.message() }}</span><button
         type="button"
         aria-label="Fermer la notification"

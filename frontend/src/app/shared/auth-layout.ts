@@ -1,11 +1,12 @@
+import { Icon } from './icon';
 import { Component, input } from '@angular/core';
 import { RouterLink } from '@angular/router';
 @Component({
   selector: 'app-auth-layout',
-  imports: [RouterLink],
+  imports: [Icon, RouterLink],
   template: `<div class="auth-layout">
     <header class="auth-card-heading">
-      <a routerLink="/" aria-label="Retour à l’accueil">←</a
+      <a routerLink="/" aria-label="Retour à l’accueil"><fc-icon name="arrow-left" /></a
       ><span>{{ registration() ? 'Rejoindre FastColoc' : 'Bienvenue chez FastColoc' }}</span>
     </header>
     <section class="auth-card-content"><ng-content /></section>

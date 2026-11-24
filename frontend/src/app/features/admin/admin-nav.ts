@@ -8,7 +8,7 @@ import { RouterLink, RouterLinkActive } from '@angular/router';
     <div class="brand">
       <img src="/assets/fastcoloc-symbol.svg" width="32" height="32" alt="" /> fast<b>coloc</b>
     </div>
-    <p class="help">ESPACE ADMINISTRATION</p>
+    <p class="help">Espace administration</p>
     <a
       routerLink="/admin"
       routerLinkActive="current"

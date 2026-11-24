@@ -1,4 +1,5 @@
 package com.iset.fastcolloc.ui.messaging
+import com.iset.fastcolloc.ui.showBusy
 import android.os.Bundle
 import android.view.*
 import android.widget.*
@@ -34,6 +35,7 @@ class MessagesFragment:BoundFragment<FragmentMessagesBinding>(FragmentMessagesBi
    binding.loadMore.isEnabled=!result.loading&&!result.sending;binding.refreshMessages.isEnabled=!result.loading&&!result.sending
    binding.messageDraft.isEnabled=!result.sending
    if(binding.messageDraft.text.toString()!=result.draft)binding.messageDraft.setText(result.draft)
+   binding.sendMessage.showBusy(result.sending)
    binding.sendMessage.isEnabled=result.draft.isNotBlank()&&!result.sending&&!result.loading
    val manager=binding.messageRows.layoutManager as LinearLayoutManager
    val previousSize=adapter.itemCount
@@ -56,12 +58,12 @@ class MessagesFragment:BoundFragment<FragmentMessagesBinding>(FragmentMessagesBi
   override fun getItemCount()=rows.size
   override fun onBindViewHolder(holder:Holder,position:Int){
    val row=rows[position];val context=holder.text.context;val unit=context.resources.displayMetrics.density
-   val own=thread&&row.mine;val ink=androidx.core.content.ContextCompat.getColor(context,if(own)R.color.fc_white else R.color.fc_plum)
+   val own=thread&&row.mine;val ink=androidx.core.content.ContextCompat.getColor(context,if(own)R.color.fc_white else R.color.fc_text)
    val secondary=androidx.core.content.ContextCompat.getColor(context,if(own)R.color.fc_cream else R.color.fc_muted)
    val text=android.text.SpannableString(row.title+"\n"+row.detail)
    text.setSpan(android.text.style.RelativeSizeSpan(.8f),row.title.length+1,text.length,0);text.setSpan(android.text.style.ForegroundColorSpan(secondary),row.title.length+1,text.length,0)
    holder.text.text=text;holder.text.setTextColor(ink)
-   holder.text.background=android.graphics.drawable.GradientDrawable().apply{setColor(androidx.core.content.ContextCompat.getColor(context,if(own)R.color.fc_violet else if(thread)R.color.fc_cream else R.color.fc_white));cornerRadius=12*unit}
+   holder.text.background=android.graphics.drawable.GradientDrawable().apply{setColor(androidx.core.content.ContextCompat.getColor(context,if(own)R.color.fc_violet else if(thread)R.color.fc_surface_alt else R.color.fc_surface));cornerRadius=12*unit}
    holder.text.layoutParams=RecyclerView.LayoutParams(-1,-2).apply{setMargins(if(own)(40*unit).toInt()else 0,(4*unit).toInt(),if(thread&&!own)(40*unit).toInt()else 0,(10*unit).toInt())}
    holder.text.gravity=if(own)Gravity.END else Gravity.START;holder.text.setOnClickListener{if(!thread)open(row.id)}
   }

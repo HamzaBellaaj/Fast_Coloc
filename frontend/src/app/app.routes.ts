@@ -5,7 +5,7 @@ export const routes: Routes = [
   {path:'messages/:id',title:'Discussion ? FastColoc',canActivate:[sessionGuard],loadComponent:()=>import('./features/messages/messages').then(m=>m.Messages)},
   {
     path: 'pour-toi',
-    title: 'Pour toi ✨ · FastColoc',
+    title: 'Pour toi  · FastColoc',
     canActivate: [sessionGuard],
     loadComponent: () =>
       import('./features/listings/recommendations').then((m) => m.Recommendations),

@@ -1,0 +1,98 @@
+/* Hallmark · shape: app screen · genre: editorial · theme: brand · redesign: full · v2.0.0 */
+/* Critique: preserve the housing facts; replace decoration with photographic space and clear controls. */
+:root {
+  --font-body: 'DM Sans', sans-serif;
+  --font-display: var(--font-body);
+  --font-brand: 'Baloo 2', sans-serif;
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 32px;
+  --space-2xl: 48px;
+  --radius-control: 10px;
+  --radius-card: 16px;
+  --radius-dialog: 20px;
+  --radius-pill: 999px;
+  --dur-micro: 120ms;
+  --dur-short: 180ms;
+  --ease-out: cubic-bezier(0.2, 0.7, 0.3, 1);
+  --color-paper: #fffaf7;
+  --color-paper-2: #fffcff;
+  --color-paper-3: #f2edf5;
+  --color-ink: #251532;
+  --color-ink-2: #65596f;
+  --color-rule: #ddd3e4;
+  --color-control: #96869f;
+  --color-accent: var(--violet);
+  --color-accent-ink: #fffcff;
+  --color-focus: var(--violet);
+  --color-link: var(--violet2);
+  --color-error: #9f2943;
+  --color-success: #21694d;
+  --color-warning: #785510;
+  --color-scrim: #17131f99;
+  --color-image-label: #fffcff;
+  --color-image-ink: #251532;
+  --color-skeleton: #e6deeb;
+  --color-skeleton-shine: #f6f1f8;
+  --color-transparent: transparent;
+  --color-photo-overlay: #25153250;
+  --color-inverse: #fffcff;
+  --shadow-dialog: 0 20px 64px #25153224;
+  --container: 1440px;
+  --gutter: 40px;
+  --control-height: 48px;
+}
+:root[data-desktop-theme='dark'] {
+  --color-paper: #17131f;
+  --color-paper-2: #241e2d;
+  --color-paper-3: #302738;
+  --color-ink: #f9f4fc;
+  --color-ink-2: #c6b8d1;
+  --color-rule: #51445d;
+  --color-control: #9c88ae;
+  --color-link: var(--pink);
+  --color-focus: var(--pink);
+  --color-error: #ffb4c0;
+  --color-success: #9edbc0;
+  --color-warning: #f0d28b;
+  --color-skeleton: #3c3047;
+  --color-skeleton-shine: #51415e;
+  --shadow-dialog: 0 20px 64px #0006;
+}
+
+:root {
+  --color-legacy-0: #fffcff;
+  --color-legacy-1: #f3eef7;
+  --color-legacy-2: #ddd3e4;
+  --color-legacy-3: #94849f;
+  --color-legacy-4: #ece4f4;
+  --color-legacy-5: #25153214;
+  --color-legacy-6: #17131f;
+  --color-legacy-7: #231c2d;
+  --color-legacy-8: #2b2236;
+  --color-legacy-9: #31273e;
+  --color-legacy-10: #f9f3fd;
+  --color-legacy-11: #c9bbd4;
+  --color-legacy-12: #53435f;
+  --color-legacy-13: #9a86aa;
+  --color-legacy-14: #3b2e49;
+  --color-legacy-15: #00000033;
+  --color-legacy-16: #25153210;
+  --color-legacy-17: #17131f80;
+}
+
+:root {
+  --space-12: 12px;
+  --space-20: 20px;
+  --space-28: 28px;
+  --space-40: 40px;
+  --space-64: 64px;
+  --color-disabled-fill: #e2dce8;
+  --color-disabled-ink: #63566f;
+}
+:root[data-desktop-theme='dark'] {
+  --color-disabled-fill: #44384f;
+  --color-disabled-ink: #c6b8d1;
+}

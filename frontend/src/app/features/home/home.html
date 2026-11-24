@@ -41,7 +41,7 @@
         <option value="REQUEST">Rencontrer des colocs</option>
       </select></label
     ><button class="search-submit" type="submit" aria-label="Explorer les annonces">
-      <img src="/assets/figma/search.svg" width="20" height="20" alt="" /><span>Rechercher</span>
+      <fc-icon name="search" /><span>Rechercher</span>
     </button>
   </form>
   <div class="home-hero">
@@ -66,7 +66,7 @@
       <h2 id="recent-title">De nouvelles places à partager</h2>
       <p class="muted">Les dernières annonces de la communauté.</p>
     </div>
-    <a class="text-action" routerLink="/annonces">Tout voir ↗</a>
+    <a class="text-action" routerLink="/annonces">Tout voir</a>
   </div>
   @if (busy()) {
     <div class="recent-grid" role="status" aria-label="Chargement des annonces">
@@ -78,7 +78,7 @@
       }
     </div>
   } @else if (failed()) {
-    <div class="home-empty" role="alert">
+    <div class="home-empty" role="alert" fcStatus="error">
       <h3>Les annonces ne sont pas disponibles.</h3>
       <p>Réessaie pour retrouver les dernières publications.</p>
       <button class="btn ghost" (click)="load()">Réessayer</button>
@@ -115,14 +115,14 @@
       <div>
         <h3>Une place à partager</h3>
         <p>Chambres, studios et appartements : trouve ton prochain chez-toi.</p>
-        <span class="text-action">Voir les logements ↗</span>
+        <span class="text-action">Voir les logements</span>
       </div></a
     ><a class="discovery-card" routerLink="/annonces" [queryParams]="{ kind: 'REQUEST' }"
       ><span class="discovery-symbol" aria-hidden="true">♡</span>
       <div>
         <h3>Les bonnes personnes</h3>
         <p>Découvre les recherches de celles et ceux qui imaginent la même coloc.</p>
-        <span class="text-action">Rencontrer les colocs ↗</span>
+        <span class="text-action">Rencontrer les colocs</span>
       </div></a
     >
   </div>

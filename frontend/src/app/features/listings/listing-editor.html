@@ -7,12 +7,12 @@
       <a
         class="link"
         [routerLink]="adminMode ? ['/admin/annonces', saved()?.id] : ['/mes-annonces']"
-        >{{ adminMode ? '← Retour à la fiche administrative' : '← Mes annonces' }}</a
+        >{{ adminMode ? 'Retour à la fiche administrative' : 'Mes annonces' }}</a
       >
       <div class="content-head">
         <div>
           <span class="tag">{{
-            adminMode ? 'ADMINISTRATION · CORRECTION' : 'UNE NOUVELLE AVENTURE'
+            adminMode ? 'Correction administrative' : 'Une nouvelle aventure'
           }}</span>
           <h1 class="listing-title">
             {{
@@ -33,7 +33,7 @@
         </div>
       </div>
       @if (busy()) {
-        <p role="status" class="notice">Enregistrement ou chargement…</p>
+        <p role="status" class="notice" fcStatus="loading">Enregistrement ou chargement…</p>
       }
       @if (!allowed()) {
         <section class="section-card">
@@ -225,10 +225,11 @@
               class="btn ghost"
               [disabled]="busy() || step === 1"
               (click)="step = step - 1"
+              [fcStatus]="busy() ? 'loading' : null"
             >
-              ← Retour</button
-            ><button class="btn coral" [disabled]="busy()">
-              {{ step < 3 ? 'Continuer →' : 'Enregistrer l’annonce' }}
+              Retour</button
+            ><button class="btn coral" [disabled]="busy()" [fcStatus]="busy() ? 'loading' : null">
+              {{ step < 3 ? 'Continuer' : 'Enregistrer l’annonce' }}
             </button>
           </div>
         </form>
@@ -249,7 +250,7 @@
   </datalist>
 } @else {
   <section class="announcement-flow">
-    <a class="link" routerLink="/mes-annonces">← Mes annonces</a>
+    <a class="link" routerLink="/mes-annonces">Mes annonces</a>
     <header class="flow-heading">
       <span class="tag">TON ANNONCE, À TA FAÇON</span>
       <h1>{{ isRequest ? 'Fais une place à tes projets.' : 'Une place à partager.' }}</h1>
@@ -684,7 +685,7 @@
                 <dd>
                   {{ form.availableFrom | date: 'dd/MM/yyyy' }}
                   @if (form.availableUntil) {
-                    → {{ form.availableUntil | date: 'dd/MM/yyyy' }}
+                    {{ form.availableUntil | date: 'dd/MM/yyyy' }}
                   }
                 </dd>
                 <dt>{{ isRequest ? 'Préférences' : 'Équipements' }}</dt>
@@ -721,14 +722,14 @@
             }
           }
           @if (flowError) {
-            <p class="field-error" role="alert">{{ flowError }}</p>
+            <p class="field-error" role="alert" fcStatus="error">{{ flowError }}</p>
           }
           <div class="flow-actions">
             <button type="button" class="btn ghost" [disabled]="step === 0" (click)="back()">
-              ← Retour
+              Retour
             </button>
             @if (step < 4) {
-              <button class="btn coral">Continuer →</button>
+              <button class="btn coral">Continuer</button>
             } @else {
               <button type="submit" class="btn ghost">
                 {{
@@ -752,12 +753,12 @@
         </fieldset>
       </form>
       @if (busy()) {
-        <p role="status" class="notice">Enregistrement en cours…</p>
+        <p role="status" class="notice" fcStatus="loading">Enregistrement en cours…</p>
       }
       @if (saved(); as row) {
         <p class="help flow-saved">
           Ton annonce est enregistrée.
-          <a class="link" routerLink="/mes-annonces">Retrouver mes annonces ↗</a>
+          <a class="link" routerLink="/mes-annonces">Retrouver mes annonces</a>
         </p>
       }
     }
@@ -796,6 +797,7 @@
               class="btn small ghost"
               [disabled]="estimating()"
               (click)="removePendingPhoto(file)"
+              [fcStatus]="estimating() ? 'loading' : null"
             >
               Retirer cette photo
             </button>
@@ -810,8 +812,14 @@
       {{ pendingPhotos.length + (saved()?.photos?.length || 0) }} / 10 photos · Toutes les photos
       sont utilisées pour l’estimation.
     </p>
-    <button type="button" class="btn coral" [disabled]="estimating()" (click)="estimateRent()">
-      ✨ Estimer mon loyer avec l’IA
+    <button
+      type="button"
+      class="btn coral"
+      [disabled]="estimating()"
+      (click)="estimateRent()"
+      [fcStatus]="estimating() ? 'loading' : null"
+    >
+       Estimer mon loyer avec l’IA
     </button>
     @if (estimating()) {
       <p role="status">
@@ -819,7 +827,7 @@
       </p>
     }
     @if (estimateError) {
-      <p class="field-error" role="alert">
+      <p class="field-error" role="alert" fcStatus="error">
         {{ estimateError }} Clique à nouveau sur Estimer pour réessayer.
       </p>
     }

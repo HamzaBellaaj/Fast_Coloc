@@ -116,7 +116,8 @@ class ListingCatalogFragment :
                 "favorites" -> getString(R.string.s2_favorites)
                 else -> "Trouve ta coloc."
             }
-        binding.listingProgress.isVisible = busy
+        binding.listingProgress.isVisible = busy && page?.items?.isNotEmpty() == true
+        binding.housingSkeleton.isVisible = busy && page?.items.isNullOrEmpty()
         binding.tvState.text =
             when {
                 busy -> "Actualisation en cours…"

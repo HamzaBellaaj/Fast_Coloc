@@ -1,7 +1,7 @@
 <div class="panel-layout">
   <fc-admin-nav />
   <section>
-    <span class="tag">ADMINISTRATION · WEB UNIQUEMENT</span>
+    <span class="tag">Administration web uniquement</span>
     <h1 class="page-title">Tableau de bord</h1>
     <p class="muted">Gère les comptes et protège la communauté FastColoc.</p>
     <div class="stats">
@@ -32,10 +32,12 @@
             <option value="BLOCKED">Bloqués</option>
           </select>
         </div>
-        <button class="btn small" [disabled]="loading">Rechercher</button>
+        <button class="btn small" [disabled]="loading" [fcStatus]="loading ? 'loading' : null">
+          Rechercher
+        </button>
       </form>
       @if (loading) {
-        <p role="status" class="loading">Chargement des comptes…</p>
+        <p role="status" class="loading" fcStatus="loading">Chargement des comptes…</p>
       } @else if (failed) {
         <button class="btn ghost" (click)="load()">Réessayer</button>
       } @else {
@@ -63,9 +65,12 @@
                   </td>
                   <td>{{ user.app_role }}</td>
                   <td>
-                    <span class="status" [class.blocked]="user.status === 'BLOCKED'">{{
-                      user.status === 'ACTIVE' ? 'Actif' : 'Bloqué'
-                    }}</span>
+                    <span
+                      class="status"
+                      [fcStatus]="user.status === 'ACTIVE' ? 'success' : 'error'"
+                      [class.blocked]="user.status === 'BLOCKED'"
+                      >{{ user.status === 'ACTIVE' ? 'Actif' : 'Bloqué' }}</span
+                    >
                   </td>
                   <td>
                     {{ user.completed_at ? 'Complète' : 'En cours' }}<br /><span class="tiny">{{
@@ -102,7 +107,7 @@
         </div>
         <div class="row between wrap spaced">
           <button class="btn small ghost" [disabled]="offset === 0" (click)="page(-20)">
-            ← Précédent</button
+            Précédent</button
           ><span class="help"
             >{{ total ? offset + 1 : 0 }}–{{ offset + users.length }} / {{ total }}</span
           ><button
@@ -110,7 +115,7 @@
             [disabled]="offset + users.length >= total"
             (click)="page(20)"
           >
-            Suivant →
+            Suivant
           </button>
         </div>
       }
@@ -146,6 +151,7 @@
         aria-label="Fermer la fenêtre"
         (click)="close()"
         [disabled]="busy"
+        [fcStatus]="busy ? 'loading' : null"
       >
         ×
       </button>
@@ -158,11 +164,13 @@
         </p>
       }
       @if (action === 'contacts' && contactsLoading) {
-        <p class="notice" role="status">Chargement des contacts actuels…</p>
+        <p class="notice" role="status" fcStatus="loading">Chargement des contacts actuels…</p>
       }
       @if (action === 'contacts' && contactsFailed) {
         <div class="notice contacts-error">
-          <p role="alert">Impossible de charger les contacts. Réessaie avant de les modifier.</p>
+          <p role="alert" fcStatus="error">
+            Impossible de charger les contacts. Réessaie avant de les modifier.
+          </p>
           <button type="button" class="btn small ghost" (click)="loadContacts()">Réessayer</button>
         </div>
       }
@@ -211,11 +219,20 @@
       </fieldset>
     </div>
     <footer class="admin-dialog-footer">
-      <button type="button" class="btn ghost" (click)="close()" [disabled]="busy">Annuler</button>
+      <button
+        type="button"
+        class="btn ghost"
+        (click)="close()"
+        [disabled]="busy"
+        [fcStatus]="busy ? 'loading' : null"
+      >
+        Annuler
+      </button>
       <button
         class="btn"
         [class.danger]="action === 'delete'"
         [disabled]="busy || form.invalid || (action === 'contacts' && !contactsReady)"
+        [fcStatus]="busy ? 'loading' : null"
       >
         {{
           busy

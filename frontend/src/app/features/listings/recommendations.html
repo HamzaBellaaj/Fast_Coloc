@@ -1,8 +1,8 @@
 <section class="recommendations-page">
   <header class="recommendations-hero">
     <div>
-      <span class="tag">LE PETIT COUP DE POUCE IA</span>
-      <h1>Pour toi <span aria-hidden="true">✨</span></h1>
+      <span class="tag">Le petit coup de pouce IA</span>
+      <h1>Pour toi <span aria-hidden="true"></span></h1>
       <p>Des logements à découvrir, classés selon tes envies.</p>
     </div>
     <button
@@ -10,6 +10,7 @@
       type="button"
       [disabled]="busy() || pending().size > 0"
       (click)="refresh()"
+      [fcStatus]="busy() ? 'loading' : null"
     >
       Actualiser les recommandations
     </button>
@@ -18,22 +19,27 @@
   @if (incomplete() && !busy()) {
     <p class="recommendations-note">
       Un budget et tes localités préférées nous aideront à affiner la sélection.
-      <a class="link" routerLink="/profile">Compléter mon profil ↗</a>
+      <a class="link" routerLink="/profile">Compléter mon profil</a>
     </p>
   }
   @if (busy()) {
-    <div class="recommendations-loading" role="status" aria-live="polite">
-      <span class="recommendations-spinner" aria-hidden="true"></span>
+    <div class="recommendations-loading" role="status" aria-live="polite" fcStatus="loading">
+      <fc-skeleton kind="cards" label="Recherche de colocations adaptées" />
       <h2>On cherche les bonnes affinités…</h2>
       <p>Ton profil rencontre les annonces disponibles. Le calcul peut prendre un petit moment.</p>
-      <div class="loading-cards" aria-hidden="true"><span></span><span></span><span></span></div>
     </div>
   }
   @if (error()) {
-    <div class="section-card recommendations-error" role="alert">
+    <div class="section-card recommendations-error" role="alert" fcStatus="error">
       <h2>La sélection se fait attendre.</h2>
       <p>{{ error() }}</p>
-      <button type="button" class="btn ghost" [disabled]="busy()" (click)="refresh()">
+      <button
+        type="button"
+        class="btn ghost"
+        [disabled]="busy()"
+        (click)="refresh()"
+        [fcStatus]="busy() ? 'loading' : null"
+      >
         Réessayer
       </button>
     </div>
@@ -68,7 +74,7 @@
             class="btn small ghost"
             [routerLink]="['/annonces', item.listing.id]"
             [queryParams]="{ from: '/pour-toi' }"
-            >Découvrir cette annonce ↗</a
+            >Découvrir cette annonce</a
           >
         </fc-listing-card>
       }

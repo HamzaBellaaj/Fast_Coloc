@@ -1,3 +1,5 @@
+import { Icon } from '../../shared/icon';
+import { DesktopStatus } from '../../shared/desktop-status';
 import { LiquidPopLink } from '../../shared/liquid-pop';
 import { ListingCard } from '../listings/listing-card';
 import { Component, inject, OnInit, signal } from '@angular/core';
@@ -8,7 +10,7 @@ import { Auth } from '../../core/auth';
 import { Feedback } from '../../core/feedback';
 import { Area, Listing, ListingPage } from '../listings/models';
 @Component({
-  imports: [LiquidPopLink, RouterLink, FormsModule, ListingCard],
+  imports: [Icon, DesktopStatus, LiquidPopLink, RouterLink, FormsModule, ListingCard],
   templateUrl: './home.html',
   styleUrl: './home.css',
 })

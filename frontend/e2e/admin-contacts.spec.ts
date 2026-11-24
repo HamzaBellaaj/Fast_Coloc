@@ -59,7 +59,7 @@ test('Contacts ADMIN : préremplissage, erreur sans effacement et dialogue respo
   await page
     .getByLabel('Mot de passe', { exact: true })
     .fill(config['FASTCOLOC_TEST_EMAIL_PASSWORD']);
-  await page.getByRole('button', { name: 'Se connecter →', exact: true }).click();
+  await page.getByRole('button', { name: 'Se connecter', exact: true }).click();
   await expect(page).not.toHaveURL(/\/login$/);
   await page.goto('/admin');
   await page.getByLabel('Rechercher par nom', { exact: true }).fill(name);
@@ -71,7 +71,7 @@ test('Contacts ADMIN : préremplissage, erreur sans effacement et dialogue respo
   await expect(dialog.getByLabel('Fixe', { exact: true })).toHaveValue('71000000');
   await expect(dialog.getByLabel('Site Web', { exact: true })).toHaveValue('https://example.com');
   expect(await page.evaluate(() => getComputedStyle(document.documentElement).overflow)).toBe(
-    'hidden',
+    'clip',
   );
   mkdirSync('test-results/admin-contacts', { recursive: true });
   for (const width of [1440, 390]) {

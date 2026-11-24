@@ -1,3 +1,4 @@
+import { DesktopStatus } from '../../shared/desktop-status';
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Api } from '../../core/api';
@@ -9,7 +10,7 @@ export interface NotificationPreferences {
 }
 @Component({
   selector: 'fc-notification-settings',
-  imports: [FormsModule],
+  imports: [DesktopStatus, FormsModule],
   templateUrl: './notification-settings.html',
 })
 export class NotificationSettings implements OnInit {
