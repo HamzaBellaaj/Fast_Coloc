@@ -16,9 +16,10 @@ import { Auth } from '../../core/auth';
 import { Api } from '../../core/api';
 import { errorMessage } from '../../core/feedback';
 import { Listing } from '../listings/models';
+import { BlockUser } from '../profile/block-user';
 import { Conversation, Message, Messaging } from './messaging';
 @Component({
-  imports: [FormsModule, RouterLink, DatePipe, DecimalPipe],
+  imports: [BlockUser, FormsModule, RouterLink, DatePipe, DecimalPipe],
   templateUrl: './messages.html',
   styleUrl: './messages.css',
 })
@@ -35,6 +36,15 @@ export class Messages implements OnInit {
   messages = signal<Message[]>([]);
   loading = signal(false);
   sending = signal(false);
+  locallyBlocked = signal(false);
+  blockChanged(blocked: boolean) {
+    const wasBlocked = this.locallyBlocked();
+    this.locallyBlocked.set(blocked);
+    if (wasBlocked && !blocked && this.selected()) void this.refresh();
+  }
+  exchangeUnavailable() {
+    return this.locallyBlocked() || this.selected()?.exchange_available === false;
+  }
   error = signal('');
   inboxError = signal('');
   older = signal(false);
@@ -78,6 +88,7 @@ export class Messages implements OnInit {
   async open(id: string | null, listingId: string | null) {
     const g = ++this.generation;
     this.selected.set(null);
+    this.locallyBlocked.set(false);
     this.listing.set(null);
     this.messages.set([]);
     this.draft = '';
@@ -224,7 +235,7 @@ export class Messages implements OnInit {
     const content = this.draft.trim(),
       c = this.selected(),
       listing = this.listing();
-    if (this.sending() || this.loading() || !content || content.length > 4000 || (!c && !listing))
+    if (this.exchangeUnavailable() || this.sending() || this.loading() || !content || content.length > 4000 || (!c && !listing))
       return;
     const g = this.generation;
     const request =

@@ -30,6 +30,9 @@ import { Listing } from './models';
       ><span class="kind-label">{{
         row().kind === 'OFFER' ? 'Une place à partager' : 'Recherche de coloc'
       }}</span>
+      @if (row().golden) {
+        <span class="golden-label">⭐ Golden</span>
+      }
       @if (showFavorite()) {
         <button
           class="favorite-icon"

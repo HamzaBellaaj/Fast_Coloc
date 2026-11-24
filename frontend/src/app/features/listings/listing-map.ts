@@ -55,12 +55,15 @@ export class ListingMap implements AfterViewInit, OnChanges, OnDestroy {
       link.href = '/annonces/' + row.id;
       link.textContent = row.title + ' · ' + row.rent + ' TND';
       const pin = L.divIcon({
-        className: 'coloc-pin',
+        className: row.golden ? 'coloc-pin coloc-pin--golden' : 'coloc-pin',
         html: '⌂',
         iconSize: [32, 38],
         iconAnchor: [16, 38],
       });
-      L.marker(point, { icon: pin, alt: row.title }).bindPopup(link).addTo(this.markers);
+      const label = row.golden ? row.title + ' · Annonce Golden' : row.title;
+      L.marker(point, { icon: pin, alt: label, title: label, zIndexOffset: row.golden ? 1000 : 0 })
+        .bindPopup(link)
+        .addTo(this.markers);
     }
     if (points.length)
       this.map.fitBounds(L.latLngBounds(points), { padding: [30, 30], maxZoom: 13 });

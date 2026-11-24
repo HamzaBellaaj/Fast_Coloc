@@ -13,6 +13,7 @@ export interface Conversation {
   last_message: string;
   unread_count: number;
   listing_available: boolean;
+  exchange_available?: boolean;
   created_at: string;
   updated_at: string;
 }

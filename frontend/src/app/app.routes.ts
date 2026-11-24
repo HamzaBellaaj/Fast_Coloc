@@ -42,6 +42,19 @@ export const routes: Routes = [
     loadComponent: () => import('./features/listings/listing-detail').then((m) => m.ListingDetail),
   },
   {
+    path: 'payment/success',
+    title: 'Vérification du paiement · FastColoc',
+    canActivate: [sessionGuard],
+    loadComponent: () => import('./features/payment/payment-success').then((m) => m.PaymentSuccess),
+  },
+  {
+    path: 'payment/cancel',
+    title: 'Paiement annulé · FastColoc',
+    canActivate: [sessionGuard],
+    data: { cancel: true },
+    loadComponent: () => import('./features/payment/payment-success').then((m) => m.PaymentSuccess),
+  },
+  {
     path: '',
     title: 'FastColoc · La coloc, c’est mieux ensemble',
     loadComponent: () => import('./features/home/home').then((m) => m.Home),
@@ -82,6 +95,11 @@ export const routes: Routes = [
     loadComponent: () => import('./features/onboarding/registration').then((m) => m.Registration),
   },
   { path: 'register', redirectTo: 'register/1', pathMatch: 'full' },
+  {
+    path: 'membres/:id',
+    canActivate: [sessionGuard],
+    loadComponent: () => import('./features/profile/member-profile').then((m) => m.MemberProfile),
+  },
   {
     path: 'profile',
     title: 'Mon profil · FastColoc',

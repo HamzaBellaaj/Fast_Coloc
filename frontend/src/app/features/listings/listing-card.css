@@ -3,9 +3,11 @@
   min-width: 0;
   height: 100%;
 }
+
 .preview-card {
   height: 100%;
 }
+
 .preview-card {
   background: white;
   border-radius: 23px;
@@ -15,30 +17,36 @@
     transform 0.2s,
     box-shadow 0.2s;
 }
+
 .preview-card:hover {
   transform: translateY(-5px);
   box-shadow: 0 16px 36px #2515320d;
 }
+
 .preview-photo {
   position: relative;
   height: 218px;
   background: #efe6f7;
 }
-.preview-photo > a {
+
+.preview-photo>a {
   display: block;
   height: 100%;
 }
-.preview-photo > a > img {
+
+.preview-photo>a>img {
   width: 100%;
   height: 100%;
   object-fit: cover;
 }
+
 .no-photo {
   height: 100%;
   display: grid;
   place-items: center;
   background: #eee6f8;
 }
+
 .kind-label {
   position: absolute;
   top: 14px;
@@ -50,6 +58,19 @@
   font-weight: 700;
   max-width: 70%;
 }
+
+.golden-label {
+  position: absolute;
+  bottom: 14px;
+  left: 14px;
+  background: #f59e0b;
+  color: white;
+  border-radius: 9px;
+  font-size: 11px;
+  padding: 8px 11px;
+  font-weight: 700;
+}
+
 .favorite-icon {
   position: absolute;
   right: 12px;
@@ -62,12 +83,15 @@
   color: var(--violet);
   font-size: 25px;
 }
+
 .preview-body {
   padding: 21px;
 }
-.preview-body > .muted {
+
+.preview-body>.muted {
   font-size: 11px;
 }
+
 .preview-body h3 {
   display: -webkit-box;
   -webkit-line-clamp: 2;
@@ -78,25 +102,57 @@
   margin: 9px 0;
   overflow-wrap: anywhere;
 }
+
 .preview-info {
   font-size: 12px;
   color: var(--muted);
 }
+
 .preview-rent {
   font-size: 23px;
   color: var(--violet);
   font-weight: 800;
   margin-top: 17px;
 }
+
 .preview-rent span {
   font-size: 11px;
   color: var(--muted);
   font-weight: 500;
 }
+
 @media (max-width: 650px) {
   .preview-photo {
     height: 230px;
   }
 }
 
-.favorite-icon{transition:transform .16s,background-color .16s}.favorite-icon:active{transform:scale(.88)}.favorite-icon[aria-pressed=true]{background:var(--pink)}@media(prefers-reduced-motion:reduce){.favorite-icon{transition:none}.favorite-icon:active{transform:none}}@media(hover:none){.preview-card:hover{transform:none}}
+
+
+.favorite-icon {
+  transition: transform .16s, background-color .16s
+}
+
+.favorite-icon:active {
+  transform: scale(.88)
+}
+
+.favorite-icon[aria-pressed=true] {
+  background: var(--pink)
+}
+
+@media(prefers-reduced-motion:reduce) {
+  .favorite-icon {
+    transition: none
+  }
+
+  .favorite-icon:active {
+    transform: none
+  }
+}
+
+@media(hover:none) {
+  .preview-card:hover {
+    transform: none
+  }
+}

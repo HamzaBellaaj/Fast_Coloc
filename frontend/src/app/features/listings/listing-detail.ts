@@ -1,3 +1,4 @@
+import { BoostCheckout, BoostMethod } from '../payment/boost-checkout';
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { Router, RouterLink, ActivatedRoute } from '@angular/router';
 import { DecimalPipe, DatePipe } from '@angular/common';
@@ -35,6 +36,9 @@ import { ListingMap } from './listing-map';
           }}</span>
           <h1 class="listing-title">{{ r.title }}</h1>
           <p class="muted">{{ r.locality }} · {{ r.governorate }}</p>
+          @if (r.golden) {
+            <span class="pill" style="background:#f59e0b;color:#fff;font-weight:600;">⭐ Annonce Golden</span>
+          }
         </div>
         <span class="rent">{{ r.rent | number: '1.0-3' }} <small>TND / mois</small></span>
       </div>
@@ -94,12 +98,23 @@ import { ListingMap } from './listing-map';
               {{ r.favorite ? '♥ Retirer des favoris' : '♡ Ajouter aux favoris' }}
             </button>
             @if (r.author_id !== auth.profile()?.id && r.status === 'PUBLISHED' && !r.is_hidden) {
+              <a class="btn ghost" [routerLink]="['/membres', r.author_id]">Voir le profil de l’auteur</a>
               <a class="btn coral" routerLink="/messages" [queryParams]="{ listing: r.id }">Contacter</a>
             }
             @if (r.author_id === auth.profile()?.id) {
               <a class="btn ghost" [routerLink]="['/annonces', r.id, 'modifier']"
                 >Modifier mon annonce</a
               >
+              @if (r.status === 'PUBLISHED' && !r.is_hidden) {
+                <p>Boost Golden · 1 mois · 5 USD</p>
+                <button class="btn coral" [disabled]="boostBusy()" (click)="boost('PAYPAL')">
+                  Payer avec PayPal
+                </button>
+                <button class="btn ghost" [disabled]="boostBusy()" (click)="boost('CARD')">
+                  Carte bancaire via PayPal — Visa / Mastercard
+                </button>
+                <p class="muted">PayPal affiche le paiement par carte sans compte selon votre éligibilité.</p>
+              }
             }
           </div>
         </aside>
@@ -132,6 +147,24 @@ export class ListingDetail implements OnInit {
     return this.router.parseUrl(
       /^\/(annonces|favoris|mes-annonces|pour-toi)(\?|$)/.test(from) ? from : '/annonces',
     );
+  }
+
+  boostBusy = signal(false);
+
+  private checkout = inject(BoostCheckout);
+
+  async boost(method: BoostMethod) {
+    const listing = this.row();
+    if (!listing || this.boostBusy()) return;
+    this.boostBusy.set(true);
+    try {
+      await this.checkout.start(listing.id, 1, method);
+    } catch (e) {
+      this.feedback.error(e);
+    } finally {
+      this.boostBusy.set(false);
+    }
+
   }
   ngOnInit() {
     void this.load();
